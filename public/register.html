@@ -48,7 +48,24 @@
     .subtitle {
       color: #d7e3f4;
       font-size: 15px;
-      margin-bottom: 28px;
+      margin-bottom: 20px;
+      line-height: 1.4;
+    }
+
+    .notice-box {
+      background: rgba(255, 255, 255, 0.92);
+      color: #111827;
+      border-radius: 14px;
+      padding: 14px;
+      text-align: left;
+      margin-bottom: 20px;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .notice-box strong {
+      display: block;
+      margin-bottom: 6px;
     }
 
     .input-group {
@@ -63,6 +80,11 @@
       outline: none;
       font-size: 15px;
       background: white;
+    }
+
+    input:focus {
+      border-color: #22c55e;
+      box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.2);
     }
 
     button {
@@ -87,6 +109,7 @@
       margin-top: 16px;
       font-size: 13px;
       color: #c7d2e0;
+      line-height: 1.5;
     }
   </style>
 </head>
@@ -94,7 +117,12 @@
   <div class="card">
     <img src="/logo.png" alt="Vehicall Logo" class="logo" />
     <h1>Vehicall</h1>
-    <p class="subtitle">Create your account and get your QR automatically</p>
+    <p class="subtitle">Create your account and get your QR automatically assigned to your vehicle</p>
+
+    <div class="notice-box">
+      <strong>Registration Includes</strong>
+      Basic plan starts with a 1 OMR registration fee and includes 3 months validity with up to 3 alerts per month.
+    </div>
 
     <div class="input-group">
       <input id="name" type="text" placeholder="Full Name" />
@@ -116,16 +144,22 @@
     <button class="secondary-btn" onclick="goToLogin()">Back to Login</button>
 
     <div class="footer-text">
-      Your QR will be generated automatically after registration
+      Your QR ID will be created automatically after registration.<br>
+      Package upgrade options will be available inside your dashboard.
     </div>
   </div>
 
   <script>
     async function registerUser() {
-      const name = document.getElementById('name').value;
-      const mobile = document.getElementById('mobile').value;
-      const vehicleNumber = document.getElementById('vehicleNumber').value;
+      const name = document.getElementById('name').value.trim();
+      const mobile = document.getElementById('mobile').value.trim();
+      const vehicleNumber = document.getElementById('vehicleNumber').value.trim();
       const password = document.getElementById('password').value;
+
+      if (!name || !mobile || !vehicleNumber || !password) {
+        alert('Please fill all fields');
+        return;
+      }
 
       const res = await fetch('/register', {
         method: 'POST',
@@ -138,9 +172,13 @@
       if (res.ok) {
         localStorage.setItem('vehicleNumber', data.vehicleNumber);
         localStorage.setItem('qr_id', data.qr_id);
-        localStorage.setItem('plan', data.plan);
+        localStorage.setItem('plan', data.plan || '');
+        localStorage.setItem('billingCycle', 'monthly');
         localStorage.setItem('isLoggedIn', 'true');
-        alert(`Registration successful\nYour QR ID: ${data.qr_id}`);
+        localStorage.setItem('packageSaved', 'false');
+        localStorage.setItem('qrGenerated', 'false');
+
+        alert(`Registration successful\nAssigned QR ID: ${data.qr_id}`);
         window.location.href = '/dashboard.html';
       } else {
         alert(data.message);

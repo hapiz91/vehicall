@@ -23,6 +23,24 @@ function generateQrId(vehicleNumber) {
   return `VHCL-${cleanVehicle}-${randomPart}`;
 }
 
+// Format alert text
+function formatAlert(type) {
+  switch (type) {
+    case 'EMERGENCY':
+      return '🚨 Emergency / Accident';
+    case 'BLOCKING':
+      return '🚗 Your Car is Blocking';
+    case 'LIGHTS_ON':
+      return '💡 Lights ON';
+    case 'NOT_LOCKED':
+      return '🔓 Vehicle Not Locked';
+    case 'NEED_ATTENTION':
+      return '⚠️ Vehicle Needs Attention';
+    default:
+      return type;
+  }
+}
+
 // Register user
 app.post('/register', (req, res) => {
   let { name, mobile, vehicleNumber, password } = req.body;
@@ -49,9 +67,11 @@ app.post('/register', (req, res) => {
     vehicleNumber,
     password,
     plan: '',
-    qr_id,
+    billingCycle: '',
     packageSaved: false,
+    qr_id,
     qr_generated: false,
+    paymentStatus: 'pending', // future use
     createdAt: new Date().toISOString()
   };
 
@@ -90,15 +110,16 @@ app.post('/login', (req, res) => {
     vehicleNumber: user.vehicleNumber,
     name: user.name,
     plan: user.plan,
+    billingCycle: user.billingCycle,
     qr_id: user.qr_id,
     packageSaved: user.packageSaved,
     qr_generated: user.qr_generated
   });
 });
 
-// Update package
+// Save / update package
 app.post('/update-plan', (req, res) => {
-  let { vehicleNumber, plan } = req.body;
+  let { vehicleNumber, plan, billingCycle } = req.body;
 
   if (!vehicleNumber || !plan) {
     return res.status(400).json({ message: 'Vehicle number and plan are required' });
@@ -115,6 +136,7 @@ app.post('/update-plan', (req, res) => {
   }
 
   user.plan = plan;
+  user.billingCycle = billingCycle || 'monthly';
   user.packageSaved = true;
 
   res.json({
@@ -142,9 +164,19 @@ app.post('/generate-qr', async (req, res) => {
       return res.status(404).json({ message: 'Vehicle owner not found' });
     }
 
+    // Step 1: package must be saved
     if (!user.packageSaved || !user.plan) {
       return res.status(400).json({ message: 'Please save package first' });
     }
+
+    // FUTURE PAYMENT RULE - KEEP COMMENTED FOR NOW
+    /*
+    if (!user.paymentStatus || user.paymentStatus !== 'paid') {
+      return res.status(400).json({
+        message: 'Payment required before generating QR'
+      });
+    }
+    */
 
     const alertUrl = `${req.protocol}://${req.get('host')}/alert.html?qr=${user.qr_id}`;
 
@@ -184,13 +216,25 @@ app.post('/send-alert', (req, res) => {
     return res.status(404).json({ message: 'No active vehicle found for this QR' });
   }
 
-  console.log('🚗 Alert received');
+  const now = new Date().toLocaleString();
+
+  const alertMessage = `Vehicall Alert
+
+Vehicle: ${user.vehicleNumber}
+Issue: ${formatAlert(alert_type)}
+Time: ${now}`;
+
+  console.log('==============================');
+  console.log('Vehicall Alert');
+  console.log('Vehicle:', user.vehicleNumber);
   console.log('QR:', qr_id);
-  console.log('Type:', alert_type);
+  console.log('Type:', formatAlert(alert_type));
   console.log('Send to:', user.mobile);
+  console.log('Time:', now);
+  console.log('==============================');
 
   res.json({
-    message: `Alert sent to ${user.name}`
+    message: alertMessage
   });
 });
 

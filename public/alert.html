@@ -28,22 +28,23 @@ body {
   cursor:pointer;
 }
 
-.red { background:#ef4444; }
-.blue { background:#3b82f6; }
-.yellow { background:#facc15; color:black;}
-.green { background:#22c55e; }
-.gray { background:#6b7280; }
+/* FIXED COLORS */
+.red { background:#ef4444; color:#ffffff; }
+.blue { background:#2563eb; color:#ffffff; }  /* FIXED HERE */
+.yellow { background:#facc15; color:#000000; }
+.green { background:#22c55e; color:#ffffff; }
+.gray { background:#6b7280; color:#ffffff; }
 
 .btn:hover { opacity:0.9; }
 
-/* NEW ALERT BOX */
+/* ALERT MESSAGE BOX */
 .alert-box {
   margin-top:20px;
   padding:16px;
   border-radius:12px;
   background: rgba(255,255,255,0.1);
   border:1px solid rgba(255,255,255,0.2);
-  color:#fef08a; /* light yellow text for visibility */
+  color:#fef08a; /* visible light color */
   font-weight:bold;
   white-space: pre-line;
 }
@@ -64,7 +65,7 @@ body {
 <button class="btn green" onclick="sendAlert('NOT_LOCKED')">🔓 Vehicle Not Locked</button>
 <button class="btn gray" onclick="sendAlert('NEED_ATTENTION')">⚠️ Vehicle Needs Attention</button>
 
-<!-- NEW MESSAGE DISPLAY -->
+<!-- MESSAGE OUTPUT -->
 <div id="response"></div>
 
 <script>
@@ -89,7 +90,7 @@ async function sendAlert(type){
 
   const data = await res.json();
 
-  // SHOW MESSAGE ON SCREEN (instead of popup)
+  // SHOW MESSAGE ON SCREEN
   document.getElementById('response').innerHTML = `
     <div class="alert-box">
       ${data.message}

@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vehicall Registration</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #031b3b, #062850, #0a3d62);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .card {
+      width: 100%;
+      max-width: 420px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 32px 28px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+      text-align: center;
+    }
+
+    .logo {
+      width: 110px;
+      margin-bottom: 16px;
+    }
+
+    h1 {
+      color: white;
+      font-size: 34px;
+      margin-bottom: 8px;
+      font-weight: 700;
+    }
+
+    .subtitle {
+      color: #d7e3f4;
+      font-size: 15px;
+      margin-bottom: 28px;
+    }
+
+    .input-group {
+      margin-bottom: 16px;
+    }
+
+    input {
+      width: 100%;
+      padding: 14px 16px;
+      border-radius: 12px;
+      border: 1px solid #c7d2e0;
+      outline: none;
+      font-size: 15px;
+      background: white;
+    }
+
+    button {
+      width: 100%;
+      padding: 14px;
+      border: none;
+      border-radius: 12px;
+      background: linear-gradient(90deg, #16a34a, #22c55e);
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 8px;
+    }
+
+    .secondary-btn {
+      background: linear-gradient(90deg, #2563eb, #3b82f6);
+      margin-top: 12px;
+    }
+
+    .footer-text {
+      margin-top: 16px;
+      font-size: 13px;
+      color: #c7d2e0;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <img src="/logo.png" alt="Vehicall Logo" class="logo" />
+    <h1>Vehicall</h1>
+    <p class="subtitle">Create your account and get your QR automatically</p>
+
+    <div class="input-group">
+      <input id="name" type="text" placeholder="Full Name" />
+    </div>
+
+    <div class="input-group">
+      <input id="mobile" type="text" placeholder="Mobile Number" />
+    </div>
+
+    <div class="input-group">
+      <input id="vehicleNumber" type="text" placeholder="Vehicle Number" />
+    </div>
+
+    <div class="input-group">
+      <input id="password" type="password" placeholder="Create Password" />
+    </div>
+
+    <button onclick="registerUser()">Register</button>
+    <button class="secondary-btn" onclick="goToLogin()">Back to Login</button>
+
+    <div class="footer-text">
+      Your QR will be generated automatically after registration
+    </div>
+  </div>
+
+  <script>
+    async function registerUser() {
+      const name = document.getElementById('name').value;
+      const mobile = document.getElementById('mobile').value;
+      const vehicleNumber = document.getElementById('vehicleNumber').value;
+      const password = document.getElementById('password').value;
+
+      const res = await fetch('/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, mobile, vehicleNumber, password })
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        localStorage.setItem('vehicleNumber', data.vehicleNumber);
+        localStorage.setItem('qr_id', data.qr_id);
+        localStorage.setItem('plan', data.plan);
+        localStorage.setItem('isLoggedIn', 'true');
+        alert(`Registration successful\nYour QR ID: ${data.qr_id}`);
+        window.location.href = '/dashboard.html';
+      } else {
+        alert(data.message);
+      }
+    }
+
+    function goToLogin() {
+      window.location.href = '/login.html';
+    }
+  </script>
+</body>
+</html>

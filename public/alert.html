@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Vehicall Alert</title>
+
+<style>
+body {
+  background: linear-gradient(135deg,#031b3b,#062850);
+  font-family: Arial;
+  text-align:center;
+  padding:20px;
+  color:white;
+}
+
+.logo {
+  width:100px;
+  margin-bottom:10px;
+}
+
+.btn {
+  width:90%;
+  padding:16px;
+  margin:8px;
+  border-radius:14px;
+  border:none;
+  font-size:16px;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+.red { background:#ef4444; }
+.blue { background:#3b82f6; }
+.yellow { background:#facc15; color:black;}
+.green { background:#22c55e; }
+.gray { background:#6b7280; }
+
+.btn:hover { opacity:0.9; }
+</style>
+
+</head>
+
+<body>
+
+<img src="/logo.png" class="logo">
+
+<h2>Vehicall Alert</h2>
+<p id="qrDisplay"></p>
+
+<button class="btn red" onclick="sendAlert('EMERGENCY')">🚨 Emergency</button>
+<button class="btn blue" onclick="sendAlert('BLOCKING')">🚗 Your Car is Blocking</button>
+<button class="btn yellow" onclick="sendAlert('LIGHTS_ON')">💡 Lights ON</button>
+<button class="btn green" onclick="sendAlert('NOT_LOCKED')">🔓 Vehicle Not Locked</button>
+<button class="btn gray" onclick="sendAlert('NEED_ATTENTION')">⚠️ Vehicle Needs Attention</button>
+
+<script>
+const params = new URLSearchParams(window.location.search);
+const qr_id = params.get('qr');
+
+document.getElementById('qrDisplay').innerText = qr_id
+  ? "Vehicle ID: " + qr_id
+  : "Invalid QR";
+
+async function sendAlert(type){
+  if(!qr_id){
+    alert("Invalid QR Code");
+    return;
+  }
+
+  const res = await fetch('/send-alert',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({qr_id, alert_type:type})
+  });
+
+  const data = await res.json();
+  alert(data.message);
+}
+</script>
+
+</body>
+</html>

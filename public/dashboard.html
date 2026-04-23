@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vehicall Dashboard</title>
+
+<style>
+* { box-sizing: border-box; margin:0; padding:0; font-family: Arial; }
+
+body {
+  min-height:100vh;
+  background: linear-gradient(135deg, #031b3b, #062850, #0a3d62);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+}
+
+.card {
+  width:100%;
+  max-width:460px;
+  background: rgba(255,255,255,0.08);
+  border-radius:20px;
+  padding:30px;
+  text-align:center;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+}
+
+.logo {
+  width:90px;
+  margin-bottom:10px;
+}
+
+h2 {
+  color:white;
+  margin-bottom:5px;
+}
+
+.sub {
+  color:#cbd5e1;
+  font-size:14px;
+  margin-bottom:20px;
+}
+
+.info-box {
+  background: white;
+  color: #111827;
+  padding: 14px;
+  border-radius: 12px;
+  text-align: left;
+  margin-bottom: 12px;
+  word-break: break-word;
+}
+
+label {
+  display:block;
+  color:#dbeafe;
+  text-align:left;
+  margin:10px 0 6px;
+  font-size:14px;
+}
+
+select {
+  width:100%;
+  padding:12px;
+  border-radius:10px;
+  border:none;
+  margin-bottom:14px;
+}
+
+button {
+  width:100%;
+  padding:14px;
+  border:none;
+  border-radius:12px;
+  background: linear-gradient(90deg,#16a34a,#22c55e);
+  color:white;
+  font-weight:bold;
+  cursor:pointer;
+  margin-bottom:10px;
+  transition: opacity 0.2s ease;
+}
+
+.secondary-btn {
+  background: linear-gradient(90deg,#2563eb,#3b82f6);
+}
+
+.logout-btn {
+  background: linear-gradient(90deg,#dc2626,#ef4444);
+}
+
+button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.saved-status {
+  display: none;
+  color: #22c55e;
+  font-weight: bold;
+  margin-bottom: 14px;
+}
+
+.qr-preview {
+  background: white;
+  padding: 18px;
+  border-radius: 16px;
+  margin-top: 16px;
+  display: none;
+  color: #111827;
+}
+
+.qr-preview img.qr {
+  max-width: 220px;
+  width: 100%;
+  margin-top: 10px;
+}
+
+.qr-logo {
+  width: 70px;
+  margin-bottom: 8px;
+}
+
+.small-note {
+  color: #475569;
+  font-size: 13px;
+  margin-top: 8px;
+}
+</style>
+
+</head>
+<body>
+
+<div class="card">
+  <img src="/logo.png" class="logo">
+
+  <h2>Owner Dashboard</h2>
+  <div class="sub">Select package first, then generate your vehicle QR</div>
+
+  <div class="info-box"><strong>Vehicle Number:</strong> <span id="vehicleNumber"></span></div>
+  <div class="info-box"><strong>Assigned QR ID:</strong> <span id="qrId"></span></div>
+
+  <label for="plan">Select Package</label>
+  <select id="plan">
+    <option value="">Select Package</option>
+    <option value="Basic">Basic</option>
+    <option value="Location">Location Add-on</option>
+    <option value="Premium">Premium</option>
+    <option value="Pro">Pro</option>
+    <option value="B2B-Basic">B2B Basic</option>
+    <option value="B2B-Pro">B2B Professional</option>
+    <option value="B2B-Enterprise">B2B Enterprise</option>
+  </select>
+
+  <div id="savedStatus" class="saved-status">✓ Package saved</div>
+
+  <button id="saveBtn" onclick="savePlan()">Save Package</button>
+  <button id="generateBtn" class="secondary-btn" onclick="generateQR()" disabled>Generate QR</button>
+  <button id="printBtn" class="secondary-btn" onclick="printQR()" disabled>Print QR</button>
+  <button class="logout-btn" onclick="logout()">Logout</button>
+
+  <div id="qrPreview" class="qr-preview">
+    <img src="/logo.png" class="qr-logo" alt="Vehicall Logo">
+    <div><strong>Vehicall Vehicle QR</strong></div>
+    <img id="qrImage" class="qr" src="" alt="QR Code">
+    <div class="small-note">Print this QR and paste it on the vehicle</div>
+  </div>
+</div>
+
+<script>
+if (localStorage.getItem('isLoggedIn') !== 'true') {
+  window.location.href = '/login.html';
+}
+
+const vehicleNumber = localStorage.getItem('vehicleNumber') || '';
+const qrId = localStorage.getItem('qr_id') || '';
+const savedPlan = localStorage.getItem('plan') || '';
+const packageSaved = localStorage.getItem('packageSaved') === 'true';
+const qrGenerated = localStorage.getItem('qrGenerated') === 'true';
+
+document.getElementById('vehicleNumber').innerText = vehicleNumber;
+document.getElementById('qrId').innerText = qrId;
+document.getElementById('plan').value = savedPlan;
+
+if (packageSaved) {
+  document.getElementById('savedStatus').style.display = 'block';
+  document.getElementById('generateBtn').disabled = false;
+}
+
+if (qrGenerated) {
+  document.getElementById('printBtn').disabled = false;
+}
+
+async function savePlan() {
+  const selectedPlan = document.getElementById('plan').value;
+
+  if (!selectedPlan) {
+    alert('Please select a package first');
+    return;
+  }
+
+  const res = await fetch('/update-plan', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      vehicleNumber: vehicleNumber,
+      plan: selectedPlan
+    })
+  });
+
+  const data = await res.json();
+
+  if (res.ok) {
+    localStorage.setItem('plan', selectedPlan);
+    localStorage.setItem('packageSaved', 'true');
+    document.getElementById('savedStatus').style.display = 'block';
+    document.getElementById('generateBtn').disabled = false;
+    alert(data.message);
+  } else {
+    alert(data.message);
+  }
+}
+
+async function generateQR() {
+  const res = await fetch('/generate-qr', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      vehicleNumber: vehicleNumber
+    })
+  });
+
+  const data = await res.json();
+
+  if (res.ok) {
+    document.getElementById('qrImage').src = data.qrImage;
+    document.getElementById('qrPreview').style.display = 'block';
+    document.getElementById('printBtn').disabled = false;
+    localStorage.setItem('qrGenerated', 'true');
+    alert(data.message);
+  } else {
+    alert(data.message);
+  }
+}
+
+function printQR() {
+  const qrImage = document.getElementById('qrImage').src;
+
+  if (!qrImage) {
+    alert('Please generate QR first');
+    return;
+  }
+
+  const printWindow = window.open('', '_blank');
+  printWindow.document.write(`
+    <html>
+      <head><title>Print Vehicall QR</title></head>
+      <body style="text-align:center; font-family:Arial; padding:30px;">
+        <img src="/logo.png" style="width:90px; margin-bottom:10px;">
+        <h2>Vehicall QR Sticker</h2>
+        <img src="${qrImage}" style="max-width:300px;"><br><br>
+        <p><strong>Vehicle:</strong> ${vehicleNumber}</p>
+        <p><strong>QR ID:</strong> ${qrId}</p>
+      </body>
+    </html>
+  `);
+  printWindow.document.close();
+  printWindow.print();
+}
+
+function logout() {
+  localStorage.removeItem('isLoggedIn');
+  localStorage.removeItem('vehicleNumber');
+  localStorage.removeItem('qr_id');
+  localStorage.removeItem('plan');
+  localStorage.removeItem('ownerName');
+  localStorage.removeItem('packageSaved');
+  localStorage.removeItem('qrGenerated');
+  window.location.href = '/login.html';
+}
+</script>
+
+</body>
+</html>

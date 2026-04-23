@@ -35,6 +35,18 @@ body {
 .gray { background:#6b7280; }
 
 .btn:hover { opacity:0.9; }
+
+/* NEW ALERT BOX */
+.alert-box {
+  margin-top:20px;
+  padding:16px;
+  border-radius:12px;
+  background: rgba(255,255,255,0.1);
+  border:1px solid rgba(255,255,255,0.2);
+  color:#fef08a; /* light yellow text for visibility */
+  font-weight:bold;
+  white-space: pre-line;
+}
 </style>
 
 </head>
@@ -51,6 +63,9 @@ body {
 <button class="btn yellow" onclick="sendAlert('LIGHTS_ON')">💡 Lights ON</button>
 <button class="btn green" onclick="sendAlert('NOT_LOCKED')">🔓 Vehicle Not Locked</button>
 <button class="btn gray" onclick="sendAlert('NEED_ATTENTION')">⚠️ Vehicle Needs Attention</button>
+
+<!-- NEW MESSAGE DISPLAY -->
+<div id="response"></div>
 
 <script>
 const params = new URLSearchParams(window.location.search);
@@ -73,7 +88,13 @@ async function sendAlert(type){
   });
 
   const data = await res.json();
-  alert(data.message);
+
+  // SHOW MESSAGE ON SCREEN (instead of popup)
+  document.getElementById('response').innerHTML = `
+    <div class="alert-box">
+      ${data.message}
+    </div>
+  `;
 }
 </script>
 

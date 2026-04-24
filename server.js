@@ -4,42 +4,76 @@ const QRCode = require('qrcode');
 const { db } = require('./firebase');
 
 const app = express();
-
 app.use(express.json());
 
-// Home page -> login
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'login.html'));
 });
 
 app.use(express.static('public'));
 
-// Generate unique QR ID automatically
+const plans = {
+  Basic: { validityMonths: 3, alertsLimit: 3, contactsLimit: 1, locationEnabled: false, price: 1 },
+  Plus: {
+    monthly: { validityMonths: 1, price: 0.5 },
+    yearly: { validityMonths: 12, price: 5 },
+    alertsLimit: 10,
+    contactsLimit: 2,
+    locationEnabled: true
+  },
+  Premium: {
+    monthly: { validityMonths: 1, price: 1 },
+    yearly: { validityMonths: 12, price: 10 },
+    alertsLimit: 30,
+    contactsLimit: 3,
+    locationEnabled: true
+  }
+};
+
+function addMonths(date, months) {
+  const d = new Date(date);
+  d.setMonth(d.getMonth() + months);
+  return d.toISOString();
+}
+
+function getPlanDetails(plan, billingCycle) {
+  if (plan === 'Basic') {
+    return {
+      price: plans.Basic.price,
+      validityMonths: plans.Basic.validityMonths,
+      alertsLimit: plans.Basic.alertsLimit,
+      contactsLimit: plans.Basic.contactsLimit,
+      locationEnabled: plans.Basic.locationEnabled
+    };
+  }
+
+  const cycle = billingCycle || 'monthly';
+  return {
+    price: plans[plan][cycle].price,
+    validityMonths: plans[plan][cycle].validityMonths,
+    alertsLimit: plans[plan].alertsLimit,
+    contactsLimit: plans[plan].contactsLimit,
+    locationEnabled: plans[plan].locationEnabled
+  };
+}
+
 function generateQrId(vehicleNumber) {
   const cleanVehicle = vehicleNumber.replace(/[^A-Z0-9]/g, '');
   const randomPart = Math.random().toString(36).substring(2, 8).toUpperCase();
   return `VHCL-${cleanVehicle}-${randomPart}`;
 }
 
-// Format alert text
 function formatAlert(type) {
   switch (type) {
-    case 'EMERGENCY':
-      return '🚨 Emergency / Accident';
-    case 'BLOCKING':
-      return '🚗 Your Car is Blocking';
-    case 'LIGHTS_ON':
-      return '💡 Lights ON';
-    case 'NOT_LOCKED':
-      return '🔓 Vehicle Not Locked';
-    case 'NEED_ATTENTION':
-      return '⚠️ Vehicle Needs Attention';
-    default:
-      return type;
+    case 'EMERGENCY': return '🚨 Emergency / Accident';
+    case 'BLOCKING': return '🚗 Your Car is Blocking';
+    case 'LIGHTS_ON': return '💡 Lights ON';
+    case 'NOT_LOCKED': return '🔓 Vehicle Not Locked';
+    case 'NEED_ATTENTION': return '⚠️ Vehicle Needs Attention';
+    default: return type;
   }
 }
 
-// Register user
 app.post('/register', async (req, res) => {
   try {
     let {
@@ -57,9 +91,7 @@ app.post('/register', async (req, res) => {
     }
 
     if (!consentAccepted) {
-      return res.status(400).json({
-        message: 'You must accept Privacy Policy, Terms & Conditions, and WhatsApp Consent to register'
-      });
+      return res.status(400).json({ message: 'Consent required' });
     }
 
     vehicleNumber = vehicleNumber.toUpperCase().trim();
@@ -68,38 +100,34 @@ app.post('/register', async (req, res) => {
     const existingUser = await userRef.get();
 
     if (existingUser.exists) {
-      return res.status(400).json({ message: 'Vehicle number already registered' });
+      return res.status(400).json({ message: 'Vehicle already registered' });
     }
 
     const qr_id = generateQrId(vehicleNumber);
 
-    const newUser = {
+    await userRef.set({
       name,
       mobile,
       vehicleNumber,
       password,
-
+      qr_id,
+      qr_generated: false,
+      alertUrl: '',
       plan: '',
       billingCycle: '',
       packageSaved: false,
-
-      qr_id,
-      qr_generated: false,
-
       paymentStatus: 'pending',
-
+      alertsUsed: 0,
+      alertsLimit: 0,
+      planStart: null,
+      planEnd: null,
+      contactsLimit: 1,
+      locationEnabled: false,
       consentAccepted: true,
       consentAcceptedAt: consentAcceptedAt || new Date().toISOString(),
-      acceptedDocuments: acceptedDocuments || [
-        'Privacy Policy',
-        'Terms & Conditions',
-        'WhatsApp & Notification Consent'
-      ],
-
+      acceptedDocuments: acceptedDocuments || [],
       createdAt: new Date().toISOString()
-    };
-
-    await userRef.set(newUser);
+    });
 
     res.json({
       message: 'Registration successful',
@@ -108,21 +136,18 @@ app.post('/register', async (req, res) => {
       plan: ''
     });
 
-  } catch (error) {
-    console.error('Register error:', error);
-    res.status(500).json({ message: 'Server error during registration' });
+  } catch (err) {
+    console.error('Register error:', err);
+    res.status(500).json({ message: 'Register error' });
   }
 });
 
-// Login user
 app.post('/login', async (req, res) => {
   try {
     let { vehicleNumber, password } = req.body;
 
     if (!vehicleNumber || !password) {
-      return res.status(400).json({
-        message: 'Vehicle number and password are required'
-      });
+      return res.status(400).json({ message: 'Vehicle number and password are required' });
     }
 
     vehicleNumber = vehicleNumber.toUpperCase().trim();
@@ -130,87 +155,125 @@ app.post('/login', async (req, res) => {
     const userDoc = await db.collection('users').doc(vehicleNumber).get();
 
     if (!userDoc.exists) {
-      return res.status(401).json({
-        message: 'Invalid vehicle number or password'
-      });
+      return res.status(401).json({ message: 'Invalid login' });
     }
 
     const user = userDoc.data();
 
     if (user.password !== password) {
-      return res.status(401).json({
-        message: 'Invalid vehicle number or password'
-      });
+      return res.status(401).json({ message: 'Invalid login' });
     }
 
-    res.json({
-      message: 'Login successful',
-      vehicleNumber: user.vehicleNumber,
-      name: user.name,
-      plan: user.plan || '',
-      billingCycle: user.billingCycle || '',
-      qr_id: user.qr_id,
-      packageSaved: user.packageSaved || false,
-      qr_generated: user.qr_generated || false
-    });
+    res.json(user);
 
-  } catch (error) {
-    console.error('Login error:', error);
-    res.status(500).json({ message: 'Server error during login' });
+  } catch (err) {
+    console.error('Login error:', err);
+    res.status(500).json({ message: 'Login error' });
   }
 });
 
-// Save / update package
+app.get('/owner/:vehicleNumber', async (req, res) => {
+  try {
+    const vehicleNumber = req.params.vehicleNumber.toUpperCase().trim();
+    const userDoc = await db.collection('users').doc(vehicleNumber).get();
+
+    if (!userDoc.exists) {
+      return res.status(404).json({ message: 'Vehicle owner not found' });
+    }
+
+    res.json(userDoc.data());
+
+  } catch (err) {
+    console.error('Owner error:', err);
+    res.status(500).json({ message: 'Owner data error' });
+  }
+});
+
+app.get('/owner-alerts/:vehicleNumber', async (req, res) => {
+  try {
+    const vehicleNumber = req.params.vehicleNumber.toUpperCase().trim();
+
+    const snapshot = await db.collection('alerts')
+      .where('vehicleNumber', '==', vehicleNumber)
+      .limit(10)
+      .get();
+
+    const alerts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    alerts.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+    res.json(alerts);
+
+  } catch (err) {
+    console.error('Alerts fetch error:', err);
+    res.status(500).json({ message: 'Alerts error' });
+  }
+});
+
 app.post('/update-plan', async (req, res) => {
   try {
     let { vehicleNumber, plan, billingCycle } = req.body;
 
     if (!vehicleNumber || !plan) {
-      return res.status(400).json({
-        message: 'Vehicle number and plan are required'
-      });
+      return res.status(400).json({ message: 'Vehicle number and plan are required' });
     }
 
     vehicleNumber = vehicleNumber.toUpperCase().trim();
+
+    if (!plans[plan]) {
+      return res.status(400).json({ message: 'Invalid plan selected' });
+    }
+
+    if (plan === 'Basic') {
+      billingCycle = '3-months';
+    } else {
+      billingCycle = billingCycle || 'monthly';
+    }
+
+    const detail = getPlanDetails(plan, billingCycle);
+    const now = new Date().toISOString();
 
     const userRef = db.collection('users').doc(vehicleNumber);
     const userDoc = await userRef.get();
 
     if (!userDoc.exists) {
-      return res.status(404).json({
-        message: 'Vehicle owner not found'
-      });
+      return res.status(404).json({ message: 'Vehicle owner not found' });
     }
 
     await userRef.update({
       plan,
-      billingCycle: billingCycle || 'monthly',
+      billingCycle,
       packageSaved: true,
-      packageSavedAt: new Date().toISOString()
+      paymentStatus: 'pending',
+      price: detail.price,
+      alertsLimit: detail.alertsLimit,
+      alertsUsed: 0,
+      contactsLimit: detail.contactsLimit,
+      locationEnabled: detail.locationEnabled,
+      planStart: now,
+      planEnd: addMonths(now, detail.validityMonths),
+      packageSavedAt: now,
+      lastRenewedAt: now
     });
 
-    const updatedUser = await userRef.get();
+    const updated = await userRef.get();
 
     res.json({
-      message: 'Package saved successfully',
-      user: updatedUser.data()
+      message: 'Package updated successfully',
+      user: updated.data()
     });
 
-  } catch (error) {
-    console.error('Update plan error:', error);
-    res.status(500).json({ message: 'Server error while saving package' });
+  } catch (err) {
+    console.error('Plan update error:', err);
+    res.status(500).json({ message: 'Plan update error' });
   }
 });
 
-// Generate QR image
 app.post('/generate-qr', async (req, res) => {
   try {
     let { vehicleNumber } = req.body;
 
     if (!vehicleNumber) {
-      return res.status(400).json({
-        message: 'Vehicle number is required'
-      });
+      return res.status(400).json({ message: 'Vehicle number is required' });
     }
 
     vehicleNumber = vehicleNumber.toUpperCase().trim();
@@ -219,32 +282,19 @@ app.post('/generate-qr', async (req, res) => {
     const userDoc = await userRef.get();
 
     if (!userDoc.exists) {
-      return res.status(404).json({
-        message: 'Vehicle owner not found'
-      });
+      return res.status(404).json({ message: 'Vehicle owner not found' });
     }
 
     const user = userDoc.data();
 
     if (!user.packageSaved || !user.plan) {
-      return res.status(400).json({
-        message: 'Please save package first'
-      });
+      return res.status(400).json({ message: 'Please save package first' });
     }
-
-    // FUTURE PAYMENT RULE - KEEP COMMENTED FOR NOW
-    /*
-    if (!user.paymentStatus || user.paymentStatus !== 'paid') {
-      return res.status(400).json({
-        message: 'Payment required before generating QR'
-      });
-    }
-    */
 
     const alertUrl = `${req.protocol}://${req.get('host')}/alert.html?qr=${user.qr_id}`;
 
     const qrImage = await QRCode.toDataURL(alertUrl, {
-      width: 320,
+      width: 360,
       margin: 2,
       color: {
         dark: '#0B1F3A',
@@ -264,21 +314,18 @@ app.post('/generate-qr', async (req, res) => {
       qrImage
     });
 
-  } catch (error) {
-    console.error('QR generate error:', error);
-    res.status(500).json({ message: 'Error generating QR' });
+  } catch (err) {
+    console.error('QR error:', err);
+    res.status(500).json({ message: 'QR generation error' });
   }
 });
 
-// Send alert
 app.post('/send-alert', async (req, res) => {
   try {
     const { qr_id, alert_type } = req.body;
 
     if (!qr_id || !alert_type) {
-      return res.status(400).json({
-        message: 'QR ID and alert type are required'
-      });
+      return res.status(400).json({ message: 'QR ID and alert type are required' });
     }
 
     const snapshot = await db.collection('users')
@@ -287,12 +334,23 @@ app.post('/send-alert', async (req, res) => {
       .get();
 
     if (snapshot.empty) {
-      return res.status(404).json({
-        message: 'No active vehicle found for this QR'
-      });
+      return res.status(404).json({ message: 'No active vehicle found for this QR' });
     }
 
+    const userRef = snapshot.docs[0].ref;
     const user = snapshot.docs[0].data();
+
+    if (!user.qr_generated) {
+      return res.status(400).json({ message: 'QR is not active yet' });
+    }
+
+    if (user.planEnd && new Date() > new Date(user.planEnd)) {
+      return res.status(400).json({ message: 'Plan expired. Please renew.' });
+    }
+
+    if ((user.alertsUsed || 0) >= (user.alertsLimit || 0)) {
+      return res.status(400).json({ message: 'Alert limit reached. Please renew or upgrade.' });
+    }
 
     const now = new Date().toLocaleString();
 
@@ -313,60 +371,31 @@ Time: ${now}`;
       createdAt: new Date().toISOString()
     });
 
-    console.log('==============================');
-    console.log('Vehicall Alert');
-    console.log('Vehicle:', user.vehicleNumber);
-    console.log('QR:', qr_id);
-    console.log('Type:', formatAlert(alert_type));
-    console.log('Send to:', user.mobile);
-    console.log('Time:', now);
-    console.log('==============================');
-
-    res.json({
-      message: alertMessage
+    await userRef.update({
+      alertsUsed: (user.alertsUsed || 0) + 1,
+      lastAlertAt: new Date().toISOString()
     });
 
-  } catch (error) {
-    console.error('Send alert error:', error);
-    res.status(500).json({ message: 'Server error while sending alert' });
+    res.json({
+      message: alertMessage,
+      vehicleNumber: user.vehicleNumber,
+      issue: formatAlert(alert_type)
+    });
+
+  } catch (err) {
+    console.error('Alert error:', err);
+    res.status(500).json({ message: 'Alert error' });
   }
 });
 
-// Debug users
 app.get('/debug-users', async (req, res) => {
-  try {
-    const snapshot = await db.collection('users').get();
-
-    const users = snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }));
-
-    res.json(users);
-  } catch (error) {
-    console.error('Debug users error:', error);
-    res.status(500).json({ message: 'Error fetching users' });
-  }
+  const snapshot = await db.collection('users').get();
+  res.json(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
 });
 
-// Debug alerts
 app.get('/debug-alerts', async (req, res) => {
-  try {
-    const snapshot = await db.collection('alerts')
-      .orderBy('createdAt', 'desc')
-      .limit(50)
-      .get();
-
-    const alerts = snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }));
-
-    res.json(alerts);
-  } catch (error) {
-    console.error('Debug alerts error:', error);
-    res.status(500).json({ message: 'Error fetching alerts' });
-  }
+  const snapshot = await db.collection('alerts').get();
+  res.json(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
 });
 
 const PORT = process.env.PORT || 3000;

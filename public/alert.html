@@ -28,28 +28,28 @@ body {
   cursor:pointer;
 }
 
-/* FIXED COLORS */
-.red { background:#ef4444; color:#ffffff; }
-.blue { background:#2563eb; color:#ffffff; }  /* FIXED HERE */
-.yellow { background:#facc15; color:#000000; }
-.green { background:#22c55e; color:#ffffff; }
-.gray { background:#6b7280; color:#ffffff; }
+.red { background:#ef4444; color:white; }
+.blue { background:#2563eb; color:white; }
+.yellow { background:#facc15; color:black; }
+.green { background:#22c55e; color:white; }
+.gray { background:#6b7280; color:white; }
 
-.btn:hover { opacity:0.9; }
-
-/* ALERT MESSAGE BOX */
 .alert-box {
   margin-top:20px;
   padding:16px;
   border-radius:12px;
-  background: rgba(255,255,255,0.1);
-  border:1px solid rgba(255,255,255,0.2);
-  color:#fef08a; /* visible light color */
+  background: rgba(255,255,255,0.12);
+  color:#fef08a;
   font-weight:bold;
   white-space: pre-line;
 }
-</style>
 
+.open-wa {
+  margin-top:12px;
+  background:#22c55e;
+  color:white;
+}
+</style>
 </head>
 
 <body>
@@ -65,7 +65,6 @@ body {
 <button class="btn green" onclick="sendAlert('NOT_LOCKED')">🔓 Vehicle Not Locked</button>
 <button class="btn gray" onclick="sendAlert('NEED_ATTENTION')">⚠️ Vehicle Needs Attention</button>
 
-<!-- MESSAGE OUTPUT -->
 <div id="response"></div>
 
 <script>
@@ -76,26 +75,76 @@ document.getElementById('qrDisplay').innerText = qr_id
   ? "Vehicle ID: " + qr_id
   : "Invalid QR";
 
+function cleanOmanMobile(mobile) {
+  let number = String(mobile || '').replace(/\D/g, '');
+
+  if (number.startsWith('968')) {
+    return number;
+  }
+
+  if (number.startsWith('0')) {
+    number = number.substring(1);
+  }
+
+  return '968' + number;
+}
+
 async function sendAlert(type){
   if(!qr_id){
     alert("Invalid QR Code");
     return;
   }
 
-  const res = await fetch('/send-alert',{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({qr_id, alert_type:type})
-  });
+  try {
+    const res = await fetch('/send-alert',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({qr_id, alert_type:type})
+    });
 
-  const data = await res.json();
+    const data = await res.json();
 
-  // SHOW MESSAGE ON SCREEN
-  document.getElementById('response').innerHTML = `
-    <div class="alert-box">
-      ${data.message}
-    </div>
-  `;
+    if(!res.ok){
+      document.getElementById('response').innerHTML = `
+        <div class="alert-box">${data.message}</div>
+      `;
+      return;
+    }
+
+    const phone = cleanOmanMobile(data.mobile);
+
+    const message = `Vehicall Alert
+
+Vehicle: ${data.vehicleNumber}
+Issue: ${data.issue}
+
+Please check your vehicle.`;
+
+    const whatsappURL = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+
+    document.getElementById('response').innerHTML = `
+      <div class="alert-box">
+        Vehicall Alert Created
+
+        Vehicle: ${data.vehicleNumber}
+        Issue: ${data.issue}
+
+        If WhatsApp does not open automatically, click below.
+      </div>
+
+      <button class="btn open-wa" onclick="window.location.href='${whatsappURL}'">
+        Open WhatsApp
+      </button>
+    `;
+
+    window.location.href = whatsappURL;
+
+  } catch (error){
+    document.getElementById('response').innerHTML = `
+      <div class="alert-box">Error opening WhatsApp</div>
+    `;
+    console.error(error);
+  }
 }
 </script>
 

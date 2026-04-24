@@ -6,252 +6,446 @@
 <title>Vehicall Dashboard</title>
 
 <style>
-* { box-sizing: border-box; margin:0; padding:0; font-family: Arial, sans-serif; }
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+}
 
 body {
   min-height: 100vh;
   background: linear-gradient(135deg, #031b3b, #062850, #0a3d62);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
+  padding: 18px;
+  color: white;
 }
 
-.card {
-  width: 100%;
-  max-width: 600px;
-  background: rgba(255,255,255,0.08);
-  border-radius: 20px;
-  padding: 30px;
+.container {
+  max-width: 980px;
+  margin: auto;
+}
+
+.header {
   text-align: center;
-  backdrop-filter: blur(10px);
-  box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+  margin-bottom: 18px;
 }
 
 .logo {
   width: 90px;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 }
 
-h2 {
-  color: white;
-  margin-bottom: 6px;
+h1 {
+  font-size: 30px;
+  margin-bottom: 4px;
 }
 
 .sub {
   color: #cbd5e1;
   font-size: 14px;
-  margin-bottom: 20px;
 }
 
-.info-box {
+.grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 16px;
+}
+
+.card {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 18px;
+  padding: 18px;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 14px 30px rgba(0,0,0,0.25);
+}
+
+.card h2 {
+  font-size: 20px;
+  margin-bottom: 14px;
+}
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+}
+
+.stat {
   background: white;
   color: #111827;
-  padding: 14px;
+  padding: 13px;
   border-radius: 12px;
-  text-align: left;
-  margin-bottom: 12px;
   word-break: break-word;
 }
 
-.pricing-box {
-  background: rgba(255,255,255,0.96);
+.stat small {
+  display: block;
+  color: #64748b;
+  font-size: 12px;
+  margin-bottom: 4px;
+}
+
+.badge {
+  display: inline-block;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: bold;
+}
+
+.badge-green { background:#dcfce7; color:#166534; }
+.badge-yellow { background:#fef9c3; color:#854d0e; }
+.badge-red { background:#fee2e2; color:#991b1b; }
+
+.setup-card {
+  max-width: 620px;
+  margin: auto;
+}
+
+.pricing-card {
+  background: white;
   color: #111827;
-  padding: 16px;
   border-radius: 14px;
-  text-align: left;
-  margin-bottom: 16px;
-}
-
-.pricing-box h3 {
-  margin-bottom: 10px;
-  color: #0f172a;
-}
-
-.plan-card {
-  border: 1px solid #dbeafe;
-  border-radius: 12px;
-  padding: 12px;
+  padding: 14px;
   margin-bottom: 10px;
 }
 
-.plan-card strong {
+.pricing-card strong {
   display: block;
   margin-bottom: 6px;
 }
 
-.plan-card ul {
+.pricing-card ul {
   margin-left: 18px;
   font-size: 14px;
+  line-height: 1.5;
 }
 
 label {
   display: block;
+  margin: 12px 0 6px;
   color: #dbeafe;
-  text-align: left;
-  margin: 10px 0 6px;
   font-size: 14px;
 }
 
 select {
   width: 100%;
-  padding: 12px;
-  border-radius: 10px;
+  padding: 13px;
+  border-radius: 12px;
   border: none;
-  margin-bottom: 14px;
+  margin-bottom: 12px;
+  font-size: 15px;
 }
 
 button {
   width: 100%;
   padding: 14px;
   border: none;
-  border-radius: 12px;
-  background: linear-gradient(90deg,#16a34a,#22c55e);
-  color: white;
+  border-radius: 13px;
   font-weight: bold;
   cursor: pointer;
   margin-bottom: 10px;
+  color: white;
+  font-size: 15px;
 }
 
-.secondary-btn {
-  background: linear-gradient(90deg,#2563eb,#3b82f6);
-}
-
-.logout-btn {
-  background: linear-gradient(90deg,#dc2626,#ef4444);
-}
+.primary { background: linear-gradient(90deg,#16a34a,#22c55e); }
+.secondary { background: linear-gradient(90deg,#2563eb,#3b82f6); }
+.warning { background: linear-gradient(90deg,#f97316,#fb923c); }
+.danger { background: linear-gradient(90deg,#dc2626,#ef4444); }
 
 button:disabled {
   opacity: 0.45;
   cursor: not-allowed;
 }
 
-.saved-status {
-  display: none;
-  color: #22c55e;
-  font-weight: bold;
-  margin-bottom: 14px;
-}
-
-.notice {
-  color: #fde68a;
-  font-size: 13px;
-  margin-bottom: 14px;
-}
-
 .qr-preview {
   background: white;
-  padding: 18px;
-  border-radius: 16px;
-  margin-top: 16px;
-  display: none;
   color: #111827;
+  border-radius: 16px;
+  padding: 18px;
+  text-align: center;
+  display: none;
+  margin-top: 12px;
 }
 
 .qr-preview img.qr {
-  max-width: 220px;
-  width: 100%;
+  width: 230px;
+  max-width: 100%;
   margin-top: 10px;
 }
 
 .qr-logo {
   width: 70px;
-  margin-bottom: 8px;
 }
 
-.small-note {
-  color: #475569;
-  font-size: 13px;
-  margin-top: 8px;
+.alert-item {
+  background: white;
+  color: #111827;
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.empty {
+  color: #cbd5e1;
+  font-size: 14px;
+}
+
+/* MODAL */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.75);
+  z-index: 9999;
+  padding: 18px;
+}
+
+.modal {
+  max-width: 640px;
+  margin: 30px auto;
+  background: #12365e;
+  border-radius: 18px;
+  padding: 20px;
+  max-height: 90vh;
+  overflow-y: auto;
+  border: 1px solid rgba(255,255,255,0.18);
+}
+
+.modal h2 {
+  margin-bottom: 14px;
+}
+
+.error-box {
+  background: #fee2e2;
+  color: #991b1b;
+  padding: 14px;
+  border-radius: 12px;
+  margin: 15px auto;
+  max-width: 700px;
+}
+
+@media (min-width: 760px) {
+  .grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .stat-grid {
+    grid-template-columns: 1fr 1fr;
+  }
 }
 </style>
 </head>
+
 <body>
 
-<div class="card">
-  <img src="/logo.png" class="logo" alt="Vehicall Logo">
+<div class="container">
 
-  <h2>Owner Dashboard</h2>
-  <div class="sub">Select package first, then generate your vehicle QR</div>
-
-  <div class="info-box">
-    <strong>Vehicle Number:</strong>
-    <span id="vehicleNumber"></span>
+  <div class="header">
+    <img src="/logo.png" class="logo">
+    <h1>Vehicall Dashboard</h1>
+    <div class="sub">Privacy-first vehicle alert management</div>
   </div>
 
-  <div class="info-box">
-    <strong>Assigned QR ID:</strong>
-    <span id="qrId"></span>
-  </div>
+  <div id="errorBox"></div>
 
-  <div class="pricing-box">
-    <h3>Pricing Chart</h3>
+  <!-- FIRST TIME SETUP VIEW -->
+  <div id="setupView" class="card setup-card" style="display:none;">
+    <h2>First-Time Setup</h2>
+    <p class="sub">Select package and generate your vehicle QR.</p><br>
 
-    <div class="plan-card">
+    <div class="stat">
+      <small>Vehicle Number</small>
+      <strong id="setupVehicle">-</strong>
+    </div>
+    <br>
+
+    <div class="pricing-card">
       <strong>Basic</strong>
-      1 OMR registration<br>
-      3 months validity
+      1 OMR registration — 3 months
       <ul>
         <li>3 alerts per month</li>
-        <li>Emergency alert without location</li>
         <li>1 contact</li>
+        <li>No location</li>
       </ul>
     </div>
 
-    <div class="plan-card">
+    <div class="pricing-card">
       <strong>Plus</strong>
-      0.500 OMR/month + VAT<br>
-      5 OMR/year + VAT
+      0.500 OMR monthly / 5 OMR yearly
       <ul>
         <li>10 alerts per month</li>
-        <li>Emergency alert with location</li>
         <li>2 contacts</li>
+        <li>Emergency location</li>
       </ul>
     </div>
 
-    <div class="plan-card">
+    <div class="pricing-card">
       <strong>Premium</strong>
-      1.000 OMR/month + VAT<br>
-      10 OMR/year + VAT
+      1 OMR monthly / 10 OMR yearly
       <ul>
         <li>30 alerts per month</li>
-        <li>Emergency alert with location</li>
         <li>3 contacts</li>
-        <li>Active / inactive contacts later</li>
+        <li>Contact active/inactive later</li>
       </ul>
+    </div>
+
+    <label>Select Package</label>
+    <select id="setupPlan">
+      <option value="">Select Package</option>
+      <option value="Basic">Basic</option>
+      <option value="Plus">Plus</option>
+      <option value="Premium">Premium</option>
+    </select>
+
+    <label>Billing Cycle</label>
+    <select id="setupBilling">
+      <option value="monthly">Monthly</option>
+      <option value="yearly">Yearly</option>
+    </select>
+
+    <button class="primary" onclick="saveSetupPackage()">Save Package</button>
+    <button id="setupGenerateBtn" class="secondary" onclick="generateQR()" disabled>Generate QR</button>
+
+    <div id="setupQrPreview" class="qr-preview">
+      <img src="/logo.png" class="qr-logo">
+      <div><strong>Vehicall QR Sticker</strong></div>
+      <img id="setupQrImage" class="qr" src="">
+      <p>QR generated. You will now go to your owner dashboard.</p>
     </div>
   </div>
 
-  <label for="plan">Select Package</label>
-  <select id="plan">
-    <option value="">Select Package</option>
-    <option value="Basic">Basic</option>
-    <option value="Plus">Plus</option>
-    <option value="Premium">Premium</option>
-  </select>
+  <!-- OWNER DASHBOARD VIEW -->
+  <div id="ownerView" style="display:none;">
+    <div class="grid">
 
-  <label for="billingCycle">Billing Cycle</label>
-  <select id="billingCycle">
-    <option value="monthly">Monthly</option>
-    <option value="yearly">Yearly</option>
-  </select>
+      <div class="card">
+        <h2>Account Status</h2>
 
-  <div class="notice">
-    For now QR generation is enabled after package save. Later payment will be mandatory before QR generation.
+        <div class="stat-grid">
+          <div class="stat">
+            <small>Vehicle Number</small>
+            <strong id="vehicleNumber">-</strong>
+          </div>
+
+          <div class="stat">
+            <small>QR ID</small>
+            <strong id="qrId">-</strong>
+          </div>
+
+          <div class="stat">
+            <small>Selected Plan</small>
+            <strong id="selectedPlan">-</strong>
+          </div>
+
+          <div class="stat">
+            <small>Billing Cycle</small>
+            <strong id="billingCycleText">-</strong>
+          </div>
+
+          <div class="stat">
+            <small>Payment Status</small>
+            <span id="paymentStatus" class="badge badge-yellow">Pending</span>
+          </div>
+
+          <div class="stat">
+            <small>QR Status</small>
+            <span id="qrStatus" class="badge badge-green">Generated</span>
+          </div>
+
+          <div class="stat">
+            <small>Alerts Used</small>
+            <strong id="alertsUsed">0 / 0</strong>
+          </div>
+
+          <div class="stat">
+            <small>Valid Until</small>
+            <strong id="validityDate">-</strong>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>QR Management</h2>
+        <button class="secondary" onclick="loadQRForUse()">Load QR</button>
+        <button id="printBtn" class="secondary" onclick="printQR()" disabled>Print QR</button>
+        <button id="downloadBtn" class="secondary" onclick="downloadQR()" disabled>Download QR</button>
+        <button class="warning" onclick="openRenewal()">Renew / Upgrade</button>
+
+        <div id="qrPreview" class="qr-preview">
+          <img src="/logo.png" class="qr-logo">
+          <div><strong>Vehicall QR Sticker</strong></div>
+          <img id="qrImage" class="qr" src="">
+          <p>Print or download and paste this QR on your vehicle</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Recent Alerts</h2>
+        <div id="recentAlerts" class="empty">No alerts yet</div>
+      </div>
+
+    </div>
+
+    <br>
+    <button class="danger" onclick="logout()">Logout</button>
   </div>
+</div>
 
-  <div id="savedStatus" class="saved-status">✓ Package saved</div>
+<!-- RENEWAL MODAL -->
+<div id="renewalModal" class="modal-overlay">
+  <div class="modal">
+    <h2>Renew / Upgrade Package</h2>
 
-  <button id="saveBtn" onclick="savePlan()">Save Package</button>
-  <button id="generateBtn" class="secondary-btn" onclick="generateQR()" disabled>Generate QR</button>
-  <button id="printBtn" class="secondary-btn" onclick="printQR()" disabled>Print QR</button>
-  <button class="logout-btn" onclick="logout()">Logout</button>
+    <div class="pricing-card">
+      <strong>Basic</strong>
+      1 OMR registration — 3 months
+      <ul>
+        <li>3 alerts per month</li>
+        <li>1 contact</li>
+        <li>No location</li>
+      </ul>
+    </div>
 
-  <div id="qrPreview" class="qr-preview">
-    <img src="/logo.png" class="qr-logo" alt="Vehicall Logo">
-    <div><strong>Vehicall QR Sticker</strong></div>
-    <img id="qrImage" class="qr" src="" alt="QR Code">
-    <div class="small-note">Print and paste this QR on your vehicle</div>
+    <div class="pricing-card">
+      <strong>Plus</strong>
+      0.500 OMR monthly / 5 OMR yearly
+      <ul>
+        <li>10 alerts per month</li>
+        <li>2 contacts</li>
+        <li>Emergency location</li>
+      </ul>
+    </div>
+
+    <div class="pricing-card">
+      <strong>Premium</strong>
+      1 OMR monthly / 10 OMR yearly
+      <ul>
+        <li>30 alerts per month</li>
+        <li>3 contacts</li>
+        <li>Contact active/inactive later</li>
+      </ul>
+    </div>
+
+    <label>Select Package</label>
+    <select id="renewPlan">
+      <option value="">Select Package</option>
+      <option value="Basic">Basic</option>
+      <option value="Plus">Plus</option>
+      <option value="Premium">Premium</option>
+    </select>
+
+    <label>Billing Cycle</label>
+    <select id="renewBilling">
+      <option value="monthly">Monthly</option>
+      <option value="yearly">Yearly</option>
+    </select>
+
+    <button class="primary" onclick="saveRenewal()">Confirm Renewal / Upgrade</button>
+    <button class="danger" onclick="closeRenewal()">Close</button>
   </div>
 </div>
 
@@ -260,102 +454,236 @@ if (localStorage.getItem('isLoggedIn') !== 'true') {
   window.location.href = '/login.html';
 }
 
-const vehicleNumber = localStorage.getItem('vehicleNumber') || '';
-const qrId = localStorage.getItem('qr_id') || '';
-const savedPlan = localStorage.getItem('plan') || '';
-const savedBillingCycle = localStorage.getItem('billingCycle') || 'monthly';
-const packageSaved = localStorage.getItem('packageSaved') === 'true';
-const qrGenerated = localStorage.getItem('qrGenerated') === 'true';
+let vehicleNumber = localStorage.getItem('vehicleNumber') || '';
+let currentQrImage = '';
+let currentUser = null;
 
-document.getElementById('vehicleNumber').innerText = vehicleNumber;
-document.getElementById('qrId').innerText = qrId;
-document.getElementById('plan').value = savedPlan;
-document.getElementById('billingCycle').value = savedBillingCycle;
-
-if (packageSaved) {
-  document.getElementById('savedStatus').style.display = 'block';
-  document.getElementById('generateBtn').disabled = false;
+function showError(message) {
+  document.getElementById('errorBox').innerHTML = `
+    <div class="error-box">
+      ${message}<br><br>
+      <button class="danger" onclick="logout()">Back to Login</button>
+    </div>
+  `;
 }
 
-if (qrGenerated) {
-  document.getElementById('printBtn').disabled = false;
+function safeText(value, fallback = '-') {
+  return value === undefined || value === null || value === '' ? fallback : value;
 }
 
-async function savePlan() {
-  const selectedPlan = document.getElementById('plan').value;
-  const billingCycle = document.getElementById('billingCycle').value;
+function getDefaultAlertsLimit(plan) {
+  if (plan === 'Basic') return 3;
+  if (plan === 'Plus') return 10;
+  if (plan === 'Premium') return 30;
+  return 0;
+}
 
-  if (!selectedPlan) {
-    alert('Please select a package');
+function getDefaultValidity(user) {
+  if (user.planEnd) return new Date(user.planEnd).toLocaleDateString();
+
+  if (!user.plan || !user.packageSavedAt) return '-';
+
+  const d = new Date(user.packageSavedAt);
+
+  if (user.plan === 'Basic') {
+    d.setMonth(d.getMonth() + 3);
+    return d.toLocaleDateString();
+  }
+
+  if (user.billingCycle === 'yearly') {
+    d.setMonth(d.getMonth() + 12);
+    return d.toLocaleDateString();
+  }
+
+  d.setMonth(d.getMonth() + 1);
+  return d.toLocaleDateString();
+}
+
+async function loadDashboard() {
+  try {
+    if (!vehicleNumber) {
+      showError('Vehicle number was not found in login session. Please login again.');
+      return;
+    }
+
+    const res = await fetch('/owner/' + encodeURIComponent(vehicleNumber));
+    const user = await res.json();
+
+    if (!res.ok) {
+      showError(user.message || 'Unable to load dashboard data.');
+      return;
+    }
+
+    currentUser = user;
+
+    if (!currentUser.qr_generated) {
+      showSetupView();
+    } else {
+      await showOwnerView();
+    }
+  } catch (error) {
+    console.error(error);
+    showError('Dashboard loading error. Please login again.');
+  }
+}
+
+function showSetupView() {
+  document.getElementById('setupView').style.display = 'block';
+  document.getElementById('ownerView').style.display = 'none';
+  document.getElementById('setupVehicle').innerText = safeText(currentUser.vehicleNumber, vehicleNumber);
+
+  if (currentUser.packageSaved) {
+    document.getElementById('setupGenerateBtn').disabled = false;
+  }
+}
+
+async function showOwnerView() {
+  document.getElementById('setupView').style.display = 'none';
+  document.getElementById('ownerView').style.display = 'block';
+
+  const alertsLimit = currentUser.alertsLimit || getDefaultAlertsLimit(currentUser.plan);
+  const alertsUsed = currentUser.alertsUsed || 0;
+
+  document.getElementById('vehicleNumber').innerText = safeText(currentUser.vehicleNumber);
+  document.getElementById('qrId').innerText = safeText(currentUser.qr_id);
+  document.getElementById('selectedPlan').innerText = safeText(currentUser.plan, 'Not selected');
+  document.getElementById('billingCycleText').innerText = safeText(currentUser.billingCycle);
+  document.getElementById('alertsUsed').innerText = alertsUsed + ' / ' + alertsLimit;
+  document.getElementById('validityDate').innerText = getDefaultValidity(currentUser);
+
+  const payment = document.getElementById('paymentStatus');
+  payment.innerText = safeText(currentUser.paymentStatus, 'pending');
+
+  if (currentUser.paymentStatus === 'paid') {
+    payment.className = 'badge badge-green';
+  } else {
+    payment.className = 'badge badge-yellow';
+  }
+
+  const qrStatus = document.getElementById('qrStatus');
+
+  if (currentUser.qr_generated) {
+    qrStatus.innerText = 'Generated';
+    qrStatus.className = 'badge badge-green';
+  } else {
+    qrStatus.innerText = 'Not Generated';
+    qrStatus.className = 'badge badge-red';
+  }
+
+  await loadAlerts();
+}
+
+async function loadAlerts() {
+  try {
+    const res = await fetch('/owner-alerts/' + encodeURIComponent(vehicleNumber));
+    const alerts = await res.json();
+
+    const box = document.getElementById('recentAlerts');
+
+    if (!Array.isArray(alerts) || !alerts.length) {
+      box.innerHTML = 'No alerts yet';
+      box.className = 'empty';
+      return;
+    }
+
+    box.className = '';
+    box.innerHTML = alerts.map(alert => `
+      <div class="alert-item">
+        <strong>${alert.alertLabel || alert.alertType || 'Alert'}</strong><br>
+        Vehicle: ${alert.vehicleNumber || vehicleNumber}<br>
+        Time: ${alert.createdAt ? new Date(alert.createdAt).toLocaleString() : '-'}
+      </div>
+    `).join('');
+  } catch (error) {
+    console.error(error);
+    document.getElementById('recentAlerts').innerHTML = 'Could not load alerts';
+  }
+}
+
+async function saveSetupPackage() {
+  const plan = document.getElementById('setupPlan').value;
+  const billingCycle = document.getElementById('setupBilling').value;
+
+  if (!plan) {
+    alert('Please select package');
     return;
   }
 
   const res = await fetch('/update-plan', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      vehicleNumber: vehicleNumber,
-      plan: selectedPlan,
-      billingCycle: billingCycle
-    })
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ vehicleNumber, plan, billingCycle })
   });
 
   const data = await res.json();
+  alert(data.message);
 
   if (res.ok) {
-    localStorage.setItem('plan', selectedPlan);
-    localStorage.setItem('billingCycle', billingCycle);
-    localStorage.setItem('packageSaved', 'true');
-
-    document.getElementById('savedStatus').style.display = 'block';
-    document.getElementById('generateBtn').disabled = false;
-
-    alert(data.message);
-  } else {
-    alert(data.message);
+    document.getElementById('setupGenerateBtn').disabled = false;
+    await loadDashboard();
   }
 }
 
 async function generateQR() {
   const res = await fetch('/generate-qr', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      vehicleNumber: vehicleNumber
-    })
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ vehicleNumber })
   });
 
   const data = await res.json();
 
-  if (res.ok) {
-    document.getElementById('qrImage').src = data.qrImage;
-    document.getElementById('qrPreview').style.display = 'block';
-    document.getElementById('printBtn').disabled = false;
-    localStorage.setItem('qrGenerated', 'true');
+  if (!res.ok) {
     alert(data.message);
-  } else {
-    alert(data.message);
+    return;
   }
+
+  currentQrImage = data.qrImage;
+  document.getElementById('setupQrImage').src = currentQrImage;
+  document.getElementById('setupQrPreview').style.display = 'block';
+
+  alert(data.message);
+
+  setTimeout(() => {
+    loadDashboard();
+  }, 1200);
+}
+
+async function loadQRForUse() {
+  const res = await fetch('/generate-qr', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ vehicleNumber })
+  });
+
+  const data = await res.json();
+
+  if (!res.ok) {
+    alert(data.message);
+    return;
+  }
+
+  currentQrImage = data.qrImage;
+  document.getElementById('qrImage').src = currentQrImage;
+  document.getElementById('qrPreview').style.display = 'block';
+  document.getElementById('printBtn').disabled = false;
+  document.getElementById('downloadBtn').disabled = false;
 }
 
 function printQR() {
-  const qrImage = document.getElementById('qrImage').src;
-
-  if (!qrImage) {
-    alert('Please generate QR first');
+  if (!currentQrImage) {
+    alert('Load QR first');
     return;
   }
 
   const printWindow = window.open('', '_blank');
   printWindow.document.write(`
     <html>
-      <head><title>Vehicall QR</title></head>
-      <body style="text-align:center; font-family:Arial; padding:30px;">
+      <body style="text-align:center;font-family:Arial;padding:30px;">
         <img src="/logo.png" style="width:80px;"><br><br>
         <h2>Vehicall QR Sticker</h2>
-        <img src="${qrImage}" style="max-width:300px;"><br><br>
+        <img src="${currentQrImage}" style="max-width:320px;"><br><br>
         <p><strong>Vehicle:</strong> ${vehicleNumber}</p>
-        <p><strong>QR ID:</strong> ${qrId}</p>
       </body>
     </html>
   `);
@@ -363,10 +691,58 @@ function printQR() {
   printWindow.print();
 }
 
+function downloadQR() {
+  if (!currentQrImage) {
+    alert('Load QR first');
+    return;
+  }
+
+  const link = document.createElement('a');
+  link.href = currentQrImage;
+  link.download = `Vehicall-QR-${vehicleNumber}.png`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+function openRenewal() {
+  document.getElementById('renewalModal').style.display = 'block';
+}
+
+function closeRenewal() {
+  document.getElementById('renewalModal').style.display = 'none';
+}
+
+async function saveRenewal() {
+  const plan = document.getElementById('renewPlan').value;
+  const billingCycle = document.getElementById('renewBilling').value;
+
+  if (!plan) {
+    alert('Please select package');
+    return;
+  }
+
+  const res = await fetch('/update-plan', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ vehicleNumber, plan, billingCycle })
+  });
+
+  const data = await res.json();
+  alert(data.message);
+
+  if (res.ok) {
+    closeRenewal();
+    await loadDashboard();
+  }
+}
+
 function logout() {
   localStorage.clear();
   window.location.href = '/login.html';
 }
+
+loadDashboard();
 </script>
 
 </body>

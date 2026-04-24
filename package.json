@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "express": "^5.1.0",
+    "express-session": "^1.19.0",
     "qrcode": "^1.5.4"
   }
 }

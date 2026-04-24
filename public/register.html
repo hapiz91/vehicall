@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Vehicall Registration</title>
+
   <style>
     * {
       box-sizing: border-box;
@@ -23,7 +24,7 @@
 
     .card {
       width: 100%;
-      max-width: 420px;
+      max-width: 450px;
       background: rgba(255, 255, 255, 0.08);
       border: 1px solid rgba(255, 255, 255, 0.12);
       backdrop-filter: blur(10px);
@@ -63,16 +64,12 @@
       line-height: 1.5;
     }
 
-    .notice-box strong {
-      display: block;
-      margin-bottom: 6px;
-    }
-
     .input-group {
       margin-bottom: 16px;
     }
 
-    input {
+    input[type="text"],
+    input[type="password"] {
       width: 100%;
       padding: 14px 16px;
       border-radius: 12px;
@@ -85,6 +82,24 @@
     input:focus {
       border-color: #22c55e;
       box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.2);
+    }
+
+    .agreement-box {
+      text-align: left;
+      color: #e5e7eb;
+      font-size: 14px;
+      line-height: 1.6;
+      margin: 14px 0;
+    }
+
+    .agreement-box a {
+      color: #22c55e;
+      font-weight: bold;
+      text-decoration: none;
+    }
+
+    .agreement-box a:hover {
+      text-decoration: underline;
     }
 
     button {
@@ -100,6 +115,11 @@
       margin-top: 8px;
     }
 
+    button:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
     .secondary-btn {
       background: linear-gradient(90deg, #2563eb, #3b82f6);
       margin-top: 12px;
@@ -111,16 +131,65 @@
       color: #c7d2e0;
       line-height: 1.5;
     }
+
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.75);
+      z-index: 9999;
+      padding: 20px;
+    }
+
+    .modal-box {
+      background: white;
+      color: #111827;
+      max-width: 760px;
+      margin: 30px auto;
+      padding: 24px;
+      border-radius: 16px;
+      max-height: 85vh;
+      overflow-y: auto;
+      text-align: left;
+      line-height: 1.6;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+    }
+
+    .modal-box h2 {
+      margin-bottom: 16px;
+      color: #0f172a;
+      text-align: center;
+    }
+
+    .modal-box h3 {
+      margin-top: 18px;
+      margin-bottom: 6px;
+      color: #0f172a;
+    }
+
+    .modal-box ul {
+      margin-left: 22px;
+    }
+
+    .close-btn {
+      margin-top: 20px;
+      background: linear-gradient(90deg,#dc2626,#ef4444);
+    }
   </style>
 </head>
+
 <body>
   <div class="card">
     <img src="/logo.png" alt="Vehicall Logo" class="logo" />
+
     <h1>Vehicall</h1>
-    <p class="subtitle">Create your account and get your QR automatically assigned to your vehicle</p>
+
+    <p class="subtitle">
+      Create your account and get your QR automatically assigned to your vehicle
+    </p>
 
     <div class="notice-box">
-      <strong>Registration Includes</strong>
+      <strong>Registration Includes</strong><br>
       Basic plan starts with a 1 OMR registration fee and includes 3 months validity with up to 3 alerts per month.
     </div>
 
@@ -140,7 +209,18 @@
       <input id="password" type="password" placeholder="Create Password" />
     </div>
 
-    <button onclick="registerUser()">Register</button>
+    <div class="agreement-box">
+      <label>
+        <input type="checkbox" id="agreeCheckbox" onchange="toggleRegisterButton()">
+        I confirm that I have read, understood, and agree to the
+        <a href="#" onclick="openModal('privacy')">Privacy Policy</a>,
+        <a href="#" onclick="openModal('terms')">Terms & Conditions</a>,
+        and
+        <a href="#" onclick="openModal('consent')">WhatsApp & Notification Consent</a>.
+      </label>
+    </div>
+
+    <button id="registerBtn" onclick="registerUser()" disabled>Register</button>
     <button class="secondary-btn" onclick="goToLogin()">Back to Login</button>
 
     <div class="footer-text">
@@ -149,45 +229,259 @@
     </div>
   </div>
 
-  <script>
-    async function registerUser() {
-      const name = document.getElementById('name').value.trim();
-      const mobile = document.getElementById('mobile').value.trim();
-      const vehicleNumber = document.getElementById('vehicleNumber').value.trim();
-      const password = document.getElementById('password').value;
+  <!-- MODAL -->
+  <div id="modalOverlay" class="modal-overlay">
+    <div class="modal-box">
+      <h2 id="modalTitle"></h2>
+      <div id="modalContent"></div>
+      <button class="close-btn" onclick="closeModal()">Close</button>
+    </div>
+  </div>
 
-      if (!name || !mobile || !vehicleNumber || !password) {
-        alert('Please fill all fields');
-        return;
-      }
+<script>
+function toggleRegisterButton() {
+  const checked = document.getElementById('agreeCheckbox').checked;
+  document.getElementById('registerBtn').disabled = !checked;
+}
 
-      const res = await fetch('/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, mobile, vehicleNumber, password })
-      });
+function openModal(type) {
+  const modal = document.getElementById('modalOverlay');
+  const title = document.getElementById('modalTitle');
+  const content = document.getElementById('modalContent');
 
-      const data = await res.json();
+  modal.style.display = 'block';
 
-      if (res.ok) {
-        localStorage.setItem('vehicleNumber', data.vehicleNumber);
-        localStorage.setItem('qr_id', data.qr_id);
-        localStorage.setItem('plan', data.plan || '');
-        localStorage.setItem('billingCycle', 'monthly');
-        localStorage.setItem('isLoggedIn', 'true');
-        localStorage.setItem('packageSaved', 'false');
-        localStorage.setItem('qrGenerated', 'false');
+  if (type === 'privacy') {
+    title.innerText = 'VEHICALL – PRIVACY POLICY';
+    content.innerHTML = `
+      <h3>1. Introduction</h3>
+      <p>Vehicall (“we”, “our”, “the Platform”) respects your privacy and is committed to protecting your personal data in accordance with applicable laws of the Sultanate of Oman. This Privacy Policy explains how we collect, use, store, and protect your information.</p>
 
-        alert(`Registration successful\nAssigned QR ID: ${data.qr_id}`);
-        window.location.href = '/dashboard.html';
-      } else {
-        alert(data.message);
-      }
-    }
+      <h3>2. Data We Collect</h3>
+      <p>We collect only the minimum data necessary to provide the service:</p>
+      <p><strong>a) Account Information</strong></p>
+      <ul>
+        <li>Mobile number for registration and verification</li>
+        <li>Vehicle details, such as plate number</li>
+        <li>Account identifiers, such as User ID</li>
+      </ul>
+      <p><strong>b) Usage Data</strong></p>
+      <ul>
+        <li>Alerts sent or received, including category, time, and status</li>
+        <li>Device or app interaction logs for security and performance</li>
+      </ul>
+      <p><strong>c) Technical Data</strong></p>
+      <ul>
+        <li>IP address</li>
+        <li>Device type</li>
+        <li>App version, where applicable, for security and troubleshooting</li>
+      </ul>
 
-    function goToLogin() {
-      window.location.href = '/login.html';
-    }
-  </script>
+      <h3>3. Purpose of Data Processing</h3>
+      <p>We process your data to:</p>
+      <ul>
+        <li>Register and authenticate your account</li>
+        <li>Deliver vehicle alerts and notifications</li>
+        <li>Prevent misuse and ensure platform security</li>
+        <li>Improve service performance and reliability</li>
+        <li>Comply with legal obligations</li>
+      </ul>
+
+      <h3>4. Legal Basis & Consent</h3>
+      <p>By registering and accepting our Terms & Conditions, you provide explicit consent for the processing of your data for the purposes described above. You may withdraw consent as permitted by law.</p>
+
+      <h3>5. Data Sharing</h3>
+      <p>We do not sell your personal data. We may share data only with service providers, such as SMS or notification gateways, strictly for service delivery, or if required by competent authorities under applicable law. User identity is never disclosed to other users when sending alerts.</p>
+
+      <h3>6. Data Retention</h3>
+      <p>We retain data only as long as necessary. Active account data is retained while the account is active. Inactive or closed account data may be retained for a limited period for legal and security purposes, then deleted or anonymized.</p>
+
+      <h3>7. Data Security</h3>
+      <p>We implement appropriate technical and organizational measures to protect your data against unauthorized access, alteration, disclosure, or destruction.</p>
+
+      <h3>8. No Sensitive Content</h3>
+      <p>Vehicall does not allow free-text input. All alerts are predefined system categories to minimize risk of misuse and protect user privacy.</p>
+
+      <h3>9. Your Rights</h3>
+      <p>Subject to applicable law, you may request access to your data, correction of inaccurate data, deletion of your data, or withdrawal of consent. Withdrawal of consent may limit or stop the service.</p>
+
+      <h3>10. Cookies / Tracking</h3>
+      <p>If applicable, we may use basic cookies or similar technologies for functionality and analytics. No intrusive tracking is used.</p>
+
+      <h3>11. Changes to this Policy</h3>
+      <p>We may update this Privacy Policy from time to time. Continued use of the Platform after updates constitutes acceptance.</p>
+
+      <h3>12. Governing Law</h3>
+      <p>This Privacy Policy is governed by the laws of the Sultanate of Oman.</p>
+
+      <h3>13. Contact</h3>
+      <p>For privacy-related requests, contact Vehicall support through official channels.</p>
+
+      <h3>Acceptance</h3>
+      <p>By registering and using Vehicall, you acknowledge that you have read and understood this Privacy Policy.</p>
+    `;
+  }
+
+  if (type === 'terms') {
+    title.innerText = 'VEHICALL – TERMS & CONDITIONS';
+    content.innerHTML = `
+      <h3>1. Introduction</h3>
+      <p>Welcome to Vehicall (“the Platform”). By registering and using this Platform, you agree to comply with and be bound by these Terms & Conditions. If you do not agree, you must not use the Platform.</p>
+
+      <h3>2. Nature of Service</h3>
+      <p>Vehicall is a vehicle alert and notification platform that enables users to send predefined alerts regarding vehicles.</p>
+      <ul>
+        <li>The Platform does not provide communication between users</li>
+        <li>The Platform does not verify the accuracy of alerts</li>
+        <li>All alerts are system-generated based on predefined categories</li>
+      </ul>
+
+      <h3>3. User Registration</h3>
+      <ul>
+        <li>Users must register using a valid mobile number</li>
+        <li>Users are responsible for maintaining the confidentiality of their account</li>
+        <li>You agree that all information provided is accurate and up to date</li>
+      </ul>
+
+      <h3>4. Permitted Use</h3>
+      <p>You agree to use the Platform only for lawful and intended purposes, including sending genuine vehicle-related alerts and using predefined reporting options responsibly.</p>
+
+      <h3>5. Prohibited Use</h3>
+      <p>Users must not:</p>
+      <ul>
+        <li>Misuse the alert system to harass, annoy, or target any individual or vehicle</li>
+        <li>Send repeated or false alerts intentionally</li>
+        <li>Attempt to manipulate or abuse the Platform</li>
+        <li>Use the Platform for illegal activities</li>
+      </ul>
+      <p>Vehicall reserves the right to suspend or terminate accounts involved in misuse.</p>
+
+      <h3>6. No User-Generated Content</h3>
+      <ul>
+        <li>Users cannot enter custom messages or free text</li>
+        <li>All alerts are limited to predefined system categories</li>
+        <li>Vehicall does not allow user-generated statements or accusations</li>
+      </ul>
+
+      <h3>7. Privacy & Anonymity</h3>
+      <ul>
+        <li>The identity of users sending alerts is not disclosed to recipients</li>
+        <li>Vehicall may internally store user data for operational and legal purposes</li>
+        <li>Users agree to the collection and use of data as outlined in the Privacy Policy</li>
+      </ul>
+
+      <h3>8. Limitation of Liability</h3>
+      <p>Vehicall is a neutral platform and shall not be liable for the accuracy or validity of alerts, any action taken by users based on alerts, or any indirect, incidental, or consequential damages. Alerts are informational only and should be independently verified.</p>
+
+      <h3>9. User Responsibility</h3>
+      <p>Users are fully responsible for their activity on the Platform. Misuse may result in account suspension and legal action if required.</p>
+
+      <h3>10. Service Availability</h3>
+      <p>Vehicall does not guarantee uninterrupted or error-free service and may modify or suspend services at any time without notice.</p>
+
+      <h3>11. Changes to Terms</h3>
+      <p>Vehicall reserves the right to update these Terms & Conditions at any time. Continued use of the Platform constitutes acceptance of the updated terms.</p>
+
+      <h3>12. Governing Law</h3>
+      <p>These Terms & Conditions shall be governed by and interpreted in accordance with the laws of the Sultanate of Oman.</p>
+
+      <h3>13. Contact</h3>
+      <p>For any inquiries, users may contact Vehicall through official support channels.</p>
+
+      <h3>Acceptance</h3>
+      <p>By selecting “I Agree” during registration, you confirm that you have read, understood, and accepted these Terms & Conditions.</p>
+    `;
+  }
+
+  if (type === 'consent') {
+    title.innerText = 'VEHICALL – WHATSAPP & NOTIFICATION CONSENT';
+    content.innerHTML = `
+      <p>By providing your mobile number and opting in, you agree that Vehicall may send you:</p>
+      <ul>
+        <li>Vehicle-related alerts linked to your registered vehicle</li>
+        <li>Service-related notifications, including account, security, and update messages</li>
+      </ul>
+
+      <h3>You acknowledge that:</h3>
+      <ul>
+        <li>Messages may be delivered via WhatsApp, SMS, or other approved channels</li>
+        <li>Message delivery depends on network and third-party services</li>
+        <li>Vehicall does not charge for receiving messages, but standard operator charges may apply</li>
+      </ul>
+
+      <h3>Opt-Out</h3>
+      <p>You may withdraw consent at any time by disabling notifications in your account settings or contacting support. Opting out may limit or stop your ability to receive alerts.</p>
+
+      <h3>Privacy</h3>
+      <p>Your contact details will not be shared with other users and will only be used for service-related communication in accordance with the Privacy Policy.</p>
+
+      <h3>Confirmation</h3>
+      <p>By opting in, you confirm that you are the authorized user of the provided mobile number and consent to receive communications from Vehicall.</p>
+    `;
+  }
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').style.display = 'none';
+}
+
+async function registerUser() {
+  const name = document.getElementById('name').value.trim();
+  const mobile = document.getElementById('mobile').value.trim();
+  const vehicleNumber = document.getElementById('vehicleNumber').value.trim();
+  const password = document.getElementById('password').value;
+  const agreed = document.getElementById('agreeCheckbox').checked;
+
+  if (!agreed) {
+    alert('Please read and accept the agreements before registration.');
+    return;
+  }
+
+  if (!name || !mobile || !vehicleNumber || !password) {
+    alert('Please fill all fields');
+    return;
+  }
+
+  const res = await fetch('/register', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      name,
+      mobile,
+      vehicleNumber,
+      password,
+      consentAccepted: true,
+      consentAcceptedAt: new Date().toISOString(),
+      acceptedDocuments: [
+        'Privacy Policy',
+        'Terms & Conditions',
+        'WhatsApp & Notification Consent'
+      ]
+    })
+  });
+
+  const data = await res.json();
+
+  if (res.ok) {
+    localStorage.setItem('vehicleNumber', data.vehicleNumber);
+    localStorage.setItem('qr_id', data.qr_id);
+    localStorage.setItem('plan', data.plan || '');
+    localStorage.setItem('billingCycle', 'monthly');
+    localStorage.setItem('isLoggedIn', 'true');
+    localStorage.setItem('packageSaved', 'false');
+    localStorage.setItem('qrGenerated', 'false');
+
+    alert(`Registration successful\nAssigned QR ID: ${data.qr_id}`);
+    window.location.href = '/dashboard.html';
+  } else {
+    alert(data.message);
+  }
+}
+
+function goToLogin() {
+  window.location.href = '/login.html';
+}
+</script>
+
 </body>
 </html>

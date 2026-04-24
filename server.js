@@ -43,10 +43,24 @@ function formatAlert(type) {
 
 // Register user
 app.post('/register', (req, res) => {
-  let { name, mobile, vehicleNumber, password } = req.body;
+  let {
+    name,
+    mobile,
+    vehicleNumber,
+    password,
+    consentAccepted,
+    consentAcceptedAt,
+    acceptedDocuments
+  } = req.body;
 
   if (!name || !mobile || !vehicleNumber || !password) {
     return res.status(400).json({ message: 'All fields are required' });
+  }
+
+  if (!consentAccepted) {
+    return res.status(400).json({
+      message: 'You must accept Privacy Policy, Terms & Conditions, and WhatsApp Consent to register'
+    });
   }
 
   vehicleNumber = vehicleNumber.toUpperCase().trim();
@@ -66,12 +80,24 @@ app.post('/register', (req, res) => {
     mobile,
     vehicleNumber,
     password,
+
     plan: '',
     billingCycle: '',
     packageSaved: false,
+
     qr_id,
     qr_generated: false,
-    paymentStatus: 'pending', // future use
+
+    paymentStatus: 'pending',
+
+    consentAccepted: true,
+    consentAcceptedAt: consentAcceptedAt || new Date().toISOString(),
+    acceptedDocuments: acceptedDocuments || [
+      'Privacy Policy',
+      'Terms & Conditions',
+      'WhatsApp & Notification Consent'
+    ],
+
     createdAt: new Date().toISOString()
   };
 
@@ -90,7 +116,9 @@ app.post('/login', (req, res) => {
   let { vehicleNumber, password } = req.body;
 
   if (!vehicleNumber || !password) {
-    return res.status(400).json({ message: 'Vehicle number and password are required' });
+    return res.status(400).json({
+      message: 'Vehicle number and password are required'
+    });
   }
 
   vehicleNumber = vehicleNumber.toUpperCase().trim();
@@ -102,7 +130,9 @@ app.post('/login', (req, res) => {
   );
 
   if (!user) {
-    return res.status(401).json({ message: 'Invalid vehicle number or password' });
+    return res.status(401).json({
+      message: 'Invalid vehicle number or password'
+    });
   }
 
   res.json({
@@ -122,7 +152,9 @@ app.post('/update-plan', (req, res) => {
   let { vehicleNumber, plan, billingCycle } = req.body;
 
   if (!vehicleNumber || !plan) {
-    return res.status(400).json({ message: 'Vehicle number and plan are required' });
+    return res.status(400).json({
+      message: 'Vehicle number and plan are required'
+    });
   }
 
   vehicleNumber = vehicleNumber.toUpperCase().trim();
@@ -132,7 +164,9 @@ app.post('/update-plan', (req, res) => {
   );
 
   if (!user) {
-    return res.status(404).json({ message: 'Vehicle owner not found' });
+    return res.status(404).json({
+      message: 'Vehicle owner not found'
+    });
   }
 
   user.plan = plan;
@@ -151,7 +185,9 @@ app.post('/generate-qr', async (req, res) => {
     let { vehicleNumber } = req.body;
 
     if (!vehicleNumber) {
-      return res.status(400).json({ message: 'Vehicle number is required' });
+      return res.status(400).json({
+        message: 'Vehicle number is required'
+      });
     }
 
     vehicleNumber = vehicleNumber.toUpperCase().trim();
@@ -161,12 +197,15 @@ app.post('/generate-qr', async (req, res) => {
     );
 
     if (!user) {
-      return res.status(404).json({ message: 'Vehicle owner not found' });
+      return res.status(404).json({
+        message: 'Vehicle owner not found'
+      });
     }
 
-    // Step 1: package must be saved
     if (!user.packageSaved || !user.plan) {
-      return res.status(400).json({ message: 'Please save package first' });
+      return res.status(400).json({
+        message: 'Please save package first'
+      });
     }
 
     // FUTURE PAYMENT RULE - KEEP COMMENTED FOR NOW
@@ -198,7 +237,9 @@ app.post('/generate-qr', async (req, res) => {
     });
   } catch (error) {
     console.error('QR generate error:', error);
-    res.status(500).json({ message: 'Error generating QR' });
+    res.status(500).json({
+      message: 'Error generating QR'
+    });
   }
 });
 
@@ -207,13 +248,17 @@ app.post('/send-alert', (req, res) => {
   const { qr_id, alert_type } = req.body;
 
   if (!qr_id || !alert_type) {
-    return res.status(400).json({ message: 'QR ID and alert type are required' });
+    return res.status(400).json({
+      message: 'QR ID and alert type are required'
+    });
   }
 
   const user = users.find((u) => u.qr_id === qr_id);
 
   if (!user) {
-    return res.status(404).json({ message: 'No active vehicle found for this QR' });
+    return res.status(404).json({
+      message: 'No active vehicle found for this QR'
+    });
   }
 
   const now = new Date().toLocaleString();

@@ -75,16 +75,27 @@ document.getElementById('qrDisplay').innerText = qr_id
   ? "Vehicle ID: " + qr_id
   : "Invalid QR";
 
+/* FORMAT TIME */
+function getCurrentTime(){
+  const now = new Date();
+
+  const options = {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  };
+
+  return now.toLocaleString('en-GB', options);
+}
+
 function cleanOmanMobile(mobile) {
   let number = String(mobile || '').replace(/\D/g, '');
 
-  if (number.startsWith('968')) {
-    return number;
-  }
+  if (number.startsWith('968')) return number;
 
-  if (number.startsWith('0')) {
-    number = number.substring(1);
-  }
+  if (number.startsWith('0')) number = number.substring(1);
 
   return '968' + number;
 }
@@ -105,18 +116,20 @@ async function sendAlert(type){
     const data = await res.json();
 
     if(!res.ok){
-      document.getElementById('response').innerHTML = `
-        <div class="alert-box">${data.message}</div>
-      `;
+      document.getElementById('response').innerHTML =
+        `<div class="alert-box">${data.message}</div>`;
       return;
     }
 
     const phone = cleanOmanMobile(data.mobile);
 
+    const time = getCurrentTime();
+
     const message = `Vehicall Alert
 
 Vehicle: ${data.vehicleNumber}
 Issue: ${data.issue}
+Time: ${time}
 
 Please check your vehicle.`;
 
@@ -124,12 +137,13 @@ Please check your vehicle.`;
 
     document.getElementById('response').innerHTML = `
       <div class="alert-box">
-        Vehicall Alert Created
+Vehicall Alert Created
 
-        Vehicle: ${data.vehicleNumber}
-        Issue: ${data.issue}
+Vehicle: ${data.vehicleNumber}
+Issue: ${data.issue}
+Time: ${time}
 
-        If WhatsApp does not open automatically, click below.
+Click below if WhatsApp did not open
       </div>
 
       <button class="btn open-wa" onclick="window.location.href='${whatsappURL}'">
@@ -140,9 +154,8 @@ Please check your vehicle.`;
     window.location.href = whatsappURL;
 
   } catch (error){
-    document.getElementById('response').innerHTML = `
-      <div class="alert-box">Error opening WhatsApp</div>
-    `;
+    document.getElementById('response').innerHTML =
+      `<div class="alert-box">Error sending alert</div>`;
     console.error(error);
   }
 }

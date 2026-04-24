@@ -376,11 +376,12 @@ Time: ${now}`;
       lastAlertAt: new Date().toISOString()
     });
 
-    res.json({
-      message: alertMessage,
-      vehicleNumber: user.vehicleNumber,
-      issue: formatAlert(alert_type)
-    });
+ res.json({
+  message: alertMessage,
+  vehicleNumber: user.vehicleNumber,
+  issue: formatAlert(alert_type),
+  mobile: user.mobile   // ✅ FIX
+});
 
   } catch (err) {
     console.error('Alert error:', err);

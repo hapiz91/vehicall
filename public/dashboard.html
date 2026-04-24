@@ -170,16 +170,6 @@ button:disabled {
   margin-top: 12px;
 }
 
-.qr-preview img.qr {
-  width: 230px;
-  max-width: 100%;
-  margin-top: 10px;
-}
-
-.qr-logo {
-  width: 70px;
-}
-
 .alert-item {
   background: white;
   color: #111827;
@@ -192,6 +182,75 @@ button:disabled {
 .empty {
   color: #cbd5e1;
   font-size: 14px;
+}
+
+/* BRANDED STICKER */
+.sticker {
+  width: 100%;
+  max-width: 520px;
+  margin: 0 auto;
+  background: #ffffff;
+  border: 10px solid #0b1f3a;
+  border-radius: 28px;
+  padding: 22px 18px;
+  color: #08172f;
+  text-align: center;
+}
+
+.sticker-logo {
+  width: 90px;
+  margin-bottom: 8px;
+}
+
+.sticker-title {
+  display: inline-block;
+  background: #0b1f3a;
+  color: white;
+  padding: 8px 16px;
+  border-radius: 10px;
+  font-size: 20px;
+  font-weight: 900;
+  margin-bottom: 12px;
+  letter-spacing: 1px;
+}
+
+.sticker-main {
+  font-size: 32px;
+  font-weight: 900;
+  line-height: 1.05;
+  margin: 8px 0 4px;
+}
+
+.sticker-sub {
+  font-size: 23px;
+  font-weight: 800;
+  margin-bottom: 12px;
+}
+
+.sticker-qr {
+  width: 260px;
+  max-width: 90%;
+  margin: 8px auto 12px;
+  display: block;
+}
+
+.sticker-safety {
+  font-size: 18px;
+  font-weight: 800;
+  margin-top: 8px;
+}
+
+.sticker-note {
+  font-size: 13px;
+  margin-top: 8px;
+  line-height: 1.35;
+  color: #111827;
+}
+
+.sticker-vehicle {
+  font-size: 13px;
+  margin-top: 8px;
+  color: #334155;
 }
 
 /* MODAL */
@@ -213,10 +272,6 @@ button:disabled {
   max-height: 90vh;
   overflow-y: auto;
   border: 1px solid rgba(255,255,255,0.18);
-}
-
-.modal h2 {
-  margin-bottom: 14px;
 }
 
 .error-box {
@@ -311,10 +366,8 @@ button:disabled {
     <button id="setupGenerateBtn" class="secondary" onclick="generateQR()" disabled>Generate QR</button>
 
     <div id="setupQrPreview" class="qr-preview">
-      <img src="/logo.png" class="qr-logo">
-      <div><strong>Vehicall QR Sticker</strong></div>
-      <img id="setupQrImage" class="qr" src="">
-      <p>QR generated. You will now go to your owner dashboard.</p>
+      <div id="setupSticker"></div>
+      <p style="margin-top:10px;">QR generated. You will now go to your owner dashboard.</p>
     </div>
   </div>
 
@@ -370,16 +423,13 @@ button:disabled {
 
       <div class="card">
         <h2>QR Management</h2>
-        <button class="secondary" onclick="loadQRForUse()">Load QR</button>
-        <button id="printBtn" class="secondary" onclick="printQR()" disabled>Print QR</button>
-        <button id="downloadBtn" class="secondary" onclick="downloadQR()" disabled>Download QR</button>
+        <button class="secondary" onclick="loadQRForUse()">Load Smart QR Sticker</button>
+        <button id="printBtn" class="secondary" onclick="printQR()" disabled>Print Sticker</button>
+        <button id="downloadBtn" class="secondary" onclick="downloadQR()" disabled>Download Sticker</button>
         <button class="warning" onclick="openRenewal()">Renew / Upgrade</button>
 
         <div id="qrPreview" class="qr-preview">
-          <img src="/logo.png" class="qr-logo">
-          <div><strong>Vehicall QR Sticker</strong></div>
-          <img id="qrImage" class="qr" src="">
-          <p>Print or download and paste this QR on your vehicle</p>
+          <div id="ownerSticker"></div>
         </div>
       </div>
 
@@ -497,6 +547,32 @@ function getDefaultValidity(user) {
 
   d.setMonth(d.getMonth() + 1);
   return d.toLocaleDateString();
+}
+
+function createStickerHtml(qrImage) {
+  return `
+    <div class="sticker">
+      <img src="/logo.png" class="sticker-logo">
+
+      <div class="sticker-title">SMART QR STICKER</div>
+
+      <div class="sticker-main">SCAN TO SEND ALERT</div>
+      <div class="sticker-sub">to Owner about this Vehicle</div>
+
+      <img src="${qrImage}" class="sticker-qr">
+
+      <div class="sticker-safety">Helping keep Oman’s roads safe and respectful.</div>
+
+      <div class="sticker-note">
+        This service is for genuine safety and communication only.<br>
+        Misuse may be subject to legal action under Oman laws.
+      </div>
+
+      <div class="sticker-vehicle">
+        Vehicle: ${vehicleNumber}
+      </div>
+    </div>
+  `;
 }
 
 async function loadDashboard() {
@@ -639,7 +715,7 @@ async function generateQR() {
   }
 
   currentQrImage = data.qrImage;
-  document.getElementById('setupQrImage').src = currentQrImage;
+  document.getElementById('setupSticker').innerHTML = createStickerHtml(currentQrImage);
   document.getElementById('setupQrPreview').style.display = 'block';
 
   alert(data.message);
@@ -664,7 +740,7 @@ async function loadQRForUse() {
   }
 
   currentQrImage = data.qrImage;
-  document.getElementById('qrImage').src = currentQrImage;
+  document.getElementById('ownerSticker').innerHTML = createStickerHtml(currentQrImage);
   document.getElementById('qrPreview').style.display = 'block';
   document.getElementById('printBtn').disabled = false;
   document.getElementById('downloadBtn').disabled = false;
@@ -676,17 +752,93 @@ function printQR() {
     return;
   }
 
+  const stickerHtml = createStickerHtml(currentQrImage);
+
   const printWindow = window.open('', '_blank');
   printWindow.document.write(`
     <html>
-      <body style="text-align:center;font-family:Arial;padding:30px;">
-        <img src="/logo.png" style="width:80px;"><br><br>
-        <h2>Vehicall QR Sticker</h2>
-        <img src="${currentQrImage}" style="max-width:320px;"><br><br>
-        <p><strong>Vehicle:</strong> ${vehicleNumber}</p>
+      <head>
+        <title>Vehicall Smart QR Sticker</title>
+        <style>
+          body {
+            text-align:center;
+            font-family:Arial;
+            padding:20px;
+          }
+
+          .sticker {
+            width: 520px;
+            margin: auto;
+            background: #ffffff;
+            border: 10px solid #0b1f3a;
+            border-radius: 28px;
+            padding: 22px 18px;
+            color: #08172f;
+            text-align: center;
+          }
+
+          .sticker-logo {
+            width: 90px;
+            margin-bottom: 8px;
+          }
+
+          .sticker-title {
+            display: inline-block;
+            background: #0b1f3a;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 10px;
+            font-size: 20px;
+            font-weight: 900;
+            margin-bottom: 12px;
+            letter-spacing: 1px;
+          }
+
+          .sticker-main {
+            font-size: 32px;
+            font-weight: 900;
+            line-height: 1.05;
+            margin: 8px 0 4px;
+          }
+
+          .sticker-sub {
+            font-size: 23px;
+            font-weight: 800;
+            margin-bottom: 12px;
+          }
+
+          .sticker-qr {
+            width: 260px;
+            margin: 8px auto 12px;
+            display: block;
+          }
+
+          .sticker-safety {
+            font-size: 18px;
+            font-weight: 800;
+            margin-top: 8px;
+          }
+
+          .sticker-note {
+            font-size: 13px;
+            margin-top: 8px;
+            line-height: 1.35;
+            color: #111827;
+          }
+
+          .sticker-vehicle {
+            font-size: 13px;
+            margin-top: 8px;
+            color: #334155;
+          }
+        </style>
+      </head>
+      <body>
+        ${stickerHtml}
       </body>
     </html>
   `);
+
   printWindow.document.close();
   printWindow.print();
 }
@@ -697,12 +849,82 @@ function downloadQR() {
     return;
   }
 
-  const link = document.createElement('a');
-  link.href = currentQrImage;
-  link.download = `Vehicall-QR-${vehicleNumber}.png`;
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+
+  canvas.width = 900;
+  canvas.height = 1150;
+
+  const logo = new Image();
+  const qr = new Image();
+
+  logo.crossOrigin = 'anonymous';
+  qr.crossOrigin = 'anonymous';
+
+  logo.src = '/logo.png';
+  qr.src = currentQrImage;
+
+  qr.onload = function () {
+    logo.onload = function () {
+      ctx.fillStyle = '#0b1f3a';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      roundRect(ctx, 35, 35, 830, 1080, 45, '#ffffff');
+
+      ctx.drawImage(logo, 380, 65, 140, 140);
+
+      ctx.fillStyle = '#0b1f3a';
+      roundRect(ctx, 275, 235, 350, 60, 12, '#0b1f3a');
+
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 34px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText('SMART QR STICKER', 450, 276);
+
+      ctx.fillStyle = '#08172f';
+      ctx.font = 'bold 58px Arial';
+      ctx.fillText('SCAN TO SEND ALERT', 450, 370);
+
+      ctx.font = 'bold 38px Arial';
+      ctx.fillText('to Owner about this Vehicle', 450, 425);
+
+      ctx.drawImage(qr, 275, 455, 350, 350);
+
+      ctx.fillStyle = '#08172f';
+      ctx.font = 'bold 30px Arial';
+      ctx.fillText('Helping keep Oman’s roads', 450, 855);
+      ctx.fillText('safe and respectful.', 450, 890);
+
+      ctx.font = '24px Arial';
+      ctx.fillText('This service is for genuine safety and communication only.', 450, 950);
+      ctx.fillText('Misuse may be subject to legal action under Oman laws.', 450, 985);
+
+      ctx.font = '22px Arial';
+      ctx.fillStyle = '#334155';
+      ctx.fillText('Vehicle: ' + vehicleNumber, 450, 1045);
+
+      const link = document.createElement('a');
+      link.download = `Vehicall-Smart-QR-Sticker-${vehicleNumber}.png`;
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+    };
+  };
+}
+
+function roundRect(ctx, x, y, width, height, radius, fillColor) {
+  ctx.beginPath();
+  ctx.moveTo(x + radius, y);
+  ctx.lineTo(x + width - radius, y);
+  ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
+  ctx.lineTo(x + width, y + height - radius);
+  ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+  ctx.lineTo(x + radius, y + height);
+  ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
+  ctx.lineTo(x, y + radius);
+  ctx.quadraticCurveTo(x, y, x + radius, y);
+  ctx.closePath();
+  ctx.fillStyle = fillColor;
+  ctx.fill();
 }
 
 function openRenewal() {

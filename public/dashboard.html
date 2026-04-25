@@ -6,291 +6,276 @@
 <title>Vehicall Dashboard</title>
 
 <style>
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-  font-family: Arial, sans-serif;
-}
+* { box-sizing: border-box; margin:0; padding:0; font-family: Arial, sans-serif; }
 
 body {
-  min-height: 100vh;
-  background: linear-gradient(135deg, #031b3b, #062850, #0a3d62);
-  padding: 18px;
-  color: white;
+  min-height:100vh;
+  background:linear-gradient(135deg,#031b3b,#062850,#0a3d62);
+  padding:18px;
+  color:white;
 }
 
-.container {
-  max-width: 980px;
-  margin: auto;
-}
+.container { max-width:980px; margin:auto; }
+.header { text-align:center; margin-bottom:18px; }
+.logo { width:90px; margin-bottom:8px; }
+h1 { font-size:30px; margin-bottom:4px; }
+.sub { color:#cbd5e1; font-size:14px; }
 
-.header {
-  text-align: center;
-  margin-bottom: 18px;
-}
-
-.logo {
-  width: 90px;
-  margin-bottom: 8px;
-}
-
-h1 {
-  font-size: 30px;
-  margin-bottom: 4px;
-}
-
-.sub {
-  color: #cbd5e1;
-  font-size: 14px;
-}
-
-.grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 16px;
-}
+.grid { display:grid; grid-template-columns:1fr; gap:16px; }
 
 .card {
-  background: rgba(255,255,255,0.08);
-  border: 1px solid rgba(255,255,255,0.12);
-  border-radius: 18px;
-  padding: 18px;
-  backdrop-filter: blur(10px);
-  box-shadow: 0 14px 30px rgba(0,0,0,0.25);
+  background:rgba(255,255,255,0.08);
+  border:1px solid rgba(255,255,255,0.12);
+  border-radius:18px;
+  padding:18px;
+  backdrop-filter:blur(10px);
+  box-shadow:0 14px 30px rgba(0,0,0,0.25);
 }
 
-.card h2 {
-  font-size: 20px;
-  margin-bottom: 14px;
-}
+.card h2 { font-size:20px; margin-bottom:14px; }
 
-.stat-grid {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 10px;
-}
+.stat-grid { display:grid; grid-template-columns:1fr; gap:10px; }
 
 .stat {
-  background: white;
-  color: #111827;
-  padding: 13px;
-  border-radius: 12px;
-  word-break: break-word;
+  background:white;
+  color:#111827;
+  padding:13px;
+  border-radius:12px;
+  word-break:break-word;
 }
 
 .stat small {
-  display: block;
-  color: #64748b;
-  font-size: 12px;
-  margin-bottom: 4px;
+  display:block;
+  color:#64748b;
+  font-size:12px;
+  margin-bottom:4px;
 }
 
 .badge {
-  display: inline-block;
-  padding: 6px 10px;
-  border-radius: 999px;
-  font-size: 13px;
-  font-weight: bold;
+  display:inline-block;
+  padding:6px 10px;
+  border-radius:999px;
+  font-size:13px;
+  font-weight:bold;
 }
 
 .badge-green { background:#dcfce7; color:#166534; }
 .badge-yellow { background:#fef9c3; color:#854d0e; }
 .badge-red { background:#fee2e2; color:#991b1b; }
 
-.setup-card {
-  max-width: 620px;
-  margin: auto;
-}
+.setup-card { max-width:620px; margin:auto; }
 
 .pricing-card {
-  background: white;
-  color: #111827;
-  border-radius: 14px;
-  padding: 14px;
-  margin-bottom: 10px;
+  background:white;
+  color:#111827;
+  border-radius:14px;
+  padding:14px;
+  margin-bottom:10px;
 }
 
-.pricing-card strong {
-  display: block;
-  margin-bottom: 6px;
-}
-
-.pricing-card ul {
-  margin-left: 18px;
-  font-size: 14px;
-  line-height: 1.5;
-}
+.pricing-card strong { display:block; margin-bottom:6px; }
+.pricing-card ul { margin-left:18px; font-size:14px; line-height:1.5; }
 
 label {
-  display: block;
-  margin: 12px 0 6px;
-  color: #dbeafe;
-  font-size: 14px;
+  display:block;
+  margin:12px 0 6px;
+  color:#dbeafe;
+  font-size:14px;
 }
 
-select {
-  width: 100%;
-  padding: 13px;
-  border-radius: 12px;
-  border: none;
-  margin-bottom: 12px;
-  font-size: 15px;
+select, input {
+  width:100%;
+  padding:13px;
+  border-radius:12px;
+  border:none;
+  margin-bottom:12px;
+  font-size:15px;
 }
 
 button {
-  width: 100%;
-  padding: 14px;
-  border: none;
-  border-radius: 13px;
-  font-weight: bold;
-  cursor: pointer;
-  margin-bottom: 10px;
-  color: white;
-  font-size: 15px;
+  width:100%;
+  padding:14px;
+  border:none;
+  border-radius:13px;
+  font-weight:bold;
+  cursor:pointer;
+  margin-bottom:10px;
+  color:white;
+  font-size:15px;
 }
 
-.primary { background: linear-gradient(90deg,#16a34a,#22c55e); }
-.secondary { background: linear-gradient(90deg,#2563eb,#3b82f6); }
-.warning { background: linear-gradient(90deg,#f97316,#fb923c); }
-.danger { background: linear-gradient(90deg,#dc2626,#ef4444); }
+.primary { background:linear-gradient(90deg,#16a34a,#22c55e); }
+.secondary { background:linear-gradient(90deg,#2563eb,#3b82f6); }
+.warning { background:linear-gradient(90deg,#f97316,#fb923c); }
+.danger { background:linear-gradient(90deg,#dc2626,#ef4444); }
 
-button:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
-}
+button:disabled { opacity:0.45; cursor:not-allowed; }
 
 .qr-preview {
-  background: white;
-  color: #111827;
-  border-radius: 16px;
-  padding: 18px;
-  text-align: center;
-  display: none;
-  margin-top: 12px;
+  background:white;
+  color:#111827;
+  border-radius:16px;
+  padding:18px;
+  text-align:center;
+  display:none;
+  margin-top:12px;
 }
 
 .alert-item {
-  background: white;
-  color: #111827;
-  border-radius: 12px;
-  padding: 12px;
-  margin-bottom: 8px;
-  font-size: 14px;
+  background:white;
+  color:#111827;
+  border-radius:12px;
+  padding:12px;
+  margin-bottom:8px;
+  font-size:14px;
 }
 
-.empty {
-  color: #cbd5e1;
-  font-size: 14px;
+.empty { color:#cbd5e1; font-size:14px; }
+
+.contact-box {
+  background:white;
+  color:#111827;
+  border-radius:14px;
+  padding:14px;
+  margin-bottom:12px;
 }
 
-/* BRANDED STICKER */
+.contact-box h3 {
+  font-size:16px;
+  margin-bottom:10px;
+}
+
+.contact-row {
+  border:1px solid #e5e7eb;
+  border-radius:12px;
+  padding:12px;
+  margin-bottom:10px;
+}
+
+.contact-row label {
+  color:#111827;
+  margin:6px 0;
+}
+
+.toggle-line {
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin-top:8px;
+  font-size:14px;
+}
+
+.toggle-line input {
+  width:auto;
+  margin:0;
+}
+
+.lock-note {
+  background:#fef9c3;
+  color:#854d0e;
+  padding:10px;
+  border-radius:10px;
+  margin-bottom:10px;
+  font-size:14px;
+}
+
 .sticker {
-  width: 100%;
-  max-width: 520px;
-  margin: 0 auto;
-  background: #ffffff;
-  border: 10px solid #0b1f3a;
-  border-radius: 28px;
-  padding: 22px 18px;
-  color: #08172f;
-  text-align: center;
+  width:100%;
+  max-width:520px;
+  margin:0 auto;
+  background:#ffffff;
+  border:10px solid #0b1f3a;
+  border-radius:28px;
+  padding:22px 18px;
+  color:#08172f;
+  text-align:center;
 }
 
-.sticker-logo {
-  width: 90px;
-  margin-bottom: 8px;
-}
+.sticker-logo { width:90px; margin-bottom:8px; }
 
 .sticker-title {
-  display: inline-block;
-  background: #0b1f3a;
-  color: white;
-  padding: 8px 16px;
-  border-radius: 10px;
-  font-size: 20px;
-  font-weight: 900;
-  margin-bottom: 12px;
-  letter-spacing: 1px;
+  display:inline-block;
+  background:#0b1f3a;
+  color:white;
+  padding:8px 16px;
+  border-radius:10px;
+  font-size:20px;
+  font-weight:900;
+  margin-bottom:12px;
+  letter-spacing:1px;
 }
 
 .sticker-main {
-  font-size: 32px;
-  font-weight: 900;
-  line-height: 1.05;
-  margin: 8px 0 4px;
+  font-size:32px;
+  font-weight:900;
+  line-height:1.05;
+  margin:8px 0 4px;
 }
 
 .sticker-sub {
-  font-size: 23px;
-  font-weight: 800;
-  margin-bottom: 12px;
+  font-size:23px;
+  font-weight:800;
+  margin-bottom:12px;
 }
 
 .sticker-qr {
-  width: 260px;
-  max-width: 90%;
-  margin: 8px auto 12px;
-  display: block;
+  width:260px;
+  max-width:90%;
+  margin:8px auto 12px;
+  display:block;
 }
 
 .sticker-safety {
-  font-size: 18px;
-  font-weight: 800;
-  margin-top: 8px;
+  font-size:18px;
+  font-weight:800;
+  margin-top:8px;
 }
 
 .sticker-note {
-  font-size: 13px;
-  margin-top: 8px;
-  line-height: 1.35;
-  color: #111827;
+  font-size:13px;
+  margin-top:8px;
+  line-height:1.35;
+  color:#111827;
 }
 
 .sticker-vehicle {
-  font-size: 13px;
-  margin-top: 8px;
-  color: #334155;
+  font-size:13px;
+  margin-top:8px;
+  color:#334155;
 }
 
-/* MODAL */
 .modal-overlay {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.75);
-  z-index: 9999;
-  padding: 18px;
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.75);
+  z-index:9999;
+  padding:18px;
 }
 
 .modal {
-  max-width: 640px;
-  margin: 30px auto;
-  background: #12365e;
-  border-radius: 18px;
-  padding: 20px;
-  max-height: 90vh;
-  overflow-y: auto;
-  border: 1px solid rgba(255,255,255,0.18);
+  max-width:640px;
+  margin:30px auto;
+  background:#12365e;
+  border-radius:18px;
+  padding:20px;
+  max-height:90vh;
+  overflow-y:auto;
+  border:1px solid rgba(255,255,255,0.18);
 }
 
 .error-box {
-  background: #fee2e2;
-  color: #991b1b;
-  padding: 14px;
-  border-radius: 12px;
-  margin: 15px auto;
-  max-width: 700px;
+  background:#fee2e2;
+  color:#991b1b;
+  padding:14px;
+  border-radius:12px;
+  margin:15px auto;
+  max-width:700px;
 }
 
-@media (min-width: 760px) {
-  .grid {
-    grid-template-columns: 1fr 1fr;
-  }
-
-  .stat-grid {
-    grid-template-columns: 1fr 1fr;
-  }
+@media (min-width:760px) {
+  .grid { grid-template-columns:1fr 1fr; }
+  .stat-grid { grid-template-columns:1fr 1fr; }
 }
 </style>
 </head>
@@ -307,7 +292,6 @@ button:disabled {
 
   <div id="errorBox"></div>
 
-  <!-- FIRST TIME SETUP VIEW -->
   <div id="setupView" class="card setup-card" style="display:none;">
     <h2>First-Time Setup</h2>
     <p class="sub">Select package and generate your vehicle QR.</p><br>
@@ -324,7 +308,7 @@ button:disabled {
       <ul>
         <li>3 alerts per month</li>
         <li>1 contact</li>
-        <li>No location</li>
+        <li>No extra contact option</li>
       </ul>
     </div>
 
@@ -333,8 +317,8 @@ button:disabled {
       0.500 OMR monthly / 5 OMR yearly
       <ul>
         <li>10 alerts per month</li>
-        <li>2 contacts</li>
-        <li>Emergency location</li>
+        <li>2 contacts including primary</li>
+        <li>Extra contact active/inactive option</li>
       </ul>
     </div>
 
@@ -343,8 +327,8 @@ button:disabled {
       1 OMR monthly / 10 OMR yearly
       <ul>
         <li>30 alerts per month</li>
-        <li>3 contacts</li>
-        <li>Contact active/inactive later</li>
+        <li>3 contacts including primary</li>
+        <li>Extra contacts active/inactive option</li>
       </ul>
     </div>
 
@@ -371,7 +355,6 @@ button:disabled {
     </div>
   </div>
 
-  <!-- OWNER DASHBOARD VIEW -->
   <div id="ownerView" style="display:none;">
     <div class="grid">
 
@@ -379,46 +362,23 @@ button:disabled {
         <h2>Account Status</h2>
 
         <div class="stat-grid">
-          <div class="stat">
-            <small>Vehicle Number</small>
-            <strong id="vehicleNumber">-</strong>
-          </div>
-
-          <div class="stat">
-            <small>QR ID</small>
-            <strong id="qrId">-</strong>
-          </div>
-
-          <div class="stat">
-            <small>Selected Plan</small>
-            <strong id="selectedPlan">-</strong>
-          </div>
-
-          <div class="stat">
-            <small>Billing Cycle</small>
-            <strong id="billingCycleText">-</strong>
-          </div>
-
-          <div class="stat">
-            <small>Payment Status</small>
-            <span id="paymentStatus" class="badge badge-yellow">Pending</span>
-          </div>
-
-          <div class="stat">
-            <small>QR Status</small>
-            <span id="qrStatus" class="badge badge-green">Generated</span>
-          </div>
-
-          <div class="stat">
-            <small>Alerts Used</small>
-            <strong id="alertsUsed">0 / 0</strong>
-          </div>
-
-          <div class="stat">
-            <small>Valid Until</small>
-            <strong id="validityDate">-</strong>
-          </div>
+          <div class="stat"><small>Vehicle Number</small><strong id="vehicleNumber">-</strong></div>
+          <div class="stat"><small>QR ID</small><strong id="qrId">-</strong></div>
+          <div class="stat"><small>Selected Plan</small><strong id="selectedPlan">-</strong></div>
+          <div class="stat"><small>Billing Cycle</small><strong id="billingCycleText">-</strong></div>
+          <div class="stat"><small>Payment Status</small><span id="paymentStatus" class="badge badge-yellow">Pending</span></div>
+          <div class="stat"><small>QR Status</small><span id="qrStatus" class="badge badge-green">Generated</span></div>
+          <div class="stat"><small>Alerts Used</small><strong id="alertsUsed">0 / 0</strong></div>
+          <div class="stat"><small>Valid Until</small><strong id="validityDate">-</strong></div>
+          <div class="stat"><small>Contacts Allowed</small><strong id="contactsLimitText">1</strong></div>
+          <div class="stat"><small>Active Contacts</small><strong id="activeContactsText">1</strong></div>
         </div>
+      </div>
+
+      <div class="card">
+        <h2>Contact Notification Settings</h2>
+        <div id="contactsSection"></div>
+        <button id="saveContactsBtn" class="primary" onclick="saveContacts()">Save Contacts</button>
       </div>
 
       <div class="card">
@@ -445,7 +405,6 @@ button:disabled {
   </div>
 </div>
 
-<!-- RENEWAL MODAL -->
 <div id="renewalModal" class="modal-overlay">
   <div class="modal">
     <h2>Renew / Upgrade Package</h2>
@@ -453,31 +412,19 @@ button:disabled {
     <div class="pricing-card">
       <strong>Basic</strong>
       1 OMR registration — 3 months
-      <ul>
-        <li>3 alerts per month</li>
-        <li>1 contact</li>
-        <li>No location</li>
-      </ul>
+      <ul><li>3 alerts per month</li><li>1 contact only</li></ul>
     </div>
 
     <div class="pricing-card">
       <strong>Plus</strong>
       0.500 OMR monthly / 5 OMR yearly
-      <ul>
-        <li>10 alerts per month</li>
-        <li>2 contacts</li>
-        <li>Emergency location</li>
-      </ul>
+      <ul><li>10 alerts per month</li><li>2 contacts including primary</li></ul>
     </div>
 
     <div class="pricing-card">
       <strong>Premium</strong>
       1 OMR monthly / 10 OMR yearly
-      <ul>
-        <li>30 alerts per month</li>
-        <li>3 contacts</li>
-        <li>Contact active/inactive later</li>
-      </ul>
+      <ul><li>30 alerts per month</li><li>3 contacts including primary</li></ul>
     </div>
 
     <label>Select Package</label>
@@ -528,49 +475,53 @@ function getDefaultAlertsLimit(plan) {
   return 0;
 }
 
+function getDefaultContactsLimit(plan) {
+  if (plan === 'Basic') return 1;
+  if (plan === 'Plus') return 2;
+  if (plan === 'Premium') return 3;
+  return 1;
+}
+
 function getDefaultValidity(user) {
   if (user.planEnd) return new Date(user.planEnd).toLocaleDateString();
-
   if (!user.plan || !user.packageSavedAt) return '-';
 
   const d = new Date(user.packageSavedAt);
 
-  if (user.plan === 'Basic') {
-    d.setMonth(d.getMonth() + 3);
-    return d.toLocaleDateString();
-  }
+  if (user.plan === 'Basic') d.setMonth(d.getMonth() + 3);
+  else if (user.billingCycle === 'yearly') d.setMonth(d.getMonth() + 12);
+  else d.setMonth(d.getMonth() + 1);
 
-  if (user.billingCycle === 'yearly') {
-    d.setMonth(d.getMonth() + 12);
-    return d.toLocaleDateString();
-  }
-
-  d.setMonth(d.getMonth() + 1);
   return d.toLocaleDateString();
+}
+
+function normalizeContacts(user) {
+  if (Array.isArray(user.contacts) && user.contacts.length > 0) {
+    return user.contacts;
+  }
+
+  return [{
+    name: user.name || 'Primary Contact',
+    mobile: user.mobile || '',
+    active: true,
+    primary: true
+  }];
 }
 
 function createStickerHtml(qrImage) {
   return `
     <div class="sticker">
       <img src="/logo.png" class="sticker-logo">
-
       <div class="sticker-title">SMART QR STICKER</div>
-
       <div class="sticker-main">SCAN TO SEND ALERT</div>
       <div class="sticker-sub">to Owner about this Vehicle</div>
-
       <img src="${qrImage}" class="sticker-qr">
-
       <div class="sticker-safety">Helping keep Oman’s roads safe and respectful.</div>
-
       <div class="sticker-note">
         This service is for genuine safety and communication only.<br>
         Misuse may be subject to legal action under Oman laws.
       </div>
-
-      <div class="sticker-vehicle">
-        Vehicle: ${vehicleNumber}
-      </div>
+      <div class="sticker-vehicle">Vehicle: ${vehicleNumber}</div>
     </div>
   `;
 }
@@ -592,11 +543,9 @@ async function loadDashboard() {
 
     currentUser = user;
 
-    if (!currentUser.qr_generated) {
-      showSetupView();
-    } else {
-      await showOwnerView();
-    }
+    if (!currentUser.qr_generated) showSetupView();
+    else await showOwnerView();
+
   } catch (error) {
     console.error(error);
     showError('Dashboard loading error. Please login again.');
@@ -619,6 +568,9 @@ async function showOwnerView() {
 
   const alertsLimit = currentUser.alertsLimit || getDefaultAlertsLimit(currentUser.plan);
   const alertsUsed = currentUser.alertsUsed || 0;
+  const contacts = normalizeContacts(currentUser);
+  const contactsLimit = currentUser.contactsLimit || getDefaultContactsLimit(currentUser.plan);
+  const activeContacts = contacts.filter(c => c.primary || c.active).length;
 
   document.getElementById('vehicleNumber').innerText = safeText(currentUser.vehicleNumber);
   document.getElementById('qrId').innerText = safeText(currentUser.qr_id);
@@ -626,27 +578,119 @@ async function showOwnerView() {
   document.getElementById('billingCycleText').innerText = safeText(currentUser.billingCycle);
   document.getElementById('alertsUsed').innerText = alertsUsed + ' / ' + alertsLimit;
   document.getElementById('validityDate').innerText = getDefaultValidity(currentUser);
+  document.getElementById('contactsLimitText').innerText = contactsLimit;
+  document.getElementById('activeContactsText').innerText = activeContacts;
 
   const payment = document.getElementById('paymentStatus');
   payment.innerText = safeText(currentUser.paymentStatus, 'pending');
-
-  if (currentUser.paymentStatus === 'paid') {
-    payment.className = 'badge badge-green';
-  } else {
-    payment.className = 'badge badge-yellow';
-  }
+  payment.className = currentUser.paymentStatus === 'paid' ? 'badge badge-green' : 'badge badge-yellow';
 
   const qrStatus = document.getElementById('qrStatus');
+  qrStatus.innerText = currentUser.qr_generated ? 'Generated' : 'Not Generated';
+  qrStatus.className = currentUser.qr_generated ? 'badge badge-green' : 'badge badge-red';
 
-  if (currentUser.qr_generated) {
-    qrStatus.innerText = 'Generated';
-    qrStatus.className = 'badge badge-green';
-  } else {
-    qrStatus.innerText = 'Not Generated';
-    qrStatus.className = 'badge badge-red';
+  renderContacts();
+  await loadAlerts();
+}
+
+function renderContacts() {
+  const contactsLimit = currentUser.contactsLimit || getDefaultContactsLimit(currentUser.plan);
+  const contacts = normalizeContacts(currentUser);
+  const box = document.getElementById('contactsSection');
+
+  if (currentUser.plan === 'Basic') {
+    box.innerHTML = `
+      <div class="lock-note">
+        Basic plan allows only the primary contact. Upgrade to Plus or Premium to add more contacts.
+      </div>
+      <div class="contact-box">
+        <h3>Primary Contact</h3>
+        <p><strong>Name:</strong> ${contacts[0].name || currentUser.name}</p>
+        <p><strong>Mobile:</strong> ${contacts[0].mobile || currentUser.mobile}</p>
+        <p><strong>Status:</strong> Always Active</p>
+      </div>
+    `;
+    document.getElementById('saveContactsBtn').style.display = 'none';
+    return;
   }
 
-  await loadAlerts();
+  document.getElementById('saveContactsBtn').style.display = 'block';
+
+  let html = `
+    <div class="lock-note">
+      Your ${currentUser.plan} plan allows ${contactsLimit} contact(s) including primary contact.
+      Primary contact is always active.
+    </div>
+  `;
+
+  for (let i = 0; i < contactsLimit; i++) {
+    const c = contacts[i] || { name: '', mobile: '', active: true, primary: i === 0 };
+
+    html += `
+      <div class="contact-row">
+        <h3>${i === 0 ? 'Primary Contact' : 'Additional Contact ' + i}</h3>
+
+        <label>Name</label>
+        <input id="contactName${i}" value="${c.name || ''}" placeholder="Contact Name" ${i === 0 ? 'readonly' : ''}>
+
+        <label>Mobile Number</label>
+        <input id="contactMobile${i}" value="${c.mobile || ''}" placeholder="Mobile Number" ${i === 0 ? 'readonly' : ''}>
+
+        ${
+          i === 0
+          ? '<p><strong>Status:</strong> Always Active</p>'
+          : `
+            <div class="toggle-line">
+              <input type="checkbox" id="contactActive${i}" ${c.active ? 'checked' : ''}>
+              <span>Active to receive alerts</span>
+            </div>
+          `
+        }
+      </div>
+    `;
+  }
+
+  box.innerHTML = html;
+}
+
+async function saveContacts() {
+  const contactsLimit = currentUser.contactsLimit || getDefaultContactsLimit(currentUser.plan);
+  const contacts = [];
+
+  for (let i = 0; i < contactsLimit; i++) {
+    const name = document.getElementById('contactName' + i).value.trim();
+    const mobile = document.getElementById('contactMobile' + i).value.trim();
+
+    let active = true;
+
+    if (i > 0) {
+      active = document.getElementById('contactActive' + i).checked;
+    }
+
+    if (i === 0 && !mobile) {
+      alert('Primary contact mobile is required');
+      return;
+    }
+
+    if (i > 0 && mobile) {
+      contacts.push({ name, mobile, active, primary: false });
+    } else if (i === 0) {
+      contacts.push({ name, mobile, active: true, primary: true });
+    }
+  }
+
+  const res = await fetch('/update-contacts', {
+    method: 'POST',
+    headers: {'Content-Type':'application/json'},
+    body: JSON.stringify({ vehicleNumber, contacts })
+  });
+
+  const data = await res.json();
+  alert(data.message);
+
+  if (res.ok) {
+    await loadDashboard();
+  }
 }
 
 async function loadAlerts() {
@@ -760,82 +804,19 @@ function printQR() {
       <head>
         <title>Vehicall Smart QR Sticker</title>
         <style>
-          body {
-            text-align:center;
-            font-family:Arial;
-            padding:20px;
-          }
-
-          .sticker {
-            width: 520px;
-            margin: auto;
-            background: #ffffff;
-            border: 10px solid #0b1f3a;
-            border-radius: 28px;
-            padding: 22px 18px;
-            color: #08172f;
-            text-align: center;
-          }
-
-          .sticker-logo {
-            width: 90px;
-            margin-bottom: 8px;
-          }
-
-          .sticker-title {
-            display: inline-block;
-            background: #0b1f3a;
-            color: white;
-            padding: 8px 16px;
-            border-radius: 10px;
-            font-size: 20px;
-            font-weight: 900;
-            margin-bottom: 12px;
-            letter-spacing: 1px;
-          }
-
-          .sticker-main {
-            font-size: 32px;
-            font-weight: 900;
-            line-height: 1.05;
-            margin: 8px 0 4px;
-          }
-
-          .sticker-sub {
-            font-size: 23px;
-            font-weight: 800;
-            margin-bottom: 12px;
-          }
-
-          .sticker-qr {
-            width: 260px;
-            margin: 8px auto 12px;
-            display: block;
-          }
-
-          .sticker-safety {
-            font-size: 18px;
-            font-weight: 800;
-            margin-top: 8px;
-          }
-
-          .sticker-note {
-            font-size: 13px;
-            margin-top: 8px;
-            line-height: 1.35;
-            color: #111827;
-          }
-
-          .sticker-vehicle {
-            font-size: 13px;
-            margin-top: 8px;
-            color: #334155;
-          }
+          body { text-align:center; font-family:Arial; padding:20px; }
+          .sticker { width:520px; margin:auto; background:#ffffff; border:10px solid #0b1f3a; border-radius:28px; padding:22px 18px; color:#08172f; text-align:center; }
+          .sticker-logo { width:90px; margin-bottom:8px; }
+          .sticker-title { display:inline-block; background:#0b1f3a; color:white; padding:8px 16px; border-radius:10px; font-size:20px; font-weight:900; margin-bottom:12px; letter-spacing:1px; }
+          .sticker-main { font-size:32px; font-weight:900; line-height:1.05; margin:8px 0 4px; }
+          .sticker-sub { font-size:23px; font-weight:800; margin-bottom:12px; }
+          .sticker-qr { width:260px; margin:8px auto 12px; display:block; }
+          .sticker-safety { font-size:18px; font-weight:800; margin-top:8px; }
+          .sticker-note { font-size:13px; margin-top:8px; line-height:1.35; color:#111827; }
+          .sticker-vehicle { font-size:13px; margin-top:8px; color:#334155; }
         </style>
       </head>
-      <body>
-        ${stickerHtml}
-      </body>
+      <body>${stickerHtml}</body>
     </html>
   `);
 
@@ -858,9 +839,6 @@ function downloadQR() {
   const logo = new Image();
   const qr = new Image();
 
-  logo.crossOrigin = 'anonymous';
-  qr.crossOrigin = 'anonymous';
-
   logo.src = '/logo.png';
   qr.src = currentQrImage;
 
@@ -873,7 +851,6 @@ function downloadQR() {
 
       ctx.drawImage(logo, 380, 65, 140, 140);
 
-      ctx.fillStyle = '#0b1f3a';
       roundRect(ctx, 275, 235, 350, 60, 12, '#0b1f3a');
 
       ctx.fillStyle = '#ffffff';

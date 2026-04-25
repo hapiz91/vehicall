@@ -74,6 +74,29 @@ function formatAlert(type) {
   }
 }
 
+function cleanMobile(mobile) {
+  return String(mobile || '').replace(/\D/g, '');
+}
+
+function makePrimaryContact(name, mobile) {
+  return {
+    name: name || 'Primary Contact',
+    mobile: cleanMobile(mobile),
+    active: true,
+    primary: true
+  };
+}
+
+function normalizeContacts(user) {
+  if (Array.isArray(user.contacts) && user.contacts.length > 0) {
+    return user.contacts;
+  }
+
+  return [
+    makePrimaryContact(user.name, user.mobile)
+  ];
+}
+
 app.post('/register', async (req, res) => {
   try {
     let {
@@ -95,6 +118,7 @@ app.post('/register', async (req, res) => {
     }
 
     vehicleNumber = vehicleNumber.toUpperCase().trim();
+    mobile = cleanMobile(mobile);
 
     const userRef = db.collection('users').doc(vehicleNumber);
     const existingUser = await userRef.get();
@@ -123,6 +147,7 @@ app.post('/register', async (req, res) => {
       planEnd: null,
       contactsLimit: 1,
       locationEnabled: false,
+      contacts: [makePrimaryContact(name, mobile)],
       consentAccepted: true,
       consentAcceptedAt: consentAcceptedAt || new Date().toISOString(),
       acceptedDocuments: acceptedDocuments || [],
@@ -181,7 +206,10 @@ app.get('/owner/:vehicleNumber', async (req, res) => {
       return res.status(404).json({ message: 'Vehicle owner not found' });
     }
 
-    res.json(userDoc.data());
+    const user = userDoc.data();
+    user.contacts = normalizeContacts(user);
+
+    res.json(user);
 
   } catch (err) {
     console.error('Owner error:', err);
@@ -239,6 +267,10 @@ app.post('/update-plan', async (req, res) => {
       return res.status(404).json({ message: 'Vehicle owner not found' });
     }
 
+    const oldUser = userDoc.data();
+    const oldContacts = normalizeContacts(oldUser);
+    const contactsAllowed = oldContacts.slice(0, detail.contactsLimit);
+
     await userRef.update({
       plan,
       billingCycle,
@@ -249,6 +281,7 @@ app.post('/update-plan', async (req, res) => {
       alertsUsed: 0,
       contactsLimit: detail.contactsLimit,
       locationEnabled: detail.locationEnabled,
+      contacts: contactsAllowed,
       planStart: now,
       planEnd: addMonths(now, detail.validityMonths),
       packageSavedAt: now,
@@ -265,6 +298,62 @@ app.post('/update-plan', async (req, res) => {
   } catch (err) {
     console.error('Plan update error:', err);
     res.status(500).json({ message: 'Plan update error' });
+  }
+});
+
+app.post('/update-contacts', async (req, res) => {
+  try {
+    let { vehicleNumber, contacts } = req.body;
+
+    if (!vehicleNumber) {
+      return res.status(400).json({ message: 'Vehicle number is required' });
+    }
+
+    vehicleNumber = vehicleNumber.toUpperCase().trim();
+
+    const userRef = db.collection('users').doc(vehicleNumber);
+    const userDoc = await userRef.get();
+
+    if (!userDoc.exists) {
+      return res.status(404).json({ message: 'Vehicle owner not found' });
+    }
+
+    const user = userDoc.data();
+    const limit = user.contactsLimit || 1;
+
+    if (!Array.isArray(contacts)) {
+      return res.status(400).json({ message: 'Invalid contacts data' });
+    }
+
+    if (contacts.length > limit) {
+      return res.status(400).json({ message: `Your plan allows only ${limit} contact(s)` });
+    }
+
+    const cleanedContacts = contacts.map((c, index) => ({
+      name: c.name || (index === 0 ? 'Primary Contact' : `Contact ${index + 1}`),
+      mobile: cleanMobile(c.mobile),
+      active: index === 0 ? true : !!c.active,
+      primary: index === 0
+    }));
+
+    if (!cleanedContacts[0] || !cleanedContacts[0].mobile) {
+      return res.status(400).json({ message: 'Primary contact is required' });
+    }
+
+    await userRef.update({
+      contacts: cleanedContacts,
+      mobile: cleanedContacts[0].mobile,
+      contactsUpdatedAt: new Date().toISOString()
+    });
+
+    res.json({
+      message: 'Contacts updated successfully',
+      contacts: cleanedContacts
+    });
+
+  } catch (err) {
+    console.error('Contact update error:', err);
+    res.status(500).json({ message: 'Contact update error' });
   }
 });
 
@@ -352,6 +441,9 @@ app.post('/send-alert', async (req, res) => {
       return res.status(400).json({ message: 'Alert limit reached. Please renew or upgrade.' });
     }
 
+    const contacts = normalizeContacts(user);
+    const activeContacts = contacts.filter(c => c.primary || c.active);
+
     const now = new Date().toLocaleString();
 
     const alertMessage = `Vehicall Alert
@@ -364,6 +456,7 @@ Time: ${now}`;
       qr_id,
       vehicleNumber: user.vehicleNumber,
       ownerMobile: user.mobile,
+      contacts: activeContacts,
       alertType: alert_type,
       alertLabel: formatAlert(alert_type),
       message: alertMessage,
@@ -376,12 +469,13 @@ Time: ${now}`;
       lastAlertAt: new Date().toISOString()
     });
 
- res.json({
-  message: alertMessage,
-  vehicleNumber: user.vehicleNumber,
-  issue: formatAlert(alert_type),
-  mobile: user.mobile   // ✅ FIX
-});
+    res.json({
+      message: alertMessage,
+      vehicleNumber: user.vehicleNumber,
+      issue: formatAlert(alert_type),
+      contacts: activeContacts,
+      mobile: activeContacts[0]?.mobile || user.mobile
+    });
 
   } catch (err) {
     console.error('Alert error:', err);

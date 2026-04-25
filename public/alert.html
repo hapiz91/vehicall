@@ -75,10 +75,8 @@ document.getElementById('qrDisplay').innerText = qr_id
   ? "Vehicle ID: " + qr_id
   : "Invalid QR";
 
-/* FORMAT TIME */
 function getCurrentTime(){
   const now = new Date();
-
   const options = {
     day: '2-digit',
     month: 'short',
@@ -86,18 +84,27 @@ function getCurrentTime(){
     hour: '2-digit',
     minute: '2-digit'
   };
-
   return now.toLocaleString('en-GB', options);
 }
 
 function cleanOmanMobile(mobile) {
   let number = String(mobile || '').replace(/\D/g, '');
-
   if (number.startsWith('968')) return number;
-
   if (number.startsWith('0')) number = number.substring(1);
-
   return '968' + number;
+}
+
+function openWhatsApp(phone, vehicle, issue, time) {
+  const message = `Vehicall Alert
+
+Vehicle: ${vehicle}
+Issue: ${issue}
+Time: ${time}
+
+Please check your vehicle.`;
+
+  const whatsappURL = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+  window.location.href = whatsappURL;
 }
 
 async function sendAlert(type){
@@ -121,19 +128,23 @@ async function sendAlert(type){
       return;
     }
 
-    const phone = cleanOmanMobile(data.mobile);
-
     const time = getCurrentTime();
+    const contacts = Array.isArray(data.contacts) && data.contacts.length
+      ? data.contacts
+      : [{ name: 'Primary Contact', mobile: data.mobile, primary: true, active: true }];
 
-    const message = `Vehicall Alert
+    let buttons = '';
 
-Vehicle: ${data.vehicleNumber}
-Issue: ${data.issue}
-Time: ${time}
+    contacts.forEach((contact, index) => {
+      const phone = cleanOmanMobile(contact.mobile);
+      const label = contact.primary ? 'Primary Contact' : (contact.name || 'Additional Contact');
 
-Please check your vehicle.`;
-
-    const whatsappURL = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
+      buttons += `
+        <button class="btn open-wa" onclick="openWhatsApp('${phone}', '${data.vehicleNumber}', '${data.issue}', '${time}')">
+          Open WhatsApp - ${label}
+        </button>
+      `;
+    });
 
     document.getElementById('response').innerHTML = `
       <div class="alert-box">
@@ -143,15 +154,13 @@ Vehicle: ${data.vehicleNumber}
 Issue: ${data.issue}
 Time: ${time}
 
-Click below if WhatsApp did not open
+Choose contact below to open WhatsApp.
       </div>
-
-      <button class="btn open-wa" onclick="window.location.href='${whatsappURL}'">
-        Open WhatsApp
-      </button>
+      ${buttons}
     `;
 
-    window.location.href = whatsappURL;
+    const firstPhone = cleanOmanMobile(contacts[0].mobile);
+    openWhatsApp(firstPhone, data.vehicleNumber, data.issue, time);
 
   } catch (error){
     document.getElementById('response').innerHTML =

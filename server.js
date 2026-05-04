@@ -975,6 +975,64 @@ app.post('/admin/regenerate-qr', requireAdmin, async (req, res) => {
   }
 });
 
+/* RESET PASSWORD */
+app.post('/reset-password', async (req, res) => {
+  try {
+    let { vehicleNumber, mobile, newPassword } = req.body;
+
+    if (!vehicleNumber || !mobile || !newPassword) {
+      return res.status(400).json({
+        message: 'Vehicle number, mobile number and new password are required'
+      });
+    }
+
+    vehicleNumber = vehicleNumber.toUpperCase().trim();
+    mobile = cleanMobile(mobile);
+
+    const userRef = db.collection('users').doc(vehicleNumber);
+    const userDoc = await userRef.get();
+
+    if (!userDoc.exists) {
+      return res.status(404).json({
+        message: 'Vehicle account not found'
+      });
+    }
+
+    const user = userDoc.data();
+    const registeredMobile = cleanMobile(user.mobile);
+
+    if (registeredMobile !== mobile) {
+      return res.status(401).json({
+        message: 'Mobile number does not match registered vehicle account'
+      });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({
+        message: 'Password must be at least 6 characters'
+      });
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    await userRef.update({
+      password: hashedPassword,
+      passwordResetAt: new Date().toISOString()
+    });
+
+    res.json({
+      success: true,
+      message: 'Password reset successfully. Please login with your new password.'
+    });
+
+  } catch (err) {
+    console.error('Password reset error:', err);
+    res.status(500).json({
+      message: 'Password reset error'
+    });
+  }
+});
+
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {

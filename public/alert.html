@@ -23,7 +23,7 @@
       <span class="trust-badge">Privacy Protected</span>
       <h2>Send Alert to Vehicle Owner</h2>
       <p>
-        Select the issue below. The vehicle owner will be notified securely through Vehicall.
+        Select the issue below. WhatsApp will open with a ready message to notify the vehicle owner.
       </p>
 
       <div class="vehicle-box">
@@ -70,16 +70,29 @@
 
     <section id="resultBox" class="result-box hidden">
       <div class="result-icon">✅</div>
-      <h3 id="resultTitle">Alert Sent</h3>
-      <p id="resultMessage">Vehicle owner has been notified.</p>
+      <h3 id="resultTitle">Alert Prepared</h3>
+      <p id="resultMessage">WhatsApp message is ready.</p>
       <small id="resultTime"></small>
+
+      <br><br>
+      <a id="whatsappBtn" href="#" target="_blank" style="
+        display:inline-block;
+        background:#25D366;
+        color:white;
+        padding:14px 20px;
+        border-radius:14px;
+        text-decoration:none;
+        font-weight:bold;
+      ">
+        Open WhatsApp
+      </a>
     </section>
 
     <section class="safety-note">
       <h4>Important Notice</h4>
       <p>
-        This service is for genuine vehicle alerts only. Personal mobile numbers are protected
-        and misuse of this system may be monitored.
+        This service is for genuine vehicle alerts only. For this test version, WhatsApp will open directly
+        to the vehicle owner’s contact number. Masked communication will be added later.
       </p>
     </section>
 
@@ -106,6 +119,17 @@ function setButtonsDisabled(disabled) {
   });
 }
 
+function formatWhatsappNumber(mobile) {
+  let clean = String(mobile || '').replace(/\D/g, '');
+
+  // Oman local mobile number usually 8 digits. Add 968 if missing.
+  if (clean.length === 8) {
+    clean = '968' + clean;
+  }
+
+  return clean;
+}
+
 async function sendAlert(alert_type) {
   if (!qr_id) {
     showError('Invalid QR Code', 'This Vehicall QR link is missing or invalid.');
@@ -124,7 +148,29 @@ async function sendAlert(alert_type) {
     const data = await res.json();
 
     if (res.ok) {
-      showSuccess(data.issue || 'Alert Sent', data.message || 'Vehicle owner has been notified.');
+      const mobile = formatWhatsappNumber(data.mobile);
+
+      if (!mobile) {
+        showError('Mobile Number Missing', 'Vehicle owner mobile number is not available.');
+        setButtonsDisabled(false);
+        return;
+      }
+
+      const whatsappMessage = data.message || `Vehicall Alert\n\nVehicle: ${data.vehicleNumber}\nIssue: ${data.issue}`;
+      const whatsappUrl = `https://wa.me/${mobile}?text=${encodeURIComponent(whatsappMessage)}`;
+
+      document.getElementById('whatsappBtn').href = whatsappUrl;
+
+      showSuccess(
+        data.issue || 'Alert Prepared',
+        'Alert has been saved. Please tap Open WhatsApp to send the message to the vehicle owner.'
+      );
+
+      // Try to open WhatsApp automatically after alert is saved.
+      setTimeout(() => {
+        window.location.href = whatsappUrl;
+      }, 800);
+
     } else {
       showError('Alert Not Sent', data.message || 'Unable to send alert.');
       setButtonsDisabled(false);
@@ -154,6 +200,8 @@ function showError(title, message) {
   document.getElementById('resultTitle').innerText = title;
   document.getElementById('resultMessage').innerText = message;
   document.getElementById('resultTime').innerText = new Date().toLocaleString();
+
+  document.getElementById('whatsappBtn').style.display = 'none';
 
   window.scrollTo({
     top: box.offsetTop - 20,

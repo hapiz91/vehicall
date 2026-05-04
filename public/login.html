@@ -1,103 +1,168 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>Vehicall Login</title>
-
-<style>
-body {
-  background: linear-gradient(135deg,#031b3b,#062850);
-  font-family: Arial;
-  text-align:center;
-  padding:20px;
-  color:white;
-}
-
-.container {
-  max-width:400px;
-  margin:auto;
-  margin-top:60px;
-  padding:20px;
-  border-radius:16px;
-  background:rgba(255,255,255,0.08);
-}
-
-input {
-  width:90%;
-  padding:12px;
-  margin:10px;
-  border-radius:10px;
-  border:none;
-}
-
-button {
-  width:90%;
-  padding:14px;
-  margin:10px;
-  border-radius:12px;
-  border:none;
-  font-weight:bold;
-  cursor:pointer;
-  color:white;
-}
-
-.login {
-  background:#22c55e;
-}
-
-.register {
-  background:#3b82f6;
-}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vehicall | Login & Register</title>
+  <link rel="stylesheet" href="auth.css" />
 </head>
-
 <body>
 
-<div class="container">
+  <div class="auth-page">
+    <div class="auth-left">
+      <a href="/" class="back-link">← Back to Home</a>
 
-<h2>Vehicall</h2>
-<p>Login with your vehicle number</p>
+      <div class="brand-box">
+        <img src="/logo.png" class="auth-logo" />
+        <div>
+          <h1>Vehicall</h1>
+          <p>Smart QR Vehicle Alert System</p>
+        </div>
+      </div>
 
-<input id="vehicleNumber" placeholder="Vehicle Number">
-<input id="password" type="password" placeholder="Password">
+      <h2>Protect your vehicle communication.</h2>
+      <p class="hero-text">
+        Register your vehicle, generate a QR sticker, and receive alerts without displaying your mobile number publicly.
+      </p>
 
-<button class="login" onclick="login()">Login</button>
-<button class="register" onclick="goRegister()">Create New Account</button>
+      <div class="benefits">
+        <div>✓ Free Welcome Plan for 2 months</div>
+        <div>✓ 3 alerts per month included</div>
+        <div>✓ QR generation included</div>
+        <div>✓ Privacy-first alert flow</div>
+      </div>
+    </div>
 
-<p id="msg"></p>
+    <div class="auth-right">
+      <div class="auth-card">
+        <div class="tabs">
+          <button id="loginTab" class="active" onclick="showLogin()">Login</button>
+          <button id="registerTab" onclick="showRegister()">Register</button>
+        </div>
 
-</div>
+        <div id="messageBox"></div>
 
-<script>
-async function login(){
+        <form id="loginForm" class="form-section">
+          <h3>Login to Dashboard</h3>
 
-  const vehicleNumber = document.getElementById('vehicleNumber').value.trim();
-  const password = document.getElementById('password').value.trim();
+          <label>Vehicle Number</label>
+          <input type="text" id="loginVehicle" placeholder="Example: M 12345" required />
 
-  const res = await fetch('/login',{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body: JSON.stringify({vehicleNumber, password})
-  });
+          <label>Password</label>
+          <input type="password" id="loginPassword" placeholder="Enter password" required />
 
-  const data = await res.json();
+          <button type="submit" class="primary-btn">Login</button>
+        </form>
 
-  if(!res.ok){
-    document.getElementById('msg').innerText = data.message;
-    return;
-  }
+        <form id="registerForm" class="form-section hidden">
+          <h3>Create Vehicle Account</h3>
 
-  // ✅ IMPORTANT FIX
-  localStorage.setItem('isLoggedIn','true');
-  localStorage.setItem('vehicleNumber', data.vehicleNumber);
+          <label>Full Name</label>
+          <input type="text" id="regName" placeholder="Enter your name" required />
 
-  // redirect
-  window.location.href = '/dashboard.html';
-}
+          <label>Mobile Number</label>
+          <input type="text" id="regMobile" placeholder="968XXXXXXXX" required />
 
-function goRegister(){
-  window.location.href = '/register.html';
-}
-</script>
+          <label>Vehicle Number</label>
+          <input type="text" id="regVehicle" placeholder="Example: M 12345" required />
+
+          <label>Password</label>
+          <input type="password" id="regPassword" placeholder="Create password" required />
+
+          <div class="consent-box">
+            <input type="checkbox" id="consentAccepted" />
+            <span>
+              I agree to use Vehicall responsibly and accept the privacy-first vehicle alert process.
+            </span>
+          </div>
+
+          <button type="submit" class="primary-btn">Register & Activate Welcome Plan</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function showMessage(message, type = 'success') {
+      const box = document.getElementById('messageBox');
+      box.innerText = message;
+      box.className = type;
+
+      setTimeout(() => {
+        box.innerText = '';
+        box.className = '';
+      }, 4000);
+    }
+
+    function showLogin() {
+      document.getElementById('loginForm').classList.remove('hidden');
+      document.getElementById('registerForm').classList.add('hidden');
+      document.getElementById('loginTab').classList.add('active');
+      document.getElementById('registerTab').classList.remove('active');
+    }
+
+    function showRegister() {
+      document.getElementById('registerForm').classList.remove('hidden');
+      document.getElementById('loginForm').classList.add('hidden');
+      document.getElementById('registerTab').classList.add('active');
+      document.getElementById('loginTab').classList.remove('active');
+    }
+
+    document.getElementById('registerForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+
+      const consentAccepted = document.getElementById('consentAccepted').checked;
+
+      const payload = {
+        name: document.getElementById('regName').value,
+        mobile: document.getElementById('regMobile').value,
+        vehicleNumber: document.getElementById('regVehicle').value,
+        password: document.getElementById('regPassword').value,
+        consentAccepted,
+        consentAcceptedAt: new Date().toISOString(),
+        acceptedDocuments: ['Vehicall MVP Consent']
+      };
+
+      const res = await fetch('/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        showMessage(data.message || 'Registration successful', 'success');
+        showLogin();
+      } else {
+        showMessage(data.message || 'Registration failed', 'error');
+      }
+    });
+
+    document.getElementById('loginForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+
+      const payload = {
+        vehicleNumber: document.getElementById('loginVehicle').value,
+        password: document.getElementById('loginPassword').value
+      };
+
+      const res = await fetch('/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        localStorage.setItem('vehicallUser', JSON.stringify(data));
+        window.location.href = '/dashboard.html';
+      } else {
+        showMessage(data.message || 'Invalid login', 'error');
+      }
+    });
+  </script>
 
 </body>
 </html>

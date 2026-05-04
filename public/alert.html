@@ -1,172 +1,164 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>Vehicall Alert</title>
-
-<style>
-body {
-  background: linear-gradient(135deg,#031b3b,#062850);
-  font-family: Arial;
-  text-align:center;
-  padding:20px;
-  color:white;
-}
-
-.logo {
-  width:100px;
-  margin-bottom:10px;
-}
-
-.btn {
-  width:90%;
-  padding:16px;
-  margin:8px;
-  border-radius:14px;
-  border:none;
-  font-size:16px;
-  font-weight:bold;
-  cursor:pointer;
-}
-
-.red { background:#ef4444; color:white; }
-.blue { background:#2563eb; color:white; }
-.yellow { background:#facc15; color:black; }
-.green { background:#22c55e; color:white; }
-.gray { background:#6b7280; color:white; }
-
-.alert-box {
-  margin-top:20px;
-  padding:16px;
-  border-radius:12px;
-  background: rgba(255,255,255,0.12);
-  color:#fef08a;
-  font-weight:bold;
-  white-space: pre-line;
-}
-
-.open-wa {
-  margin-top:12px;
-  background:#22c55e;
-  color:white;
-}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Vehicall | Send Vehicle Alert</title>
+  <link rel="stylesheet" href="alert.css"/>
 </head>
-
 <body>
 
-<img src="/logo.png" class="logo">
+<div class="page-bg">
+  <div class="alert-shell">
 
-<h2>Vehicall Alert</h2>
-<p id="qrDisplay"></p>
+    <header class="brand-header">
+      <img src="/logo.png" class="logo" />
+      <div>
+        <h1>Vehicall</h1>
+        <p>Smart Vehicle Alert System</p>
+      </div>
+    </header>
 
-<button class="btn red" onclick="sendAlert('EMERGENCY')">🚨 Emergency</button>
-<button class="btn blue" onclick="sendAlert('BLOCKING')">🚗 Your Car is Blocking</button>
-<button class="btn yellow" onclick="sendAlert('LIGHTS_ON')">💡 Lights ON</button>
-<button class="btn green" onclick="sendAlert('NOT_LOCKED')">🔓 Vehicle Not Locked</button>
-<button class="btn gray" onclick="sendAlert('NEED_ATTENTION')">⚠️ Vehicle Needs Attention</button>
+    <section class="hero-card">
+      <span class="trust-badge">Privacy Protected</span>
+      <h2>Send Alert to Vehicle Owner</h2>
+      <p>
+        Select the issue below. The vehicle owner will be notified securely through Vehicall.
+      </p>
 
-<div id="response"></div>
+      <div class="vehicle-box">
+        <span>Vehicle QR</span>
+        <b id="qrIdText">Loading...</b>
+      </div>
+    </section>
+
+    <section class="alert-card">
+      <h3>What is the issue?</h3>
+
+      <div class="alert-grid">
+        <button onclick="sendAlert('BLOCKING')">
+          <span>🚗</span>
+          <b>Vehicle is Blocking</b>
+          <small>Parking or access issue</small>
+        </button>
+
+        <button onclick="sendAlert('LIGHTS_ON')">
+          <span>💡</span>
+          <b>Lights are ON</b>
+          <small>Headlights/interior lights left on</small>
+        </button>
+
+        <button onclick="sendAlert('NOT_LOCKED')">
+          <span>🔓</span>
+          <b>Vehicle Not Locked</b>
+          <small>Door/window appears open</small>
+        </button>
+
+        <button class="danger" onclick="sendAlert('EMERGENCY')">
+          <span>🚨</span>
+          <b>Emergency / Accident</b>
+          <small>Urgent attention required</small>
+        </button>
+
+        <button onclick="sendAlert('NEED_ATTENTION')">
+          <span>⚠️</span>
+          <b>Needs Attention</b>
+          <small>Other vehicle-related issue</small>
+        </button>
+      </div>
+    </section>
+
+    <section id="resultBox" class="result-box hidden">
+      <div class="result-icon">✅</div>
+      <h3 id="resultTitle">Alert Sent</h3>
+      <p id="resultMessage">Vehicle owner has been notified.</p>
+      <small id="resultTime"></small>
+    </section>
+
+    <section class="safety-note">
+      <h4>Important Notice</h4>
+      <p>
+        This service is for genuine vehicle alerts only. Personal mobile numbers are protected
+        and misuse of this system may be monitored.
+      </p>
+    </section>
+
+    <footer>
+      Powered by <b>Vehicall Oman</b>
+    </footer>
+
+  </div>
+</div>
 
 <script>
 const params = new URLSearchParams(window.location.search);
 const qr_id = params.get('qr');
 
-document.getElementById('qrDisplay').innerText = qr_id
-  ? "Vehicle ID: " + qr_id
-  : "Invalid QR";
+document.getElementById('qrIdText').innerText = qr_id || 'Invalid QR';
 
-function getCurrentTime(){
-  const now = new Date();
-  const options = {
-    day: '2-digit',
-    month: 'short',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  };
-  return now.toLocaleString('en-GB', options);
+if (!qr_id) {
+  showError('Invalid QR Code', 'This Vehicall QR link is missing or invalid.');
 }
 
-function cleanOmanMobile(mobile) {
-  let number = String(mobile || '').replace(/\D/g, '');
-  if (number.startsWith('968')) return number;
-  if (number.startsWith('0')) number = number.substring(1);
-  return '968' + number;
+function setButtonsDisabled(disabled) {
+  document.querySelectorAll('.alert-grid button').forEach(btn => {
+    btn.disabled = disabled;
+  });
 }
 
-function openWhatsApp(phone, vehicle, issue, time) {
-  const message = `Vehicall Alert
-
-Vehicle: ${vehicle}
-Issue: ${issue}
-Time: ${time}
-
-Please check your vehicle.`;
-
-  const whatsappURL = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
-  window.location.href = whatsappURL;
-}
-
-async function sendAlert(type){
-  if(!qr_id){
-    alert("Invalid QR Code");
+async function sendAlert(alert_type) {
+  if (!qr_id) {
+    showError('Invalid QR Code', 'This Vehicall QR link is missing or invalid.');
     return;
   }
 
+  setButtonsDisabled(true);
+
   try {
-    const res = await fetch('/send-alert',{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({qr_id, alert_type:type})
+    const res = await fetch('/send-alert', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ qr_id, alert_type })
     });
 
     const data = await res.json();
 
-    if(!res.ok){
-      document.getElementById('response').innerHTML =
-        `<div class="alert-box">${data.message}</div>`;
-      return;
+    if (res.ok) {
+      showSuccess(data.issue || 'Alert Sent', data.message || 'Vehicle owner has been notified.');
+    } else {
+      showError('Alert Not Sent', data.message || 'Unable to send alert.');
+      setButtonsDisabled(false);
     }
-
-    const time = getCurrentTime();
-    const contacts = Array.isArray(data.contacts) && data.contacts.length
-      ? data.contacts
-      : [{ name: 'Primary Contact', mobile: data.mobile, primary: true, active: true }];
-
-    let buttons = '';
-
-    contacts.forEach((contact, index) => {
-      const phone = cleanOmanMobile(contact.mobile);
-      const label = contact.primary ? 'Primary Contact' : (contact.name || 'Additional Contact');
-
-      buttons += `
-        <button class="btn open-wa" onclick="openWhatsApp('${phone}', '${data.vehicleNumber}', '${data.issue}', '${time}')">
-          Open WhatsApp - ${label}
-        </button>
-      `;
-    });
-
-    document.getElementById('response').innerHTML = `
-      <div class="alert-box">
-Vehicall Alert Created
-
-Vehicle: ${data.vehicleNumber}
-Issue: ${data.issue}
-Time: ${time}
-
-Choose contact below to open WhatsApp.
-      </div>
-      ${buttons}
-    `;
-
-    const firstPhone = cleanOmanMobile(contacts[0].mobile);
-    openWhatsApp(firstPhone, data.vehicleNumber, data.issue, time);
-
-  } catch (error){
-    document.getElementById('response').innerHTML =
-      `<div class="alert-box">Error sending alert</div>`;
-    console.error(error);
+  } catch (err) {
+    showError('Connection Error', 'Please check your connection and try again.');
+    setButtonsDisabled(false);
   }
+}
+
+function showSuccess(title, message) {
+  const box = document.getElementById('resultBox');
+  box.className = 'result-box success';
+  document.getElementById('resultTitle').innerText = title;
+  document.getElementById('resultMessage').innerText = message;
+  document.getElementById('resultTime').innerText = new Date().toLocaleString();
+
+  window.scrollTo({
+    top: box.offsetTop - 20,
+    behavior: 'smooth'
+  });
+}
+
+function showError(title, message) {
+  const box = document.getElementById('resultBox');
+  box.className = 'result-box error';
+  document.getElementById('resultTitle').innerText = title;
+  document.getElementById('resultMessage').innerText = message;
+  document.getElementById('resultTime').innerText = new Date().toLocaleString();
+
+  window.scrollTo({
+    top: box.offsetTop - 20,
+    behavior: 'smooth'
+  });
 }
 </script>
 

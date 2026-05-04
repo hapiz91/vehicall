@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Vehicall Admin QR Management</title>
+  <link rel="stylesheet" href="admin.css" />
+</head>
+<body>
+
+  <div class="admin-layout">
+    <aside class="sidebar">
+      <h2>Vehicall</h2>
+      <p>Admin Panel</p>
+
+      <nav>
+        <a href="/admin-dashboard.html">Dashboard</a>
+        <a href="/admin-users.html">Users</a>
+        <a class="active" href="/admin-qr.html">QR Management</a>
+        <a href="#">Plans</a>
+        <a href="/admin-alerts.html">Alert Logs</a>
+        <a href="/admin/logout">Logout</a>
+      </nav>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <div>
+          <h1>QR Management</h1>
+          <p>Activate, disable and regenerate vehicle QR codes.</p>
+        </div>
+
+        <input class="search-box" id="searchInput" placeholder="Search vehicle, owner, plan or QR ID..." />
+      </div>
+
+      <section class="stats-grid">
+        <div class="stat-card">
+          <span>Total Vehicles</span>
+          <h2 id="totalVehicles">0</h2>
+        </div>
+
+        <div class="stat-card">
+          <span>QR Active</span>
+          <h2 id="qrGenerated">0</h2>
+        </div>
+
+        <div class="stat-card">
+          <span>QR Disabled/Pending</span>
+          <h2 id="qrPending">0</h2>
+        </div>
+
+        <div class="stat-card">
+          <span>Expired Plans</span>
+          <h2 id="expiredPlans">0</h2>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div id="actionMessage" class="action-message"></div>
+
+        <h2>Vehicle QR List</h2>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Vehicle</th>
+                <th>Owner</th>
+                <th>Mobile</th>
+                <th>Plan</th>
+                <th>QR ID</th>
+                <th>QR Status</th>
+                <th>Alerts</th>
+                <th>Plan End</th>
+                <th>Alert URL</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="qrBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    let allQR = [];
+
+    async function loadQR() {
+      const res = await fetch('/admin/qr-data');
+
+      if (res.redirected) {
+        window.location.href = res.url;
+        return;
+      }
+
+      allQR = await res.json();
+
+      updateStats(allQR);
+      renderQR(allQR);
+    }
+
+    function showMessage(message, type = 'success') {
+      const box = document.getElementById('actionMessage');
+      box.innerText = message;
+      box.className = `action-message ${type}`;
+
+      setTimeout(() => {
+        box.innerText = '';
+        box.className = 'action-message';
+      }, 3500);
+    }
+
+    function updateStats(list) {
+      const totalVehicles = list.length;
+      const qrGenerated = list.filter(item => item.qr_generated).length;
+      const qrPending = list.filter(item => !item.qr_generated).length;
+      const expiredPlans = list.filter(item => {
+        if (!item.planEnd) return false;
+        return new Date() > new Date(item.planEnd);
+      }).length;
+
+      document.getElementById('totalVehicles').innerText = totalVehicles;
+      document.getElementById('qrGenerated').innerText = qrGenerated;
+      document.getElementById('qrPending').innerText = qrPending;
+      document.getElementById('expiredPlans').innerText = expiredPlans;
+    }
+
+    function renderQR(list) {
+      const tbody = document.getElementById('qrBody');
+      tbody.innerHTML = '';
+
+      if (list.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="10" style="text-align:center; color:#667085;">
+              No QR records found
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      list.forEach(item => {
+        const planEnd = item.planEnd
+          ? new Date(item.planEnd).toLocaleDateString()
+          : '-';
+
+        const qrStatus = item.qr_generated
+          ? '<span class="status-active">Active</span>'
+          : '<span class="status-pending">Disabled</span>';
+
+        const alertUrl = item.alertUrl
+          ? `<a href="${item.alertUrl}" target="_blank">Open</a>`
+          : '-';
+
+        const vehicleNumber = item.vehicleNumber || item.id || '';
+
+        const qrToggleButton = item.qr_generated
+          ? `<button class="danger-btn" onclick="updateQRStatus('${vehicleNumber}', false)">Disable</button>`
+          : `<button onclick="updateQRStatus('${vehicleNumber}', true)">Activate</button>`;
+
+        const tr = document.createElement('tr');
+
+        tr.innerHTML = `
+          <td><b>${vehicleNumber || '-'}</b></td>
+          <td>${item.name || '-'}</td>
+          <td>${item.mobile || '-'}</td>
+          <td><span class="badge">${item.plan || '-'}</span></td>
+          <td>${item.qr_id || '-'}</td>
+          <td>${qrStatus}</td>
+          <td>${item.alertsUsed}/${item.alertsLimit}</td>
+          <td>${planEnd}</td>
+          <td>${alertUrl}</td>
+          <td>
+            <div class="action-buttons">
+              ${qrToggleButton}
+              <button onclick="regenerateQR('${vehicleNumber}')">Regenerate</button>
+            </div>
+          </td>
+        `;
+
+        tbody.appendChild(tr);
+      });
+    }
+
+    async function updateQRStatus(vehicleNumber, qrStatus) {
+      const actionText = qrStatus ? 'activate' : 'disable';
+      const confirmAction = confirm(`Are you sure you want to ${actionText} QR for ${vehicleNumber}?`);
+
+      if (!confirmAction) return;
+
+      const res = await fetch('/admin/update-qr-status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ vehicleNumber, qrStatus })
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        showMessage(data.message, 'success');
+        await loadQR();
+      } else {
+        showMessage(data.message || 'QR status update failed', 'error');
+      }
+    }
+
+    async function regenerateQR(vehicleNumber) {
+      const confirmAction = confirm(
+        `Regenerate QR for ${vehicleNumber}?\n\nOld printed QR sticker will stop working after this.`
+      );
+
+      if (!confirmAction) return;
+
+      const res = await fetch('/admin/regenerate-qr', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ vehicleNumber })
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        showMessage(data.message, 'success');
+        await loadQR();
+      } else {
+        showMessage(data.message || 'QR regeneration failed', 'error');
+      }
+    }
+
+    document.getElementById('searchInput').addEventListener('input', function() {
+      const keyword = this.value.toLowerCase();
+
+      const filtered = allQR.filter(item =>
+        String(item.vehicleNumber || '').toLowerCase().includes(keyword) ||
+        String(item.name || '').toLowerCase().includes(keyword) ||
+        String(item.mobile || '').toLowerCase().includes(keyword) ||
+        String(item.plan || '').toLowerCase().includes(keyword) ||
+        String(item.qr_id || '').toLowerCase().includes(keyword)
+      );
+
+      renderQR(filtered);
+    });
+
+    loadQR();
+  </script>
+
+</body>
+</html>

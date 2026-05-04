@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Vehicall Admin Dashboard</title>
+  <link rel="stylesheet" href="admin.css" />
+</head>
+<body>
+
+  <div class="admin-layout">
+    <aside class="sidebar">
+      <h2>Vehicall</h2>
+      <p>Admin Panel</p>
+
+      <nav>
+        <a class="active" href="/admin-dashboard.html">Dashboard</a>
+        <a href="/admin-users.html">Users</a>
+        <a href="/admin-qr.html">QR Management</a>
+        <a href="#">Plans</a>
+        <a href="/admin-alerts.html">Alert Logs</a>
+        <a href="/admin/logout">Logout</a>
+      </nav>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <div>
+          <h1>Dashboard Overview</h1>
+          <p>Manage Vehicall users, QR codes, plans and alerts.</p>
+        </div>
+        <div class="admin-badge">Admin</div>
+      </div>
+
+      <section class="stats-grid">
+        <div class="stat-card">
+          <span>Total Users</span>
+          <h2 id="totalUsers">0</h2>
+        </div>
+
+        <div class="stat-card">
+          <span>QR Generated</span>
+          <h2 id="qrGenerated">0</h2>
+        </div>
+
+        <div class="stat-card">
+          <span>Total Alerts</span>
+          <h2 id="totalAlerts">0</h2>
+        </div>
+
+        <div class="stat-card">
+          <span>Expired Plans</span>
+          <h2 id="expiredPlans">0</h2>
+        </div>
+      </section>
+
+      <section class="content-grid">
+        <div class="panel">
+          <h2>Plan Summary</h2>
+          <div class="plan-list">
+            <div><span>Welcome</span><b id="planWelcome">0</b></div>
+            <div><span>Basic</span><b id="planBasic">0</b></div>
+            <div><span>Plus</span><b id="planPlus">0</b></div>
+            <div><span>Premium</span><b id="planPremium">0</b></div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h2>Quick Actions</h2>
+          <div class="quick-actions">
+            <a href="/admin-users.html">View Users</a>
+            <a href="#">Manage QR Codes</a>
+            <a href="#">Review Alerts</a>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>Recent Users</h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Vehicle</th>
+                <th>Name</th>
+                <th>Mobile</th>
+                <th>Plan</th>
+                <th>Alerts</th>
+                <th>QR</th>
+              </tr>
+            </thead>
+            <tbody id="recentUsersBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    async function loadDashboard() {
+      const res = await fetch('/admin/dashboard-data');
+
+      if (res.redirected) {
+        window.location.href = res.url;
+        return;
+      }
+
+      const data = await res.json();
+
+      document.getElementById('totalUsers').innerText = data.totalUsers;
+      document.getElementById('qrGenerated').innerText = data.qrGenerated;
+      document.getElementById('totalAlerts').innerText = data.totalAlerts;
+      document.getElementById('expiredPlans').innerText = data.expiredPlans;
+
+      document.getElementById('planWelcome').innerText = data.planCounts.Welcome;
+      document.getElementById('planBasic').innerText = data.planCounts.Basic;
+      document.getElementById('planPlus').innerText = data.planCounts.Plus;
+      document.getElementById('planPremium').innerText = data.planCounts.Premium;
+
+      const tbody = document.getElementById('recentUsersBody');
+      tbody.innerHTML = '';
+
+      data.recentUsers.forEach(user => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${user.vehicleNumber || '-'}</td>
+          <td>${user.name || '-'}</td>
+          <td>${user.mobile || '-'}</td>
+          <td><span class="badge">${user.plan || '-'}</span></td>
+          <td>${user.alertsUsed || 0}/${user.alertsLimit || 0}</td>
+          <td>${user.qr_generated ? 'Active' : 'Not Generated'}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    loadDashboard();
+  </script>
+
+</body>
+</html>

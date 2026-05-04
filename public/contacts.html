@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Vehicall | Contact Management</title>
+  <link rel="stylesheet" href="contacts.css"/>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <img src="/logo.png" class="logo"/>
+    <div>
+      <h2>Vehicall</h2>
+      <p>Contact Management</p>
+    </div>
+  </div>
+
+  <a href="/dashboard.html" class="back-btn">Back to Dashboard</a>
+</header>
+
+<main class="container">
+
+  <section class="hero-card">
+    <div>
+      <span>Contact Settings</span>
+      <h1>Manage Alert Contacts</h1>
+      <p>
+        Add and manage the mobile numbers that should receive Vehicall alerts for your vehicle.
+      </p>
+    </div>
+
+    <div class="limit-card">
+      <small>Your Plan Limit</small>
+      <b id="contactLimit">1 Contact</b>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div id="messageBox"></div>
+
+    <div class="panel-header">
+      <div>
+        <h2 id="vehicleTitle">Vehicle</h2>
+        <p id="planTitle">Plan</p>
+      </div>
+
+      <button onclick="addContact()" class="primary-btn">Add Contact</button>
+    </div>
+
+    <div id="contactsList" class="contacts-list"></div>
+
+    <button onclick="saveContacts()" class="save-btn">Save Contacts</button>
+
+    <p class="note">
+      Primary contact is always active. Additional contacts can be activated or deactivated based on your plan.
+    </p>
+  </section>
+
+</main>
+
+<script>
+let user = JSON.parse(localStorage.getItem('vehicallUser'));
+let contacts = [];
+
+if (!user) {
+  window.location.href = '/login.html';
+}
+
+async function refreshUser() {
+  const res = await fetch('/owner/' + encodeURIComponent(user.vehicleNumber));
+
+  if (res.ok) {
+    user = await res.json();
+    localStorage.setItem('vehicallUser', JSON.stringify(user));
+  }
+}
+
+async function init() {
+  await refreshUser();
+
+  document.getElementById('vehicleTitle').innerText = user.vehicleNumber || '-';
+  document.getElementById('planTitle').innerText = `${user.plan || '-'} Plan`;
+  document.getElementById('contactLimit').innerText = `${user.contactsLimit || 1} Contact(s)`;
+
+  contacts = Array.isArray(user.contacts) && user.contacts.length > 0
+    ? user.contacts
+    : [{
+        name: user.name || 'Primary Contact',
+        mobile: user.mobile || '',
+        active: true,
+        primary: true
+      }];
+
+  renderContacts();
+}
+
+function showMessage(message, type = 'success') {
+  const box = document.getElementById('messageBox');
+  box.innerText = message;
+  box.className = type;
+
+  setTimeout(() => {
+    box.innerText = '';
+    box.className = '';
+  }, 3500);
+}
+
+function renderContacts() {
+  const list = document.getElementById('contactsList');
+  list.innerHTML = '';
+
+  contacts.forEach((contact, index) => {
+    const isPrimary = index === 0 || contact.primary;
+
+    const div = document.createElement('div');
+    div.className = 'contact-card';
+
+    div.innerHTML = `
+      <div class="contact-top">
+        <div>
+          <span class="${isPrimary ? 'primary-badge' : 'secondary-badge'}">
+            ${isPrimary ? 'Primary Contact' : 'Secondary Contact'}
+          </span>
+        </div>
+
+        ${!isPrimary ? `<button class="remove-btn" onclick="removeContact(${index})">Remove</button>` : ''}
+      </div>
+
+      <label>Name</label>
+      <input type="text" value="${contact.name || ''}" onchange="updateContact(${index}, 'name', this.value)" />
+
+      <label>Mobile Number</label>
+      <input type="text" value="${contact.mobile || ''}" onchange="updateContact(${index}, 'mobile', this.value)" />
+
+      <div class="active-row">
+        <span>Receive Alerts</span>
+        ${
+          isPrimary
+            ? `<b class="always-active">Always Active</b>`
+            : `<label class="switch">
+                <input type="checkbox" ${contact.active ? 'checked' : ''} onchange="updateContact(${index}, 'active', this.checked)" />
+                <span class="slider"></span>
+              </label>`
+        }
+      </div>
+    `;
+
+    list.appendChild(div);
+  });
+}
+
+function updateContact(index, field, value) {
+  contacts[index][field] = value;
+
+  if (index === 0) {
+    contacts[index].primary = true;
+    contacts[index].active = true;
+  }
+}
+
+function addContact() {
+  const limit = user.contactsLimit || 1;
+
+  if (contacts.length >= limit) {
+    showMessage(`Your ${user.plan} plan allows only ${limit} contact(s). Please upgrade to add more.`, 'error');
+    return;
+  }
+
+  contacts.push({
+    name: `Contact ${contacts.length + 1}`,
+    mobile: '',
+    active: true,
+    primary: false
+  });
+
+  renderContacts();
+}
+
+function removeContact(index) {
+  if (index === 0) {
+    showMessage('Primary contact cannot be removed.', 'error');
+    return;
+  }
+
+  const confirmAction = confirm('Remove this contact?');
+  if (!confirmAction) return;
+
+  contacts.splice(index, 1);
+  renderContacts();
+}
+
+async function saveContacts() {
+  if (!contacts[0] || !contacts[0].mobile) {
+    showMessage('Primary contact mobile number is required.', 'error');
+    return;
+  }
+
+  for (const contact of contacts) {
+    if (!contact.name || !contact.mobile) {
+      showMessage('All contact names and mobile numbers are required.', 'error');
+      return;
+    }
+  }
+
+  contacts = contacts.map((contact, index) => ({
+    name: contact.name,
+    mobile: String(contact.mobile).replace(/\D/g, ''),
+    active: index === 0 ? true : !!contact.active,
+    primary: index === 0
+  }));
+
+  const res = await fetch('/update-contacts', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      vehicleNumber: user.vehicleNumber,
+      contacts
+    })
+  });
+
+  const data = await res.json();
+
+  if (res.ok) {
+    user.contacts = data.contacts;
+    user.mobile = data.contacts[0].mobile;
+    localStorage.setItem('vehicallUser', JSON.stringify(user));
+
+    showMessage('Contacts updated successfully.', 'success');
+    renderContacts();
+  } else {
+    showMessage(data.message || 'Contact update failed.', 'error');
+  }
+}
+
+init();
+</script>
+
+</body>
+</html>

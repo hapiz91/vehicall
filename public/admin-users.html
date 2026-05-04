@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Vehicall Admin Users</title>
+  <link rel="stylesheet" href="admin.css" />
+</head>
+<body>
+
+  <div class="admin-layout">
+    <aside class="sidebar">
+      <h2>Vehicall</h2>
+      <p>Admin Panel</p>
+
+      <nav>
+        <a href="/admin-dashboard.html">Dashboard</a>
+        <a class="active" href="/admin-users.html">Users</a>
+        <a href="/admin-qr.html">QR Management</a>
+        <a href="#">Plans</a>
+        <a href="/admin-alerts.html">Alert Logs</a>
+        <a href="/admin/logout">Logout</a>
+      </nav>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <div>
+          <h1>User Management</h1>
+          <p>View users, reset alerts, extend plan, change plan and suspend accounts.</p>
+        </div>
+
+        <input class="search-box" id="searchInput" placeholder="Search vehicle, name, mobile, plan or status..." />
+      </div>
+
+      <section class="panel">
+        <div id="actionMessage" class="action-message"></div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Vehicle</th>
+                <th>Name</th>
+                <th>Mobile</th>
+                <th>Plan</th>
+                <th>Status</th>
+                <th>Plan End</th>
+                <th>Alerts</th>
+                <th>Contacts</th>
+                <th>QR</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="usersBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    let allUsers = [];
+
+    async function loadUsers() {
+      const res = await fetch('/admin/users-data');
+
+      if (res.redirected) {
+        window.location.href = res.url;
+        return;
+      }
+
+      allUsers = await res.json();
+      renderUsers(allUsers);
+    }
+
+    function showMessage(message, type = 'success') {
+      const box = document.getElementById('actionMessage');
+      box.innerText = message;
+      box.className = `action-message ${type}`;
+
+      setTimeout(() => {
+        box.innerText = '';
+        box.className = 'action-message';
+      }, 3500);
+    }
+
+    function renderUsers(users) {
+      const tbody = document.getElementById('usersBody');
+      tbody.innerHTML = '';
+
+      if (users.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="10" style="text-align:center; color:#667085;">
+              No users found
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      users.forEach(user => {
+        const planEnd = user.planEnd
+          ? new Date(user.planEnd).toLocaleDateString()
+          : '-';
+
+        const qrStatus = user.qr_generated
+          ? '<span class="status-active">Active</span>'
+          : '<span class="status-pending">Pending</span>';
+
+        const accountStatus = user.accountStatus || 'active';
+
+        const statusBadge = accountStatus === 'suspended'
+          ? '<span class="status-suspended">Suspended</span>'
+          : '<span class="status-active">Active</span>';
+
+        const vehicleNumber = user.vehicleNumber || user.id || '';
+
+        const suspendButton = accountStatus === 'suspended'
+          ? `<button onclick="updateUserStatus('${vehicleNumber}', 'active')">Activate</button>`
+          : `<button class="danger-btn" onclick="updateUserStatus('${vehicleNumber}', 'suspended')">Suspend</button>`;
+
+        const tr = document.createElement('tr');
+
+        tr.innerHTML = `
+          <td><b>${vehicleNumber || '-'}</b></td>
+          <td>${user.name || '-'}</td>
+          <td>${user.mobile || '-'}</td>
+          <td><span class="badge">${user.plan || '-'}</span></td>
+          <td>${statusBadge}</td>
+          <td>${planEnd}</td>
+          <td>${user.alertsUsed || 0}/${user.alertsLimit || 0}</td>
+          <td>${user.contactsLimit || 1}</td>
+          <td>${qrStatus}</td>
+          <td>
+            <div class="action-buttons">
+              <button onclick="resetAlerts('${vehicleNumber}')">Reset</button>
+              <button onclick="extendPlan('${vehicleNumber}', 1)">+1M</button>
+              <button onclick="extendPlan('${vehicleNumber}', 12)">+1Y</button>
+              <button onclick="changePlan('${vehicleNumber}')">Change Plan</button>
+              ${suspendButton}
+            </div>
+          </td>
+        `;
+
+        tbody.appendChild(tr);
+      });
+    }
+
+    async function resetAlerts(vehicleNumber) {
+      const confirmAction = confirm(`Reset alerts for ${vehicleNumber}?`);
+      if (!confirmAction) return;
+
+      const res = await fetch('/admin/reset-alerts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ vehicleNumber })
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        showMessage(data.message, 'success');
+        await loadUsers();
+      } else {
+        showMessage(data.message || 'Reset failed', 'error');
+      }
+    }
+
+    async function extendPlan(vehicleNumber, months) {
+      const label = months === 12 ? '1 year' : `${months} month`;
+      const confirmAction = confirm(`Extend plan for ${vehicleNumber} by ${label}?`);
+      if (!confirmAction) return;
+
+      const res = await fetch('/admin/extend-plan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ vehicleNumber, months })
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        showMessage(data.message, 'success');
+        await loadUsers();
+      } else {
+        showMessage(data.message || 'Plan extension failed', 'error');
+      }
+    }
+
+    async function changePlan(vehicleNumber) {
+      const plan = prompt("Enter Plan: Welcome / Basic / Plus / Premium");
+      if (!plan) return;
+
+      let billingCycle = 'monthly';
+
+      if (plan !== 'Welcome') {
+        const cycle = prompt("Enter Billing Cycle: monthly / yearly");
+        if (cycle) billingCycle = cycle;
+      } else {
+        billingCycle = 'free-trial';
+      }
+
+      const confirmAction = confirm(`Change plan for ${vehicleNumber} to ${plan}?`);
+      if (!confirmAction) return;
+
+      const res = await fetch('/admin/change-plan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ vehicleNumber, plan, billingCycle })
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        showMessage(data.message, 'success');
+        await loadUsers();
+      } else {
+        showMessage(data.message || 'Change plan failed', 'error');
+      }
+    }
+
+    async function updateUserStatus(vehicleNumber, status) {
+      const actionText = status === 'suspended' ? 'suspend' : 'activate';
+      const confirmAction = confirm(`Are you sure you want to ${actionText} ${vehicleNumber}?`);
+
+      if (!confirmAction) return;
+
+      const res = await fetch('/admin/update-user-status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ vehicleNumber, status })
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        showMessage(data.message, 'success');
+        await loadUsers();
+      } else {
+        showMessage(data.message || 'Status update failed', 'error');
+      }
+    }
+
+    document.getElementById('searchInput').addEventListener('input', function() {
+      const keyword = this.value.toLowerCase();
+
+      const filtered = allUsers.filter(user =>
+        String(user.vehicleNumber || '').toLowerCase().includes(keyword) ||
+        String(user.name || '').toLowerCase().includes(keyword) ||
+        String(user.mobile || '').toLowerCase().includes(keyword) ||
+        String(user.plan || '').toLowerCase().includes(keyword) ||
+        String(user.accountStatus || 'active').toLowerCase().includes(keyword)
+      );
+
+      renderUsers(filtered);
+    });
+
+    loadUsers();
+  </script>
+
+</body>
+</html>

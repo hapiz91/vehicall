@@ -1,0 +1,415 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f6f9fc;
+  color: #122033;
+}
+
+.container {
+  width: min(1180px, 92%);
+  margin: auto;
+}
+
+.site-header {
+  background: #ffffff;
+  border-bottom: 1px solid #e6edf5;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+.nav {
+  height: 82px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.brand {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+.brand-icon {
+  width: 46px;
+  height: 46px;
+  background: #0b1f3a;
+  color: #ffffff;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  font-weight: bold;
+  font-size: 24px;
+}
+
+.brand h1 {
+  margin: 0;
+  font-size: 26px;
+  color: #0b1f3a;
+}
+
+.brand span {
+  font-size: 13px;
+  color: #667085;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+
+.nav-links a {
+  color: #344054;
+  text-decoration: none;
+  font-size: 15px;
+}
+
+.btn {
+  display: inline-block;
+  text-decoration: none;
+  border-radius: 14px;
+  padding: 11px 18px;
+  font-weight: bold;
+  border: 1px solid transparent;
+  cursor: pointer;
+}
+
+.btn-primary {
+  background: #0b1f3a;
+  color: #ffffff !important;
+}
+
+.btn-outline {
+  background: #ffffff;
+  color: #0b1f3a !important;
+  border-color: #cbd5e1;
+}
+
+.btn-light {
+  background: #eef4ff;
+  color: #0b1f3a !important;
+}
+
+.large {
+  padding: 15px 24px;
+  font-size: 16px;
+}
+
+.hero {
+  padding: 80px 0;
+  background:
+    radial-gradient(circle at top right, #dbeafe, transparent 35%),
+    linear-gradient(135deg, #f8fbff, #eef5ff);
+}
+
+.hero-grid {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  align-items: center;
+  gap: 50px;
+}
+
+.badge,
+.section-kicker {
+  display: inline-block;
+  background: #e8f1ff;
+  color: #0b4f9c;
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.hero h2 {
+  font-size: 54px;
+  line-height: 1.05;
+  color: #0b1f3a;
+  margin: 20px 0;
+}
+
+.hero p {
+  font-size: 18px;
+  line-height: 1.7;
+  color: #475467;
+  max-width: 650px;
+}
+
+.hero-actions {
+  display: flex;
+  gap: 14px;
+  margin: 30px 0;
+}
+
+.trust-row {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.trust-row span {
+  background: #ffffff;
+  border: 1px solid #e6edf5;
+  padding: 10px 14px;
+  border-radius: 999px;
+  color: #344054;
+  font-size: 14px;
+}
+
+.hero-card {
+  display: flex;
+  justify-content: center;
+}
+
+.phone-preview {
+  width: 330px;
+  height: 560px;
+  background: #0b1f3a;
+  border-radius: 42px;
+  padding: 24px;
+  box-shadow: 0 30px 80px rgba(11,31,58,0.3);
+}
+
+.phone-top {
+  width: 90px;
+  height: 8px;
+  background: #28445f;
+  border-radius: 999px;
+  margin: 0 auto 70px;
+}
+
+.alert-card {
+  background: #ffffff;
+  border-radius: 28px;
+  padding: 26px;
+  margin-top: 60px;
+}
+
+.alert-label {
+  color: #0b4f9c;
+  font-weight: bold;
+}
+
+.alert-card h3 {
+  margin: 18px 0 10px;
+  color: #0b1f3a;
+}
+
+.alert-card p {
+  font-size: 15px;
+  color: #667085;
+}
+
+.alert-card button {
+  width: 100%;
+  border: none;
+  padding: 14px;
+  border-radius: 14px;
+  background: #0b1f3a;
+  color: #ffffff;
+  font-weight: bold;
+  margin-top: 18px;
+}
+
+.section {
+  padding: 80px 0;
+}
+
+.section-title {
+  text-align: center;
+  margin-bottom: 36px;
+}
+
+.section-title span {
+  color: #0b4f9c;
+  font-weight: bold;
+}
+
+.section-title h2 {
+  font-size: 38px;
+  margin: 10px 0 0;
+  color: #0b1f3a;
+}
+
+.steps-grid,
+.plans-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 22px;
+}
+
+.steps-grid {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.step-card,
+.plan-card {
+  background: #ffffff;
+  border: 1px solid #e6edf5;
+  border-radius: 26px;
+  padding: 28px;
+  box-shadow: 0 10px 30px rgba(16,24,40,0.05);
+}
+
+.step-no {
+  width: 48px;
+  height: 48px;
+  background: #0b1f3a;
+  color: #ffffff;
+  border-radius: 16px;
+  display: grid;
+  place-items: center;
+  font-weight: bold;
+}
+
+.step-card h3,
+.plan-card h3 {
+  color: #0b1f3a;
+  font-size: 22px;
+}
+
+.step-card p,
+.plan-card li,
+.privacy-section p,
+.cta-card p {
+  color: #667085;
+  line-height: 1.7;
+}
+
+.privacy-section {
+  background: #ffffff;
+}
+
+.privacy-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 45px;
+  align-items: center;
+}
+
+.privacy-grid h2 {
+  font-size: 40px;
+  color: #0b1f3a;
+}
+
+.privacy-list {
+  display: grid;
+  gap: 14px;
+}
+
+.privacy-list div {
+  background: #f4f7fb;
+  padding: 18px;
+  border-radius: 18px;
+  font-weight: bold;
+  color: #0b1f3a;
+}
+
+.plans-grid {
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.plan-card.featured {
+  border: 2px solid #0b1f3a;
+  transform: translateY(-8px);
+}
+
+.price {
+  font-size: 22px;
+  font-weight: bold;
+  color: #0b4f9c !important;
+}
+
+.plan-card ul {
+  padding-left: 18px;
+  min-height: 150px;
+}
+
+.cta-section {
+  padding-top: 20px;
+}
+
+.cta-card {
+  background: linear-gradient(135deg, #0b1f3a, #123b63);
+  color: #ffffff;
+  border-radius: 34px;
+  padding: 55px;
+  text-align: center;
+}
+
+.cta-card h2 {
+  font-size: 36px;
+  margin: 0 0 12px;
+}
+
+.cta-card p {
+  color: #d7e2f2;
+}
+
+.footer {
+  background: #071526;
+  color: #cbd5e1;
+  padding: 26px 0;
+}
+
+.footer-inner {
+  display: flex;
+  justify-content: space-between;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 900px) {
+  .nav {
+    height: auto;
+    padding: 18px 0;
+    align-items: flex-start;
+  }
+
+  .nav-links {
+    display: none;
+  }
+
+  .hero-grid,
+  .privacy-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .hero h2 {
+    font-size: 38px;
+  }
+
+  .steps-grid,
+  .plans-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-actions {
+    flex-direction: column;
+  }
+
+  .phone-preview {
+    width: 290px;
+    height: 500px;
+  }
+
+  .cta-card {
+    padding: 36px 22px;
+  }
+}
+
+.logo {
+  width: 46px;
+  height: 46px;
+  object-fit: contain;
+}
+
+.hero-logo {
+  width: 90px;
+  margin-bottom: 20px;
+}

@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Vehicall Admin Alert Logs</title>
+  <link rel="stylesheet" href="admin.css" />
+</head>
+<body>
+
+  <div class="admin-layout">
+    <aside class="sidebar">
+      <h2>Vehicall</h2>
+      <p>Admin Panel</p>
+
+      <nav>
+        <a href="/admin-dashboard.html">Dashboard</a>
+        <a href="/admin-users.html">Users</a>
+        <a href="/admin-qr.html">QR Management</a>
+        <a href="#">Plans</a>
+        <a class="active" href="/admin-alerts.html">Alert Logs</a>
+        <a href="/admin/logout">Logout</a>
+      </nav>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <div>
+          <h1>Alert Logs</h1>
+          <p>Monitor all Vehicall QR alerts sent by public users.</p>
+        </div>
+
+        <input class="search-box" id="searchInput" placeholder="Search vehicle, alert type or mobile..." />
+      </div>
+
+      <section class="stats-grid">
+        <div class="stat-card">
+          <span>Total Alerts</span>
+          <h2 id="totalAlerts">0</h2>
+        </div>
+
+        <div class="stat-card">
+          <span>Emergency Alerts</span>
+          <h2 id="emergencyAlerts">0</h2>
+        </div>
+
+        <div class="stat-card">
+          <span>Blocking Alerts</span>
+          <h2 id="blockingAlerts">0</h2>
+        </div>
+
+        <div class="stat-card">
+          <span>Today Alerts</span>
+          <h2 id="todayAlerts">0</h2>
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>Recent Alert Activity</h2>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Date & Time</th>
+                <th>Vehicle</th>
+                <th>Alert Type</th>
+                <th>Owner Mobile</th>
+                <th>Contacts Notified</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="alertsBody"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    let allAlerts = [];
+
+    async function loadAlerts() {
+      const res = await fetch('/admin/alerts-data');
+
+      if (res.redirected) {
+        window.location.href = res.url;
+        return;
+      }
+
+      allAlerts = await res.json();
+
+      updateStats(allAlerts);
+      renderAlerts(allAlerts);
+    }
+
+    function updateStats(alerts) {
+      const today = new Date().toDateString();
+
+      const emergencyCount = alerts.filter(a => a.alertType === 'EMERGENCY').length;
+      const blockingCount = alerts.filter(a => a.alertType === 'BLOCKING').length;
+      const todayCount = alerts.filter(a => {
+        if (!a.createdAt) return false;
+        return new Date(a.createdAt).toDateString() === today;
+      }).length;
+
+      document.getElementById('totalAlerts').innerText = alerts.length;
+      document.getElementById('emergencyAlerts').innerText = emergencyCount;
+      document.getElementById('blockingAlerts').innerText = blockingCount;
+      document.getElementById('todayAlerts').innerText = todayCount;
+    }
+
+    function renderAlerts(alerts) {
+      const tbody = document.getElementById('alertsBody');
+      tbody.innerHTML = '';
+
+      if (alerts.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="6" style="text-align:center; color:#667085;">
+              No alerts found
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      alerts.forEach(alert => {
+        const contactsCount = Array.isArray(alert.contacts) ? alert.contacts.length : 0;
+        const createdDate = alert.createdAt
+          ? new Date(alert.createdAt).toLocaleString()
+          : '-';
+
+        const tr = document.createElement('tr');
+
+        tr.innerHTML = `
+          <td>${createdDate}</td>
+          <td><b>${alert.vehicleNumber || '-'}</b></td>
+          <td><span class="badge">${alert.alertLabel || alert.alertType || '-'}</span></td>
+          <td>${alert.ownerMobile || '-'}</td>
+          <td>${contactsCount}</td>
+          <td>${alert.status || 'created'}</td>
+        `;
+
+        tbody.appendChild(tr);
+      });
+    }
+
+    document.getElementById('searchInput').addEventListener('input', function() {
+      const keyword = this.value.toLowerCase();
+
+      const filtered = allAlerts.filter(alert =>
+        String(alert.vehicleNumber || '').toLowerCase().includes(keyword) ||
+        String(alert.alertType || '').toLowerCase().includes(keyword) ||
+        String(alert.alertLabel || '').toLowerCase().includes(keyword) ||
+        String(alert.ownerMobile || '').toLowerCase().includes(keyword)
+      );
+
+      renderAlerts(filtered);
+    });
+
+    loadAlerts();
+  </script>
+
+</body>
+</html>

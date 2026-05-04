@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Vehicall | Upgrade Plan</title>
+  <link rel="stylesheet" href="upgrade.css"/>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <img src="/logo.png" class="logo"/>
+    <div>
+      <h2>Vehicall</h2>
+      <p>Upgrade Plan</p>
+    </div>
+  </div>
+
+  <a href="/dashboard.html" class="back-btn">Back to Dashboard</a>
+</header>
+
+<main class="container">
+
+  <section class="page-title">
+    <h1>Choose Your Vehicall Plan</h1>
+    <p>Select the best plan for your vehicle alert needs.</p>
+  </section>
+
+  <section class="billing-toggle">
+    <button id="monthlyBtn" class="active" onclick="setBilling('monthly')">Monthly</button>
+    <button id="yearlyBtn" onclick="setBilling('yearly')">Yearly</button>
+  </section>
+
+  <section class="plans-grid">
+
+    <div class="plan-card">
+      <h3>Basic</h3>
+      <p class="price" id="basicPrice">OMR 0.300</p>
+      <span class="sub-text">per month + VAT</span>
+
+      <ul>
+        <li>3 alerts per month</li>
+        <li>1 contact number</li>
+        <li>QR alert system</li>
+        <li>Best for low usage</li>
+      </ul>
+
+      <button onclick="selectPlan('Basic')">Choose Basic</button>
+    </div>
+
+    <div class="plan-card featured">
+      <div class="tag">Recommended</div>
+      <h3>Plus</h3>
+      <p class="price" id="plusPrice">OMR 0.500</p>
+      <span class="sub-text">per month + VAT</span>
+
+      <ul>
+        <li>10 alerts per month</li>
+        <li>2 contact numbers</li>
+        <li>Emergency location option</li>
+        <li>Better for family vehicles</li>
+      </ul>
+
+      <button onclick="selectPlan('Plus')">Choose Plus</button>
+    </div>
+
+    <div class="plan-card">
+      <h3>Premium</h3>
+      <p class="price" id="premiumPrice">OMR 1.000</p>
+      <span class="sub-text">per month + VAT</span>
+
+      <ul>
+        <li>30 alerts per month</li>
+        <li>3 contact numbers</li>
+        <li>Contact active/inactive control</li>
+        <li>Best for high usage</li>
+      </ul>
+
+      <button onclick="selectPlan('Premium')">Choose Premium</button>
+    </div>
+
+  </section>
+
+  <section class="payment-box">
+    <h2>Payment Summary</h2>
+
+    <div class="summary-row">
+      <span>Vehicle Number</span>
+      <b id="vehicleNumber">-</b>
+    </div>
+
+    <div class="summary-row">
+      <span>Selected Plan</span>
+      <b id="selectedPlan">-</b>
+    </div>
+
+    <div class="summary-row">
+      <span>Billing Cycle</span>
+      <b id="billingCycleText">Monthly</b>
+    </div>
+
+    <div class="summary-row">
+      <span>Amount</span>
+      <b id="selectedAmount">-</b>
+    </div>
+
+    <button class="pay-btn" onclick="confirmUpgrade()">Confirm Upgrade</button>
+
+    <p class="note">
+      Payment gateway integration will be added later. For now, this saves the selected package as pending payment.
+    </p>
+  </section>
+
+</main>
+
+<script>
+let user = JSON.parse(localStorage.getItem('vehicallUser'));
+let selectedPlan = null;
+let billingCycle = 'monthly';
+
+const prices = {
+  Basic: {
+    monthly: 'OMR 0.300',
+    yearly: 'OMR 2.500'
+  },
+  Plus: {
+    monthly: 'OMR 0.500',
+    yearly: 'OMR 5.000'
+  },
+  Premium: {
+    monthly: 'OMR 1.000',
+    yearly: 'OMR 10.000'
+  }
+};
+
+if (!user) {
+  window.location.href = '/login.html';
+}
+
+document.getElementById('vehicleNumber').innerText = user.vehicleNumber;
+
+function setBilling(type) {
+  billingCycle = type;
+
+  document.getElementById('monthlyBtn').classList.remove('active');
+  document.getElementById('yearlyBtn').classList.remove('active');
+
+  if (type === 'monthly') {
+    document.getElementById('monthlyBtn').classList.add('active');
+
+    document.getElementById('basicPrice').innerText = prices.Basic.monthly;
+    document.getElementById('plusPrice').innerText = prices.Plus.monthly;
+    document.getElementById('premiumPrice').innerText = prices.Premium.monthly;
+    document.getElementById('billingCycleText').innerText = 'Monthly';
+  } else {
+    document.getElementById('yearlyBtn').classList.add('active');
+
+    document.getElementById('basicPrice').innerText = prices.Basic.yearly;
+    document.getElementById('plusPrice').innerText = prices.Plus.yearly;
+    document.getElementById('premiumPrice').innerText = prices.Premium.yearly;
+    document.getElementById('billingCycleText').innerText = 'Yearly';
+  }
+
+  if (selectedPlan) {
+    document.getElementById('selectedAmount').innerText = prices[selectedPlan][billingCycle];
+  }
+}
+
+function selectPlan(plan) {
+  selectedPlan = plan;
+
+  document.getElementById('selectedPlan').innerText = plan;
+  document.getElementById('selectedAmount').innerText = prices[plan][billingCycle];
+
+  document.querySelectorAll('.plan-card').forEach(card => {
+    card.classList.remove('selected');
+  });
+
+  event.target.closest('.plan-card').classList.add('selected');
+}
+
+async function confirmUpgrade() {
+  if (!selectedPlan) {
+    alert('Please select a plan first');
+    return;
+  }
+
+  const confirmAction = confirm(
+    `Confirm upgrade to ${selectedPlan} (${billingCycle}) for ${user.vehicleNumber}?`
+  );
+
+  if (!confirmAction) return;
+
+  const res = await fetch('/update-plan', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      vehicleNumber: user.vehicleNumber,
+      plan: selectedPlan,
+      billingCycle
+    })
+  });
+
+  const data = await res.json();
+
+  if (res.ok) {
+    localStorage.setItem('vehicallUser', JSON.stringify(data.user));
+    alert('Package selected successfully. Payment status: Pending.');
+    window.location.href = '/dashboard.html';
+  } else {
+    alert(data.message || 'Upgrade failed');
+  }
+}
+</script>
+
+</body>
+</html>

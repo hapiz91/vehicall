@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Vehicall | Alert History</title>
+  <link rel="stylesheet" href="alert-history.css"/>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">
+    <img src="/logo.png" class="logo"/>
+    <div>
+      <h2>Vehicall</h2>
+      <p>Alert History</p>
+    </div>
+  </div>
+
+  <a href="/dashboard.html" class="back-btn">Back to Dashboard</a>
+</header>
+
+<main class="container">
+
+  <section class="hero-card">
+    <div>
+      <span>Vehicle Alerts</span>
+      <h1 id="vehicleTitle">Vehicle</h1>
+      <p>Review all alerts received through your Vehicall QR sticker.</p>
+    </div>
+
+    <div class="count-card">
+      <small>Total Alerts</small>
+      <b id="totalAlerts">0</b>
+    </div>
+  </section>
+
+  <section class="stats-grid">
+    <div class="stat-card">
+      <span>Emergency</span>
+      <h2 id="emergencyCount">0</h2>
+    </div>
+
+    <div class="stat-card">
+      <span>Blocking</span>
+      <h2 id="blockingCount">0</h2>
+    </div>
+
+    <div class="stat-card">
+      <span>Lights On</span>
+      <h2 id="lightsCount">0</h2>
+    </div>
+
+    <div class="stat-card">
+      <span>Today</span>
+      <h2 id="todayCount">0</h2>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-header">
+      <div>
+        <h2>Recent Alerts</h2>
+        <p>Latest alerts received for your vehicle.</p>
+      </div>
+
+      <input id="searchInput" class="search-box" placeholder="Search alert type or status..." />
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Date & Time</th>
+            <th>Alert Type</th>
+            <th>Status</th>
+            <th>Contacts Notified</th>
+            <th>Message</th>
+          </tr>
+        </thead>
+        <tbody id="alertsBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+</main>
+
+<script>
+let user = JSON.parse(localStorage.getItem('vehicallUser'));
+let allAlerts = [];
+
+if (!user) {
+  window.location.href = '/login.html';
+}
+
+document.getElementById('vehicleTitle').innerText = user.vehicleNumber || '-';
+
+async function loadAlerts() {
+  const res = await fetch('/owner-alerts/' + encodeURIComponent(user.vehicleNumber));
+
+  if (!res.ok) {
+    renderEmpty('Unable to load alerts');
+    return;
+  }
+
+  allAlerts = await res.json();
+
+  updateStats(allAlerts);
+  renderAlerts(allAlerts);
+}
+
+function updateStats(alerts) {
+  const today = new Date().toDateString();
+
+  document.getElementById('totalAlerts').innerText = alerts.length;
+
+  document.getElementById('emergencyCount').innerText =
+    alerts.filter(a => a.alertType === 'EMERGENCY').length;
+
+  document.getElementById('blockingCount').innerText =
+    alerts.filter(a => a.alertType === 'BLOCKING').length;
+
+  document.getElementById('lightsCount').innerText =
+    alerts.filter(a => a.alertType === 'LIGHTS_ON').length;
+
+  document.getElementById('todayCount').innerText =
+    alerts.filter(a => a.createdAt && new Date(a.createdAt).toDateString() === today).length;
+}
+
+function renderEmpty(message = 'No alerts found') {
+  document.getElementById('alertsBody').innerHTML = `
+    <tr>
+      <td colspan="5" style="text-align:center; color:#667085; padding:30px;">
+        ${message}
+      </td>
+    </tr>
+  `;
+}
+
+function renderAlerts(alerts) {
+  const tbody = document.getElementById('alertsBody');
+  tbody.innerHTML = '';
+
+  if (!alerts.length) {
+    renderEmpty();
+    return;
+  }
+
+  alerts.forEach(alert => {
+    const createdAt = alert.createdAt
+      ? new Date(alert.createdAt).toLocaleString()
+      : '-';
+
+    const contactsCount = Array.isArray(alert.contacts) ? alert.contacts.length : 0;
+
+    const tr = document.createElement('tr');
+
+    tr.innerHTML = `
+      <td>${createdAt}</td>
+      <td><span class="badge">${alert.alertLabel || alert.alertType || '-'}</span></td>
+      <td>${alert.status || 'created'}</td>
+      <td>${contactsCount}</td>
+      <td class="message-cell">${alert.message || '-'}</td>
+    `;
+
+    tbody.appendChild(tr);
+  });
+}
+
+document.getElementById('searchInput').addEventListener('input', function() {
+  const keyword = this.value.toLowerCase();
+
+  const filtered = allAlerts.filter(alert =>
+    String(alert.alertType || '').toLowerCase().includes(keyword) ||
+    String(alert.alertLabel || '').toLowerCase().includes(keyword) ||
+    String(alert.status || '').toLowerCase().includes(keyword) ||
+    String(alert.message || '').toLowerCase().includes(keyword)
+  );
+
+  renderAlerts(filtered);
+});
+
+loadAlerts();
+</script>
+
+</body>
+</html>

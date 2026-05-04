@@ -11,6 +11,10 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
 
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
 app.use(session({
   secret: process.env.SESSION_SECRET || 'vehicall_admin_secret',
   resave: false,
@@ -24,13 +28,8 @@ function requireAdmin(req, res, next) {
   if (req.session && req.session.adminLoggedIn) {
     return next();
   }
-
   return res.redirect('/admin-login.html');
 }
-
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
 
 const plans = {
   Welcome: {
@@ -201,6 +200,7 @@ app.post('/register', async (req, res) => {
 
       accountType: 'individual',
       companyId: null,
+      accountStatus: 'active',
 
       createdAt: now
     });
@@ -238,6 +238,11 @@ app.post('/login', async (req, res) => {
     }
 
     const user = userDoc.data();
+
+    if (user.accountStatus === 'suspended') {
+      return res.status(403).json({ message: 'Your account is suspended. Please contact Vehicall support.' });
+    }
+
     const isMatch = await bcrypt.compare(password, user.password);
 
     if (!isMatch) {
@@ -284,7 +289,7 @@ app.get('/owner-alerts/:vehicleNumber', async (req, res) => {
       .get();
 
     const alerts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    alerts.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    alerts.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
 
     res.json(alerts);
 
@@ -500,11 +505,11 @@ app.post('/send-alert', async (req, res) => {
       return res.status(400).json({ message: 'QR is not active yet' });
     }
 
-if (user.accountStatus === 'suspended') {
-  return res.status(400).json({
-    message: 'This vehicle alert service is currently suspended.'
-  });
-}
+    if (user.accountStatus === 'suspended') {
+      return res.status(400).json({
+        message: 'This vehicle alert service is currently suspended.'
+      });
+    }
 
     if (user.planEnd && new Date() > new Date(user.planEnd)) {
       return res.status(400).json({ message: 'Plan expired. Please renew.' });

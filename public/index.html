@@ -1,10 +1,61 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" dir="ltr">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Vehicall | Smart QR Vehicle Alert System in Oman</title>
   <link rel="stylesheet" href="style.css" />
+
+  <style>
+    .lang-switch {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .lang-switch button {
+      border: 1px solid #cbd5e1;
+      background: #ffffff;
+      color: #0b1f3a;
+      padding: 9px 12px;
+      border-radius: 12px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .lang-switch button.active {
+      background: #0b1f3a;
+      color: #ffffff;
+    }
+
+    body.rtl {
+      direction: rtl;
+      text-align: right;
+      font-family: Arial, Tahoma, sans-serif;
+    }
+
+    body.rtl .brand,
+    body.rtl .hero-actions,
+    body.rtl .trust-row,
+    body.rtl .footer-inner {
+      direction: rtl;
+    }
+
+    body.rtl .hero-content p {
+      margin-right: 0;
+    }
+
+    body.rtl .plan-card ul {
+      padding-right: 18px;
+      padding-left: 0;
+    }
+
+    @media (max-width: 900px) {
+      .lang-switch {
+        margin-top: 12px;
+      }
+    }
+  </style>
 </head>
 <body>
 
@@ -14,17 +65,22 @@
       <img src="/logo.png" class="logo" />
       <div>
         <h1>Vehicall</h1>
-        <span>Smart Vehicle Alerts</span>
+        <span data-key="brandSubtitle">Smart Vehicle Alerts</span>
       </div>
     </div>
 
     <nav class="nav-links">
-      <a href="#how">How it works</a>
-      <a href="#register-flow">How to register</a>
-      <a href="#plans">Plans</a>
-      <a href="#privacy">Privacy</a>
-      <a href="/login.html" class="btn btn-outline">Login</a>
-      <a href="/login.html" class="btn btn-primary">Get Started</a>
+      <a href="#how" data-key="navHow">How it works</a>
+      <a href="#register-flow" data-key="navRegister">How to register</a>
+      <a href="#plans" data-key="navPlans">Plans</a>
+      <a href="#privacy" data-key="navPrivacy">Privacy</a>
+      <a href="/login.html" class="btn btn-outline" data-key="navLogin">Login</a>
+      <a href="/login.html" class="btn btn-primary" data-key="navGetStarted">Get Started</a>
+
+      <div class="lang-switch">
+        <button id="btnEn" onclick="setLang('en')">EN</button>
+        <button id="btnAr" onclick="setLang('ar')">العربية</button>
+      </div>
     </nav>
   </div>
 </header>
@@ -35,24 +91,24 @@
     <div class="container hero-grid">
       <div class="hero-content">
         <img src="/logo.png" class="hero-logo" />
-        <div class="badge">Made for Oman roads</div>
+        <div class="badge" data-key="heroBadge">Made for Oman roads</div>
 
-        <h2>Let people alert you about your vehicle without exposing your phone number.</h2>
+        <h2 data-key="heroTitle">Let people alert you about your vehicle without exposing your phone number.</h2>
 
-        <p>
+        <p data-key="heroText">
           Vehicall is a smart QR sticker system that helps vehicle owners receive quick alerts
           for blocked parking, lights left on, unlocked vehicles, emergencies and more.
         </p>
 
         <div class="hero-actions">
-          <a href="/login.html" class="btn btn-primary large">Register Vehicle</a>
-          <a href="#how" class="btn btn-light large">See How It Works</a>
+          <a href="/login.html" class="btn btn-primary large" data-key="registerVehicle">Register Vehicle</a>
+          <a href="#how" class="btn btn-light large" data-key="seeHow">See How It Works</a>
         </div>
 
         <div class="trust-row">
-          <span>Privacy-first</span>
-          <span>QR based</span>
-          <span>Plan controlled</span>
+          <span data-key="trust1">Privacy-first</span>
+          <span data-key="trust2">QR based</span>
+          <span data-key="trust3">Plan controlled</span>
         </div>
       </div>
 
@@ -60,10 +116,10 @@
         <div class="phone-preview">
           <div class="phone-top"></div>
           <div class="alert-card">
-            <span class="alert-label">Vehicall Alert</span>
-            <h3>🚗 Your Car is Blocking</h3>
-            <p>Vehicle owner has been notified securely through Vehicall.</p>
-            <button>Alert Sent</button>
+            <span class="alert-label" data-key="phoneAlert">Vehicall Alert</span>
+            <h3 data-key="phoneIssue">🚗 Your Car is Blocking</h3>
+            <p data-key="phoneText">Vehicle owner has been notified securely through Vehicall.</p>
+            <button data-key="phoneButton">Alert Sent</button>
           </div>
         </div>
       </div>
@@ -73,36 +129,36 @@
   <section id="how" class="section">
     <div class="container">
       <div class="section-title">
-        <span>Simple process</span>
-        <h2>How Vehicall Works</h2>
-        <p>Scan, select, notify — fast vehicle communication without public phone number exposure.</p>
+        <span data-key="simpleProcess">Simple process</span>
+        <h2 data-key="howTitle">How Vehicall Works</h2>
+        <p data-key="howSubtitle">Scan, select, notify — fast vehicle communication without public phone number exposure.</p>
       </div>
 
       <div class="steps-grid">
         <div class="step-card">
           <div class="step-no">01</div>
-          <h3>Register your vehicle</h3>
-          <p>Create your Vehicall account using your vehicle number and mobile contact.</p>
+          <h3 data-key="step1Title">Register your vehicle</h3>
+          <p data-key="step1Text">Create your Vehicall account using your vehicle number and mobile contact.</p>
         </div>
 
         <div class="step-card">
           <div class="step-no">02</div>
-          <h3>Generate QR sticker</h3>
-          <p>Get a unique QR code linked to your vehicle alert page.</p>
+          <h3 data-key="step2Title">Generate QR sticker</h3>
+          <p data-key="step2Text">Get a unique QR code linked to your vehicle alert page.</p>
         </div>
 
         <div class="step-card">
           <div class="step-no">03</div>
-          <h3>Receive alerts</h3>
-          <p>Anyone can scan and notify you without seeing your private number.</p>
+          <h3 data-key="step3Title">Receive alerts</h3>
+          <p data-key="step3Text">Anyone can scan and notify you without seeing your private number.</p>
         </div>
       </div>
 
       <div class="animated-flow-card">
         <div class="flow-heading">
-          <span>Live visual flow</span>
-          <h2>From QR Scan to Owner Alert</h2>
-          <p>A simple animated view of how the public alert process works.</p>
+          <span data-key="visualFlow">Live visual flow</span>
+          <h2 data-key="flowTitle">From QR Scan to Owner Alert</h2>
+          <p data-key="flowSubtitle">A simple animated view of how the public alert process works.</p>
         </div>
 
         <div class="vehicall-flow">
@@ -116,8 +172,8 @@
               </div>
               <div class="scan-ring"></div>
             </div>
-            <h3>Scan QR Sticker</h3>
-            <p>Someone notices an issue and scans the Vehicall QR.</p>
+            <h3 data-key="flow1Title">Scan QR Sticker</h3>
+            <p data-key="flow1Text">Someone notices an issue and scans the Vehicall QR.</p>
           </div>
 
           <div class="flow-arrow"></div>
@@ -126,13 +182,13 @@
             <div class="flow-visual phone-visual">
               <div class="mini-phone">
                 <div class="mini-top"></div>
-                <div class="mini-btn">🚗 Blocking</div>
-                <div class="mini-btn">💡 Lights On</div>
-                <div class="mini-btn">🚨 Emergency</div>
+                <div class="mini-btn" data-key="miniBlocking">🚗 Blocking</div>
+                <div class="mini-btn" data-key="miniLights">💡 Lights On</div>
+                <div class="mini-btn" data-key="miniEmergency">🚨 Emergency</div>
               </div>
             </div>
-            <h3>Select Alert Type</h3>
-            <p>The scanner selects the correct vehicle issue.</p>
+            <h3 data-key="flow2Title">Select Alert Type</h3>
+            <p data-key="flow2Text">The scanner selects the correct vehicle issue.</p>
           </div>
 
           <div class="flow-arrow"></div>
@@ -144,8 +200,8 @@
               <div class="pulse-dot two"></div>
               <div class="pulse-dot three"></div>
             </div>
-            <h3>Vehicall Processes</h3>
-            <p>The alert is recorded and prepared for delivery.</p>
+            <h3 data-key="flow3Title">Vehicall Processes</h3>
+            <p data-key="flow3Text">The alert is recorded and prepared for delivery.</p>
           </div>
 
           <div class="flow-arrow"></div>
@@ -155,60 +211,60 @@
               <div class="owner-phone">
                 <div class="mini-top"></div>
                 <div class="notification-pop">
-                  <b>Vehicall Alert</b>
-                  <span>Your vehicle needs attention</span>
+                  <b data-key="notifTitle">Vehicall Alert</b>
+                  <span data-key="notifText">Your vehicle needs attention</span>
                 </div>
               </div>
             </div>
-            <h3>Owner Gets Alert</h3>
-            <p>The owner receives the alert and can take action.</p>
+            <h3 data-key="flow4Title">Owner Gets Alert</h3>
+            <p data-key="flow4Text">The owner receives the alert and can take action.</p>
           </div>
         </div>
 
         <div class="flow-trust-row">
-          <div>🔒 Privacy Protected</div>
-          <div>⚡ Instant Alert Flow</div>
-          <div>📱 Smart QR Sticker</div>
-          <div>🇴🇲 Built for Oman</div>
+          <div data-key="flowTrust1">🔒 Privacy Protected</div>
+          <div data-key="flowTrust2">⚡ Instant Alert Flow</div>
+          <div data-key="flowTrust3">📱 Smart QR Sticker</div>
+          <div data-key="flowTrust4">🇴🇲 Built for Oman</div>
         </div>
       </div>
 
       <div id="register-flow" class="animated-register-card">
         <div class="flow-heading">
-          <span>Registration journey</span>
-          <h2>How to Register for Vehicall</h2>
-          <p>From account creation to a downloadable branded QR sticker.</p>
+          <span data-key="regJourney">Registration journey</span>
+          <h2 data-key="regTitle">How to Register for Vehicall</h2>
+          <p data-key="regSubtitle">From account creation to a downloadable branded QR sticker.</p>
         </div>
 
         <div class="register-timeline">
           <div class="register-step">
             <div class="reg-icon">🌐</div>
-            <h3>Open Vehicall</h3>
-            <p>Visit the website and click Get Started.</p>
+            <h3 data-key="reg1Title">Open Vehicall</h3>
+            <p data-key="reg1Text">Visit the website and click Get Started.</p>
           </div>
 
           <div class="register-line"></div>
 
           <div class="register-step">
             <div class="reg-icon">📝</div>
-            <h3>Register Vehicle</h3>
-            <p>Enter name, mobile number, vehicle number and password.</p>
+            <h3 data-key="reg2Title">Register Vehicle</h3>
+            <p data-key="reg2Text">Enter name, mobile number, vehicle number and password.</p>
           </div>
 
           <div class="register-line"></div>
 
           <div class="register-step">
             <div class="reg-icon">🎁</div>
-            <h3>Welcome Plan</h3>
-            <p>Get 2 months free trial with 3 alerts per month.</p>
+            <h3 data-key="reg3Title">Welcome Pack</h3>
+            <p data-key="reg3Text">Activate your Welcome Pack with 2 months and 3 alerts per month.</p>
           </div>
 
           <div class="register-line"></div>
 
           <div class="register-step">
             <div class="reg-icon">▦</div>
-            <h3>Generate QR</h3>
-            <p>Download your branded Vehicall QR sticker.</p>
+            <h3 data-key="reg4Title">Generate QR</h3>
+            <p data-key="reg4Text">Download your branded Vehicall QR sticker.</p>
           </div>
         </div>
 
@@ -216,25 +272,25 @@
           <div class="register-screen">
             <div class="screen-header">
               <img src="/logo.png" />
-              <b>Vehicall Registration</b>
+              <b data-key="regScreenTitle">Vehicall Registration</b>
             </div>
             <div class="form-line long"></div>
             <div class="form-line"></div>
             <div class="form-line medium"></div>
-            <div class="submit-line">Activate Welcome Plan</div>
+            <div class="submit-line" data-key="activateWelcome">Activate Welcome Pack</div>
           </div>
 
           <div class="register-arrow"></div>
 
           <div class="qr-preview-mini">
             <img src="/logo.png" />
-            <h3>SCAN TO ALERT OWNER</h3>
+            <h3 data-key="scanOwner">SCAN TO ALERT OWNER</h3>
             <div class="fake-qr">
               <span></span><span></span><span></span><span></span>
               <span></span><span></span><span></span><span></span>
               <span></span><span></span><span></span><span></span>
             </div>
-            <p>Powered by Vehicall Oman</p>
+            <p data-key="poweredOman">Powered by Vehicall Oman</p>
           </div>
         </div>
       </div>
@@ -245,19 +301,19 @@
   <section id="privacy" class="section privacy-section">
     <div class="container privacy-grid">
       <div>
-        <span class="section-kicker">Privacy-first system</span>
-        <h2>Your mobile number should not be public on your vehicle.</h2>
-        <p>
+        <span class="section-kicker" data-key="privacyKicker">Privacy-first system</span>
+        <h2 data-key="privacyTitle">Your mobile number should not be public on your vehicle.</h2>
+        <p data-key="privacyText">
           Traditional stickers expose phone numbers. Vehicall keeps communication structured,
           controlled, and safer for both vehicle owners and people reporting an issue.
         </p>
       </div>
 
       <div class="privacy-list">
-        <div>✓ No public mobile number display</div>
-        <div>✓ QR based vehicle alert flow</div>
-        <div>✓ Alert limits based on selected plan</div>
-        <div>✓ Future-ready for masked WhatsApp alerts</div>
+        <div data-key="privacy1">✓ No public mobile number display</div>
+        <div data-key="privacy2">✓ QR based vehicle alert flow</div>
+        <div data-key="privacy3">✓ Alert limits based on selected plan</div>
+        <div data-key="privacy4">✓ Future-ready for masked WhatsApp alerts</div>
       </div>
     </div>
   </section>
@@ -265,58 +321,58 @@
   <section id="plans" class="section">
     <div class="container">
       <div class="section-title">
-        <span>Plans</span>
-        <h2>Start with Welcome Plan</h2>
-        <p>Choose the plan that matches your vehicle alert needs.</p>
+        <span data-key="plansKicker">Plans</span>
+        <h2 data-key="plansTitle">Start with Welcome Pack</h2>
+        <p data-key="plansSubtitle">Choose the plan that matches your vehicle alert needs.</p>
       </div>
 
       <div class="plans-grid">
         <div class="plan-card featured">
-          <h3>Welcome</h3>
-          <p class="price">Free Trial</p>
+          <h3 data-key="welcomePlan">Welcome Pack</h3>
+          <p class="price" data-key="welcomePrice">OMR 1 Activation</p>
           <ul>
-            <li>2 months validity</li>
-            <li>3 alerts per month</li>
-            <li>1 contact number</li>
-            <li>QR generation included</li>
+            <li data-key="welcome1">2 months validity</li>
+            <li data-key="welcome2">3 alerts per month</li>
+            <li data-key="welcome3">1 contact number</li>
+            <li data-key="welcome4">QR generation included</li>
           </ul>
-          <a href="/login.html" class="btn btn-primary">Start Free</a>
+          <a href="/login.html" class="btn btn-primary" data-key="startNow">Start Now</a>
         </div>
 
         <div class="plan-card">
           <h3>Basic</h3>
           <p class="price">OMR 0.300 / month</p>
           <ul>
-            <li>3 alerts per month</li>
-            <li>1 contact number</li>
-            <li>Same features as Welcome</li>
-            <li>Yearly option available</li>
+            <li data-key="basic1">3 alerts per month</li>
+            <li data-key="basic2">1 contact number</li>
+            <li data-key="basic3">Same features as Welcome</li>
+            <li data-key="basic4">Yearly option available</li>
           </ul>
-          <a href="/login.html" class="btn btn-outline">Choose Basic</a>
+          <a href="/login.html" class="btn btn-outline" data-key="chooseBasic">Choose Basic</a>
         </div>
 
         <div class="plan-card">
           <h3>Plus</h3>
           <p class="price">OMR 0.500 / month</p>
           <ul>
-            <li>10 alerts per month</li>
-            <li>2 contact numbers</li>
-            <li>Emergency location option</li>
-            <li>Better for family users</li>
+            <li data-key="plus1">10 alerts per month</li>
+            <li data-key="plus2">2 contact numbers</li>
+            <li data-key="plus3">Emergency location option</li>
+            <li data-key="plus4">Better for family users</li>
           </ul>
-          <a href="/login.html" class="btn btn-outline">Choose Plus</a>
+          <a href="/login.html" class="btn btn-outline" data-key="choosePlus">Choose Plus</a>
         </div>
 
         <div class="plan-card">
           <h3>Premium</h3>
           <p class="price">OMR 1.000 / month</p>
           <ul>
-            <li>30 alerts per month</li>
-            <li>3 contact numbers</li>
-            <li>Contact activation controls</li>
-            <li>Best for high-use vehicles</li>
+            <li data-key="premium1">30 alerts per month</li>
+            <li data-key="premium2">3 contact numbers</li>
+            <li data-key="premium3">Contact activation controls</li>
+            <li data-key="premium4">Best for high-use vehicles</li>
           </ul>
-          <a href="/login.html" class="btn btn-outline">Choose Premium</a>
+          <a href="/login.html" class="btn btn-outline" data-key="choosePremium">Choose Premium</a>
         </div>
       </div>
     </div>
@@ -324,9 +380,9 @@
 
   <section class="section cta-section">
     <div class="container cta-card">
-      <h2>Ready to protect your vehicle communication?</h2>
-      <p>Register your vehicle and generate your smart QR sticker with Vehicall.</p>
-      <a href="/login.html" class="btn btn-primary large">Create Account</a>
+      <h2 data-key="ctaTitle">Ready to protect your vehicle communication?</h2>
+      <p data-key="ctaText">Register your vehicle and generate your smart QR sticker with Vehicall.</p>
+      <a href="/login.html" class="btn btn-primary large" data-key="createAccount">Create Account</a>
     </div>
   </section>
 
@@ -334,10 +390,267 @@
 
 <footer class="footer">
   <div class="container footer-inner">
-    <p>© 2026 Vehicall. Smart QR Vehicle Alert System.</p>
-    <p>Privacy-first vehicle communication for Oman.</p>
+    <p data-key="footer1">© 2026 Vehicall. Smart QR Vehicle Alert System.</p>
+    <p data-key="footer2">Privacy-first vehicle communication for Oman.</p>
   </div>
 </footer>
+
+<script>
+const translations = {
+  en: {
+    brandSubtitle: "Smart Vehicle Alerts",
+    navHow: "How it works",
+    navRegister: "How to register",
+    navPlans: "Plans",
+    navPrivacy: "Privacy",
+    navLogin: "Login",
+    navGetStarted: "Get Started",
+
+    heroBadge: "Made for Oman roads",
+    heroTitle: "Let people alert you about your vehicle without exposing your phone number.",
+    heroText: "Vehicall is a smart QR sticker system that helps vehicle owners receive quick alerts for blocked parking, lights left on, unlocked vehicles, emergencies and more.",
+    registerVehicle: "Register Vehicle",
+    seeHow: "See How It Works",
+    trust1: "Privacy-first",
+    trust2: "QR based",
+    trust3: "Plan controlled",
+
+    phoneAlert: "Vehicall Alert",
+    phoneIssue: "🚗 Your Car is Blocking",
+    phoneText: "Vehicle owner has been notified securely through Vehicall.",
+    phoneButton: "Alert Sent",
+
+    simpleProcess: "Simple process",
+    howTitle: "How Vehicall Works",
+    howSubtitle: "Scan, select, notify — fast vehicle communication without public phone number exposure.",
+    step1Title: "Register your vehicle",
+    step1Text: "Create your Vehicall account using your vehicle number and mobile contact.",
+    step2Title: "Generate QR sticker",
+    step2Text: "Get a unique QR code linked to your vehicle alert page.",
+    step3Title: "Receive alerts",
+    step3Text: "Anyone can scan and notify you without seeing your private number.",
+
+    visualFlow: "Live visual flow",
+    flowTitle: "From QR Scan to Owner Alert",
+    flowSubtitle: "A simple animated view of how the public alert process works.",
+    flow1Title: "Scan QR Sticker",
+    flow1Text: "Someone notices an issue and scans the Vehicall QR.",
+    flow2Title: "Select Alert Type",
+    flow2Text: "The scanner selects the correct vehicle issue.",
+    flow3Title: "Vehicall Processes",
+    flow3Text: "The alert is recorded and prepared for delivery.",
+    flow4Title: "Owner Gets Alert",
+    flow4Text: "The owner receives the alert and can take action.",
+    miniBlocking: "🚗 Blocking",
+    miniLights: "💡 Lights On",
+    miniEmergency: "🚨 Emergency",
+    notifTitle: "Vehicall Alert",
+    notifText: "Your vehicle needs attention",
+    flowTrust1: "🔒 Privacy Protected",
+    flowTrust2: "⚡ Instant Alert Flow",
+    flowTrust3: "📱 Smart QR Sticker",
+    flowTrust4: "🇴🇲 Built for Oman",
+
+    regJourney: "Registration journey",
+    regTitle: "How to Register for Vehicall",
+    regSubtitle: "From account creation to a downloadable branded QR sticker.",
+    reg1Title: "Open Vehicall",
+    reg1Text: "Visit the website and click Get Started.",
+    reg2Title: "Register Vehicle",
+    reg2Text: "Enter name, mobile number, vehicle number and password.",
+    reg3Title: "Welcome Pack",
+    reg3Text: "Activate your Welcome Pack with 2 months and 3 alerts per month.",
+    reg4Title: "Generate QR",
+    reg4Text: "Download your branded Vehicall QR sticker.",
+    regScreenTitle: "Vehicall Registration",
+    activateWelcome: "Activate Welcome Pack",
+    scanOwner: "SCAN TO ALERT OWNER",
+    poweredOman: "Powered by Vehicall Oman",
+
+    privacyKicker: "Privacy-first system",
+    privacyTitle: "Your mobile number should not be public on your vehicle.",
+    privacyText: "Traditional stickers expose phone numbers. Vehicall keeps communication structured, controlled, and safer for both vehicle owners and people reporting an issue.",
+    privacy1: "✓ No public mobile number display",
+    privacy2: "✓ QR based vehicle alert flow",
+    privacy3: "✓ Alert limits based on selected plan",
+    privacy4: "✓ Future-ready for masked WhatsApp alerts",
+
+    plansKicker: "Plans",
+    plansTitle: "Start with Welcome Pack",
+    plansSubtitle: "Choose the plan that matches your vehicle alert needs.",
+    welcomePlan: "Welcome Pack",
+    welcomePrice: "OMR 1 Activation",
+    welcome1: "2 months validity",
+    welcome2: "3 alerts per month",
+    welcome3: "1 contact number",
+    welcome4: "QR generation included",
+    startNow: "Start Now",
+    basic1: "3 alerts per month",
+    basic2: "1 contact number",
+    basic3: "Same features as Welcome",
+    basic4: "Yearly option available",
+    chooseBasic: "Choose Basic",
+    plus1: "10 alerts per month",
+    plus2: "2 contact numbers",
+    plus3: "Emergency location option",
+    plus4: "Better for family users",
+    choosePlus: "Choose Plus",
+    premium1: "30 alerts per month",
+    premium2: "3 contact numbers",
+    premium3: "Contact activation controls",
+    premium4: "Best for high-use vehicles",
+    choosePremium: "Choose Premium",
+
+    ctaTitle: "Ready to protect your vehicle communication?",
+    ctaText: "Register your vehicle and generate your smart QR sticker with Vehicall.",
+    createAccount: "Create Account",
+    footer1: "© 2026 Vehicall. Smart QR Vehicle Alert System.",
+    footer2: "Privacy-first vehicle communication for Oman."
+  },
+
+  ar: {
+    brandSubtitle: "تنبيهات ذكية للمركبات",
+    navHow: "كيف يعمل",
+    navRegister: "طريقة التسجيل",
+    navPlans: "الباقات",
+    navPrivacy: "الخصوصية",
+    navLogin: "تسجيل الدخول",
+    navGetStarted: "ابدأ الآن",
+
+    heroBadge: "مصمم لطرق عُمان",
+    heroTitle: "اسمح للآخرين بتنبيهك عن مركبتك دون إظهار رقم هاتفك.",
+    heroText: "Vehicall هو نظام ملصق ذكي برمز QR يساعد مالكي المركبات على استلام تنبيهات سريعة عند إغلاق الطريق، ترك الأنوار، عدم إغلاق المركبة، الحالات الطارئة وغيرها.",
+    registerVehicle: "تسجيل المركبة",
+    seeHow: "شاهد كيف يعمل",
+    trust1: "خصوصية أولاً",
+    trust2: "يعتمد على QR",
+    trust3: "تحكم حسب الباقة",
+
+    phoneAlert: "تنبيه Vehicall",
+    phoneIssue: "🚗 مركبتك تعيق الطريق",
+    phoneText: "تم تنبيه مالك المركبة بشكل آمن عبر Vehicall.",
+    phoneButton: "تم إرسال التنبيه",
+
+    simpleProcess: "عملية بسيطة",
+    howTitle: "كيف يعمل Vehicall",
+    howSubtitle: "امسح، اختر، أرسل التنبيه — تواصل سريع مع مالك المركبة دون إظهار رقم الهاتف.",
+    step1Title: "سجّل مركبتك",
+    step1Text: "أنشئ حساب Vehicall باستخدام رقم المركبة ورقم الهاتف.",
+    step2Title: "أنشئ ملصق QR",
+    step2Text: "احصل على رمز QR خاص مرتبط بصفحة تنبيه مركبتك.",
+    step3Title: "استلم التنبيهات",
+    step3Text: "يمكن لأي شخص مسح الرمز وتنبيهك دون معرفة رقمك الخاص.",
+
+    visualFlow: "عرض مرئي مباشر",
+    flowTitle: "من مسح QR إلى تنبيه المالك",
+    flowSubtitle: "عرض متحرك بسيط لكيفية عمل عملية التنبيه.",
+    flow1Title: "مسح ملصق QR",
+    flow1Text: "يلاحظ شخص وجود مشكلة ويمسح رمز Vehicall.",
+    flow2Title: "اختيار نوع التنبيه",
+    flow2Text: "يختار المبلّغ نوع المشكلة المناسبة.",
+    flow3Title: "معالجة التنبيه",
+    flow3Text: "يقوم Vehicall بتسجيل التنبيه وتجهيزه للإرسال.",
+    flow4Title: "استلام المالك للتنبيه",
+    flow4Text: "يستلم مالك المركبة التنبيه ويتخذ الإجراء المناسب.",
+    miniBlocking: "🚗 إعاقة الطريق",
+    miniLights: "💡 الأنوار تعمل",
+    miniEmergency: "🚨 حالة طارئة",
+    notifTitle: "تنبيه Vehicall",
+    notifText: "مركبتك تحتاج إلى انتباه",
+    flowTrust1: "🔒 خصوصية محمية",
+    flowTrust2: "⚡ تنبيه سريع",
+    flowTrust3: "📱 ملصق QR ذكي",
+    flowTrust4: "🇴🇲 مصمم لعُمان",
+
+    regJourney: "رحلة التسجيل",
+    regTitle: "طريقة التسجيل في Vehicall",
+    regSubtitle: "من إنشاء الحساب إلى تحميل ملصق QR الخاص بك.",
+    reg1Title: "افتح Vehicall",
+    reg1Text: "قم بزيارة الموقع واضغط على ابدأ الآن.",
+    reg2Title: "سجّل المركبة",
+    reg2Text: "أدخل الاسم، رقم الهاتف، رقم المركبة وكلمة المرور.",
+    reg3Title: "باقة الترحيب",
+    reg3Text: "فعّل باقة الترحيب لمدة شهرين مع 3 تنبيهات شهرياً.",
+    reg4Title: "أنشئ QR",
+    reg4Text: "قم بتحميل ملصق Vehicall QR المخصص.",
+    regScreenTitle: "تسجيل Vehicall",
+    activateWelcome: "تفعيل باقة الترحيب",
+    scanOwner: "امسح لتنبيه المالك",
+    poweredOman: "مدعوم من Vehicall عُمان",
+
+    privacyKicker: "نظام يحافظ على الخصوصية",
+    privacyTitle: "رقم هاتفك لا يجب أن يكون ظاهراً على مركبتك.",
+    privacyText: "الملصقات التقليدية تكشف أرقام الهواتف. Vehicall يجعل التواصل منظماً وأكثر أماناً لمالك المركبة وللشخص الذي يرسل التنبيه.",
+    privacy1: "✓ لا يتم عرض رقم الهاتف للعامة",
+    privacy2: "✓ تنبيه المركبة عبر رمز QR",
+    privacy3: "✓ حدود التنبيهات حسب الباقة",
+    privacy4: "✓ جاهز مستقبلاً لتنبيهات واتساب مخفية الرقم",
+
+    plansKicker: "الباقات",
+    plansTitle: "ابدأ مع باقة الترحيب",
+    plansSubtitle: "اختر الباقة المناسبة لاحتياجات تنبيهات مركبتك.",
+    welcomePlan: "باقة الترحيب",
+    welcomePrice: "تفعيل 1 ريال عُماني",
+    welcome1: "صلاحية شهرين",
+    welcome2: "3 تنبيهات شهرياً",
+    welcome3: "رقم تواصل واحد",
+    welcome4: "إنشاء QR مشمول",
+    startNow: "ابدأ الآن",
+    basic1: "3 تنبيهات شهرياً",
+    basic2: "رقم تواصل واحد",
+    basic3: "نفس مزايا باقة الترحيب",
+    basic4: "خيار سنوي متاح",
+    chooseBasic: "اختر Basic",
+    plus1: "10 تنبيهات شهرياً",
+    plus2: "رقما تواصل",
+    plus3: "خيار موقع للحالات الطارئة",
+    plus4: "مناسب للمركبات العائلية",
+    choosePlus: "اختر Plus",
+    premium1: "30 تنبيهاً شهرياً",
+    premium2: "3 أرقام تواصل",
+    premium3: "التحكم في تفعيل جهات الاتصال",
+    premium4: "الأفضل للاستخدام العالي",
+    choosePremium: "اختر Premium",
+
+    ctaTitle: "هل أنت مستعد لحماية تواصل مركبتك؟",
+    ctaText: "سجّل مركبتك وأنشئ ملصق QR الذكي مع Vehicall.",
+    createAccount: "إنشاء حساب",
+    footer1: "© 2026 Vehicall. نظام تنبيه ذكي للمركبات عبر QR.",
+    footer2: "تواصل آمن وخاص للمركبات في عُمان."
+  }
+};
+
+function setLang(lang) {
+  localStorage.setItem("vehicallLang", lang);
+  applyLang();
+}
+
+function applyLang() {
+  const lang = localStorage.getItem("vehicallLang") || "en";
+  const dict = translations[lang];
+
+  document.documentElement.lang = lang;
+  document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
+
+  if (lang === "ar") {
+    document.body.classList.add("rtl");
+  } else {
+    document.body.classList.remove("rtl");
+  }
+
+  document.querySelectorAll("[data-key]").forEach(el => {
+    const key = el.getAttribute("data-key");
+    if (dict[key]) {
+      el.innerText = dict[key];
+    }
+  });
+
+  document.getElementById("btnEn").classList.toggle("active", lang === "en");
+  document.getElementById("btnAr").classList.toggle("active", lang === "ar");
+}
+
+applyLang();
+</script>
 
 </body>
 </html>

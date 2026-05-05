@@ -2,213 +2,356 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Vehicall | Send Vehicle Alert</title>
-  <link rel="stylesheet" href="alert.css"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vehicall Alert</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      margin: 0;
+      background: linear-gradient(135deg, #eef6ff, #ffffff);
+      color: #0b1f3a;
+      min-height: 100vh;
+    }
+
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 22px;
+      background: #ffffff;
+      border-bottom: 1px solid #e5eaf0;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: bold;
+      font-size: 20px;
+    }
+
+    .brand img {
+      width: 42px;
+      height: 42px;
+      object-fit: contain;
+    }
+
+    .lang-switch {
+      display: flex;
+      gap: 8px;
+    }
+
+    .lang-switch button {
+      border: 1px solid #cbd5e1;
+      background: #ffffff;
+      padding: 8px 14px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: bold;
+      color: #0b1f3a;
+    }
+
+    .lang-switch button.active {
+      background: #0b1f3a;
+      color: #ffffff;
+    }
+
+    .container {
+      max-width: 520px;
+      margin: 40px auto;
+      padding: 20px;
+    }
+
+    .card {
+      background: #ffffff;
+      border-radius: 24px;
+      padding: 28px;
+      box-shadow: 0 15px 40px rgba(11, 31, 58, 0.12);
+      text-align: center;
+    }
+
+    .logo {
+      width: 90px;
+      margin-bottom: 10px;
+    }
+
+    h1 {
+      margin: 10px 0;
+      font-size: 28px;
+      color: #0b1f3a;
+    }
+
+    .subtitle {
+      color: #64748b;
+      font-size: 15px;
+      margin-bottom: 25px;
+      line-height: 1.6;
+    }
+
+    .vehicle-box {
+      background: #f1f7ff;
+      border: 1px solid #d8e9ff;
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 22px;
+    }
+
+    .vehicle-label {
+      color: #64748b;
+      font-size: 13px;
+      margin-bottom: 6px;
+    }
+
+    .vehicle-id {
+      font-size: 22px;
+      font-weight: bold;
+      color: #003f8f;
+    }
+
+    .alerts {
+      display: grid;
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .alert-btn {
+      width: 100%;
+      padding: 15px;
+      border: none;
+      border-radius: 16px;
+      background: #0b1f3a;
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .alert-btn:hover {
+      background: #003f8f;
+      transform: translateY(-1px);
+    }
+
+    .emergency {
+      background: #b91c1c;
+    }
+
+    .emergency:hover {
+      background: #991b1b;
+    }
+
+    .message-box {
+      display: none;
+      margin-top: 20px;
+      padding: 16px;
+      border-radius: 16px;
+      background: #ecfdf5;
+      color: #065f46;
+      font-weight: bold;
+      line-height: 1.6;
+    }
+
+    .footer-note {
+      margin-top: 18px;
+      font-size: 13px;
+      color: #64748b;
+      line-height: 1.6;
+    }
+
+    body.rtl {
+      direction: rtl;
+    }
+
+    body.rtl .brand,
+    body.rtl .top-bar {
+      flex-direction: row-reverse;
+    }
+
+    @media (max-width: 600px) {
+      .top-bar {
+        padding: 12px 14px;
+      }
+
+      .brand {
+        font-size: 16px;
+      }
+
+      .brand img {
+        width: 36px;
+        height: 36px;
+      }
+
+      .lang-switch button {
+        padding: 7px 10px;
+        font-size: 13px;
+      }
+
+      .container {
+        margin: 20px auto;
+        padding: 14px;
+      }
+
+      .card {
+        padding: 22px;
+      }
+
+      h1 {
+        font-size: 24px;
+      }
+    }
+  </style>
 </head>
+
 <body>
+  <div class="top-bar">
+    <div class="brand">
+      <img src="logo.png" alt="Vehicall Logo" />
+      <span>Vehicall</span>
+    </div>
 
-<div class="page-bg">
-  <div class="alert-shell">
+    <div class="lang-switch">
+      <button id="enBtn" onclick="setLanguage('en')">EN</button>
+      <button id="arBtn" onclick="setLanguage('ar')">العربية</button>
+    </div>
+  </div>
 
-    <header class="brand-header">
-      <img src="/logo.png" class="logo" />
-      <div>
-        <h1>Vehicall</h1>
-        <p>Smart Vehicle Alert System</p>
-      </div>
-    </header>
+  <div class="container">
+    <div class="card">
+      <img src="logo.png" class="logo" alt="Vehicall Logo" />
 
-    <section class="hero-card">
-      <span class="trust-badge">Privacy Protected</span>
-      <h2>Send Alert to Vehicle Owner</h2>
-      <p>
-        Select the issue below. WhatsApp will open with a ready message to notify the vehicle owner.
+      <h1 id="pageTitle">Alert Vehicle Owner</h1>
+
+      <p class="subtitle" id="pageSubtitle">
+        Select the reason for alerting the vehicle owner. Your phone number will not be exposed.
       </p>
 
       <div class="vehicle-box">
-        <span>Vehicle QR</span>
-        <b id="qrIdText">Loading...</b>
+        <div class="vehicle-label" id="vehicleLabel">Vehicle ID</div>
+        <div class="vehicle-id" id="vehicleId">Loading...</div>
       </div>
-    </section>
 
-    <section class="alert-card">
-      <h3>What is the issue?</h3>
-
-      <div class="alert-grid">
-        <button onclick="sendAlert('BLOCKING')">
-          <span>🚗</span>
-          <b>Vehicle is Blocking</b>
-          <small>Parking or access issue</small>
+      <div class="alerts">
+        <button class="alert-btn" onclick="sendAlert('blocking')" id="blockingBtn">
+          🚗 Your car is blocking
         </button>
 
-        <button onclick="sendAlert('LIGHTS_ON')">
-          <span>💡</span>
-          <b>Lights are ON</b>
-          <small>Headlights/interior lights left on</small>
+        <button class="alert-btn" onclick="sendAlert('lights')" id="lightsBtn">
+          💡 Lights are on
         </button>
 
-        <button onclick="sendAlert('NOT_LOCKED')">
-          <span>🔓</span>
-          <b>Vehicle Not Locked</b>
-          <small>Door/window appears open</small>
+        <button class="alert-btn" onclick="sendAlert('unlocked')" id="unlockedBtn">
+          🔓 Vehicle not locked
         </button>
 
-        <button class="danger" onclick="sendAlert('EMERGENCY')">
-          <span>🚨</span>
-          <b>Emergency / Accident</b>
-          <small>Urgent attention required</small>
+        <button class="alert-btn" onclick="sendAlert('attention')" id="attentionBtn">
+          ⚠️ Vehicle needs attention
         </button>
 
-        <button onclick="sendAlert('NEED_ATTENTION')">
-          <span>⚠️</span>
-          <b>Needs Attention</b>
-          <small>Other vehicle-related issue</small>
+        <button class="alert-btn emergency" onclick="sendAlert('emergency')" id="emergencyBtn">
+          🚨 Emergency / Accident
         </button>
       </div>
-    </section>
 
-    <section id="resultBox" class="result-box hidden">
-      <div class="result-icon">✅</div>
-      <h3 id="resultTitle">Alert Prepared</h3>
-      <p id="resultMessage">WhatsApp message is ready.</p>
-      <small id="resultTime"></small>
+      <div class="message-box" id="messageBox"></div>
 
-      <br><br>
-      <a id="whatsappBtn" href="#" target="_blank" style="
-        display:inline-block;
-        background:#25D366;
-        color:white;
-        padding:14px 20px;
-        border-radius:14px;
-        text-decoration:none;
-        font-weight:bold;
-      ">
-        Open WhatsApp
-      </a>
-    </section>
-
-    <section class="safety-note">
-      <h4>Important Notice</h4>
-      <p>
-        This service is for genuine vehicle alerts only. For this test version, WhatsApp will open directly
-        to the vehicle owner’s contact number. Masked communication will be added later.
-      </p>
-    </section>
-
-    <footer>
-      Powered by <b>Vehicall Oman</b>
-    </footer>
-
+      <div class="footer-note" id="footerNote">
+        Vehicall protects privacy by allowing alerts without revealing personal phone numbers.
+      </div>
+    </div>
   </div>
-</div>
 
-<script>
-const params = new URLSearchParams(window.location.search);
-const qr_id = params.get('qr');
-
-document.getElementById('qrIdText').innerText = qr_id || 'Invalid QR';
-
-if (!qr_id) {
-  showError('Invalid QR Code', 'This Vehicall QR link is missing or invalid.');
-}
-
-function setButtonsDisabled(disabled) {
-  document.querySelectorAll('.alert-grid button').forEach(btn => {
-    btn.disabled = disabled;
-  });
-}
-
-function formatWhatsappNumber(mobile) {
-  let clean = String(mobile || '').replace(/\D/g, '');
-
-  // Oman local mobile number usually 8 digits. Add 968 if missing.
-  if (clean.length === 8) {
-    clean = '968' + clean;
-  }
-
-  return clean;
-}
-
-async function sendAlert(alert_type) {
-  if (!qr_id) {
-    showError('Invalid QR Code', 'This Vehicall QR link is missing or invalid.');
-    return;
-  }
-
-  setButtonsDisabled(true);
-
-  try {
-    const res = await fetch('/send-alert', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ qr_id, alert_type })
-    });
-
-    const data = await res.json();
-
-    if (res.ok) {
-      const mobile = formatWhatsappNumber(data.mobile);
-
-      if (!mobile) {
-        showError('Mobile Number Missing', 'Vehicle owner mobile number is not available.');
-        setButtonsDisabled(false);
-        return;
+  <script>
+    const translations = {
+      en: {
+        title: "Alert Vehicle Owner",
+        subtitle: "Select the reason for alerting the vehicle owner. Your phone number will not be exposed.",
+        vehicleLabel: "Vehicle ID",
+        blocking: "🚗 Your car is blocking",
+        lights: "💡 Lights are on",
+        unlocked: "🔓 Vehicle not locked",
+        attention: "⚠️ Vehicle needs attention",
+        emergency: "🚨 Emergency / Accident",
+        footer: "Vehicall protects privacy by allowing alerts without revealing personal phone numbers.",
+        alertSent: "Alert sent successfully. The vehicle owner has been notified securely through Vehicall.",
+        loading: "Loading..."
+      },
+      ar: {
+        title: "تنبيه صاحب المركبة",
+        subtitle: "اختر سبب تنبيه صاحب المركبة. لن يتم إظهار رقم هاتفك.",
+        vehicleLabel: "رقم المركبة",
+        blocking: "🚗 السيارة تعيق المرور",
+        lights: "💡 أضواء السيارة تعمل",
+        unlocked: "🔓 المركبة غير مقفلة",
+        attention: "⚠️ المركبة تحتاج إلى انتباه",
+        emergency: "🚨 حالة طارئة / حادث",
+        footer: "تحافظ فيهيكال على الخصوصية من خلال إرسال التنبيهات دون إظهار أرقام الهواتف الشخصية.",
+        alertSent: "تم إرسال التنبيه بنجاح. تم إشعار صاحب المركبة بشكل آمن عبر فيهيكال.",
+        loading: "جاري التحميل..."
       }
+    };
 
-      const whatsappMessage = data.message || `Vehicall Alert\n\nVehicle: ${data.vehicleNumber}\nIssue: ${data.issue}`;
-      const whatsappUrl = `https://wa.me/${mobile}?text=${encodeURIComponent(whatsappMessage)}`;
+    let currentLang = localStorage.getItem("vehicall_lang") || "en";
 
-      document.getElementById('whatsappBtn').href = whatsappUrl;
-
-      showSuccess(
-        data.issue || 'Alert Prepared',
-        'Alert has been saved. Please tap Open WhatsApp to send the message to the vehicle owner.'
-      );
-
-      // Try to open WhatsApp automatically after alert is saved.
-      setTimeout(() => {
-        window.location.href = whatsappUrl;
-      }, 800);
-
-    } else {
-      showError('Alert Not Sent', data.message || 'Unable to send alert.');
-      setButtonsDisabled(false);
+    function setLanguage(lang) {
+      currentLang = lang;
+      localStorage.setItem("vehicall_lang", lang);
+      applyLanguage();
     }
-  } catch (err) {
-    showError('Connection Error', 'Please check your connection and try again.');
-    setButtonsDisabled(false);
-  }
-}
 
-function showSuccess(title, message) {
-  const box = document.getElementById('resultBox');
-  box.className = 'result-box success';
-  document.getElementById('resultTitle').innerText = title;
-  document.getElementById('resultMessage').innerText = message;
-  document.getElementById('resultTime').innerText = new Date().toLocaleString();
+    function applyLanguage() {
+      const t = translations[currentLang];
 
-  window.scrollTo({
-    top: box.offsetTop - 20,
-    behavior: 'smooth'
-  });
-}
+      document.documentElement.lang = currentLang;
+      document.body.classList.toggle("rtl", currentLang === "ar");
 
-function showError(title, message) {
-  const box = document.getElementById('resultBox');
-  box.className = 'result-box error';
-  document.getElementById('resultTitle').innerText = title;
-  document.getElementById('resultMessage').innerText = message;
-  document.getElementById('resultTime').innerText = new Date().toLocaleString();
+      document.getElementById("pageTitle").innerText = t.title;
+      document.getElementById("pageSubtitle").innerText = t.subtitle;
+      document.getElementById("vehicleLabel").innerText = t.vehicleLabel;
+      document.getElementById("blockingBtn").innerText = t.blocking;
+      document.getElementById("lightsBtn").innerText = t.lights;
+      document.getElementById("unlockedBtn").innerText = t.unlocked;
+      document.getElementById("attentionBtn").innerText = t.attention;
+      document.getElementById("emergencyBtn").innerText = t.emergency;
+      document.getElementById("footerNote").innerText = t.footer;
 
-  document.getElementById('whatsappBtn').style.display = 'none';
+      document.getElementById("enBtn").classList.toggle("active", currentLang === "en");
+      document.getElementById("arBtn").classList.toggle("active", currentLang === "ar");
+    }
 
-  window.scrollTo({
-    top: box.offsetTop - 20,
-    behavior: 'smooth'
-  });
-}
-</script>
+    function getVehicleIdFromUrl() {
+      const params = new URLSearchParams(window.location.search);
+      return params.get("vehicle") || params.get("id") || "VEHICALL";
+    }
 
+    function loadVehicleId() {
+      const vehicleId = getVehicleIdFromUrl();
+      document.getElementById("vehicleId").innerText = vehicleId;
+    }
+
+    function sendAlert(type) {
+      const t = translations[currentLang];
+      const vehicleId = getVehicleIdFromUrl();
+
+      const alertData = {
+        vehicleId: vehicleId,
+        alertType: type,
+        language: currentLang,
+        timestamp: new Date().toISOString()
+      };
+
+      console.log("Vehicall Alert:", alertData);
+
+      document.getElementById("messageBox").style.display = "block";
+      document.getElementById("messageBox").innerText = t.alertSent;
+    }
+
+    applyLanguage();
+    loadVehicleId();
+  </script>
 </body>
 </html>

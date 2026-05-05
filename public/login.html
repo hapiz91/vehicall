@@ -1,100 +1,282 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" dir="ltr">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Vehicall | Login & Register</title>
   <link rel="stylesheet" href="auth.css" />
+
+  <style>
+    .auth-lang-switch {
+      position: absolute;
+      top: 28px;
+      right: 45px;
+      display: flex;
+      gap: 8px;
+      z-index: 5;
+    }
+
+    .auth-lang-switch button {
+      border: 1px solid #cbd5e1;
+      background: #ffffff;
+      color: #0b1f3a;
+      padding: 9px 12px;
+      border-radius: 12px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .auth-lang-switch button.active {
+      background: #0b1f3a;
+      color: #ffffff;
+    }
+
+    body.rtl {
+      direction: rtl;
+      text-align: right;
+      font-family: Arial, Tahoma, sans-serif;
+    }
+
+    body.rtl .brand-box,
+    body.rtl .consent-box {
+      direction: rtl;
+    }
+
+    body.rtl .back-link {
+      left: auto;
+      right: 55px;
+    }
+
+    body.rtl .auth-lang-switch {
+      right: auto;
+      left: 45px;
+    }
+
+    body.rtl input {
+      text-align: right;
+    }
+
+    body.rtl .tabs {
+      direction: rtl;
+    }
+
+    @media (max-width: 900px) {
+      .auth-lang-switch {
+        position: static;
+        margin-bottom: 18px;
+      }
+
+      body.rtl .back-link {
+        right: 28px;
+      }
+    }
+  </style>
 </head>
 <body>
 
   <div class="auth-page">
     <div class="auth-left">
-      <a href="/" class="back-link">← Back to Home</a>
+      <a href="/" class="back-link" data-key="backHome">← Back to Home</a>
 
       <div class="brand-box">
         <img src="/logo.png" class="auth-logo" />
         <div>
           <h1>Vehicall</h1>
-          <p>Smart QR Vehicle Alert System</p>
+          <p data-key="brandSubtitle">Smart QR Vehicle Alert System</p>
         </div>
       </div>
 
-      <h2>Protect your vehicle communication.</h2>
-      <p class="hero-text">
+      <h2 data-key="leftTitle">Protect your vehicle communication.</h2>
+      <p class="hero-text" data-key="leftText">
         Register your vehicle, generate a QR sticker, and receive alerts without displaying your mobile number publicly.
       </p>
 
       <div class="benefits">
-        <div>✓ Free Welcome Plan for 2 months</div>
-        <div>✓ 3 alerts per month included</div>
-        <div>✓ QR generation included</div>
-        <div>✓ Privacy-first alert flow</div>
+        <div data-key="benefit1">✓ Welcome Pack with 2 months validity</div>
+        <div data-key="benefit2">✓ 3 alerts per month included</div>
+        <div data-key="benefit3">✓ QR generation included</div>
+        <div data-key="benefit4">✓ Privacy-first alert flow</div>
       </div>
     </div>
 
     <div class="auth-right">
+      <div class="auth-lang-switch">
+        <button id="btnEn" onclick="setLang('en')">EN</button>
+        <button id="btnAr" onclick="setLang('ar')">العربية</button>
+      </div>
+
       <div class="auth-card">
         <div class="tabs">
-          <button id="loginTab" class="active" onclick="showLogin()">Login</button>
-          <button id="registerTab" onclick="showRegister()">Register</button>
+          <button id="loginTab" class="active" onclick="showLogin()" data-key="loginTab">Login</button>
+          <button id="registerTab" onclick="showRegister()" data-key="registerTab">Register</button>
         </div>
 
         <div id="messageBox"></div>
 
         <form id="loginForm" class="form-section">
-          <h3>Login to Dashboard</h3>
+          <h3 data-key="loginTitle">Login to Dashboard</h3>
 
-          <label>Vehicle Number</label>
-          <input type="text" id="loginVehicle" placeholder="Example: M 12345" required />
+          <label data-key="vehicleLabel">Vehicle Number</label>
+          <input type="text" id="loginVehicle" placeholder="Example: M 12345" required data-placeholder-key="vehiclePlaceholder" />
 
-          <label>Password</label>
-          <input type="password" id="loginPassword" placeholder="Enter password" required />
-<a href="/forgot-password.html" style="
-  display:block;
-  text-align:right;
-  margin-top:-8px;
-  margin-bottom:16px;
-  color:#0b4f9c;
-  font-weight:bold;
-  text-decoration:none;
-  font-size:14px;
-">
-  Forgot Password?
-</a>
+          <label data-key="passwordLabel">Password</label>
+          <input type="password" id="loginPassword" placeholder="Enter password" required data-placeholder-key="passwordPlaceholder" />
 
-          <button type="submit" class="primary-btn">Login</button>
+          <a href="/forgot-password.html" class="forgot-link" data-key="forgotPassword" style="
+            display:block;
+            text-align:right;
+            margin-top:-8px;
+            margin-bottom:16px;
+            color:#0b4f9c;
+            font-weight:bold;
+            text-decoration:none;
+            font-size:14px;
+          ">
+            Forgot Password?
+          </a>
+
+          <button type="submit" class="primary-btn" data-key="loginButton">Login</button>
         </form>
 
         <form id="registerForm" class="form-section hidden">
-          <h3>Create Vehicle Account</h3>
+          <h3 data-key="registerTitle">Create Vehicle Account</h3>
 
-          <label>Full Name</label>
-          <input type="text" id="regName" placeholder="Enter your name" required />
+          <label data-key="nameLabel">Full Name</label>
+          <input type="text" id="regName" placeholder="Enter your name" required data-placeholder-key="namePlaceholder" />
 
-          <label>Mobile Number</label>
-          <input type="text" id="regMobile" placeholder="968XXXXXXXX" required />
+          <label data-key="mobileLabel">Mobile Number</label>
+          <input type="text" id="regMobile" placeholder="968XXXXXXXX" required data-placeholder-key="mobilePlaceholder" />
 
-          <label>Vehicle Number</label>
-          <input type="text" id="regVehicle" placeholder="Example: M 12345" required />
+          <label data-key="vehicleLabel">Vehicle Number</label>
+          <input type="text" id="regVehicle" placeholder="Example: M 12345" required data-placeholder-key="vehiclePlaceholder" />
 
-          <label>Password</label>
-          <input type="password" id="regPassword" placeholder="Create password" required />
+          <label data-key="passwordLabel">Password</label>
+          <input type="password" id="regPassword" placeholder="Create password" required data-placeholder-key="createPasswordPlaceholder" />
 
           <div class="consent-box">
             <input type="checkbox" id="consentAccepted" />
-            <span>
+            <span data-key="consentText">
               I agree to use Vehicall responsibly and accept the privacy-first vehicle alert process.
             </span>
           </div>
 
-          <button type="submit" class="primary-btn">Register & Activate Welcome Plan</button>
+          <button type="submit" class="primary-btn" data-key="registerButton">Register & Activate Welcome Pack</button>
         </form>
       </div>
     </div>
   </div>
 
   <script>
+    const translations = {
+      en: {
+        backHome: "← Back to Home",
+        brandSubtitle: "Smart QR Vehicle Alert System",
+        leftTitle: "Protect your vehicle communication.",
+        leftText: "Register your vehicle, generate a QR sticker, and receive alerts without displaying your mobile number publicly.",
+        benefit1: "✓ Welcome Pack with 2 months validity",
+        benefit2: "✓ 3 alerts per month included",
+        benefit3: "✓ QR generation included",
+        benefit4: "✓ Privacy-first alert flow",
+
+        loginTab: "Login",
+        registerTab: "Register",
+        loginTitle: "Login to Dashboard",
+        registerTitle: "Create Vehicle Account",
+        vehicleLabel: "Vehicle Number",
+        passwordLabel: "Password",
+        nameLabel: "Full Name",
+        mobileLabel: "Mobile Number",
+        forgotPassword: "Forgot Password?",
+        consentText: "I agree to use Vehicall responsibly and accept the privacy-first vehicle alert process.",
+        loginButton: "Login",
+        registerButton: "Register & Activate Welcome Pack",
+
+        vehiclePlaceholder: "Example: M 12345",
+        passwordPlaceholder: "Enter password",
+        namePlaceholder: "Enter your name",
+        mobilePlaceholder: "968XXXXXXXX",
+        createPasswordPlaceholder: "Create password",
+
+        msgRegistrationSuccess: "Registration successful",
+        msgRegistrationFailed: "Registration failed",
+        msgInvalidLogin: "Invalid login"
+      },
+
+      ar: {
+        backHome: "→ العودة إلى الرئيسية",
+        brandSubtitle: "نظام تنبيه ذكي للمركبات عبر QR",
+        leftTitle: "احمِ تواصل مركبتك.",
+        leftText: "سجّل مركبتك، أنشئ ملصق QR، واستلم التنبيهات دون عرض رقم هاتفك للعامة.",
+        benefit1: "✓ باقة الترحيب بصلاحية شهرين",
+        benefit2: "✓ تشمل 3 تنبيهات شهرياً",
+        benefit3: "✓ إنشاء QR مشمول",
+        benefit4: "✓ نظام تنبيه يحافظ على الخصوصية",
+
+        loginTab: "تسجيل الدخول",
+        registerTab: "تسجيل",
+        loginTitle: "تسجيل الدخول إلى لوحة التحكم",
+        registerTitle: "إنشاء حساب للمركبة",
+        vehicleLabel: "رقم المركبة",
+        passwordLabel: "كلمة المرور",
+        nameLabel: "الاسم الكامل",
+        mobileLabel: "رقم الهاتف",
+        forgotPassword: "نسيت كلمة المرور؟",
+        consentText: "أوافق على استخدام Vehicall بشكل مسؤول وأقبل نظام التنبيه الذي يحافظ على الخصوصية.",
+        loginButton: "تسجيل الدخول",
+        registerButton: "تسجيل وتفعيل باقة الترحيب",
+
+        vehiclePlaceholder: "مثال: M 12345",
+        passwordPlaceholder: "أدخل كلمة المرور",
+        namePlaceholder: "أدخل اسمك",
+        mobilePlaceholder: "968XXXXXXXX",
+        createPasswordPlaceholder: "أنشئ كلمة مرور",
+
+        msgRegistrationSuccess: "تم التسجيل بنجاح",
+        msgRegistrationFailed: "فشل التسجيل",
+        msgInvalidLogin: "بيانات الدخول غير صحيحة"
+      }
+    };
+
+    function getLang() {
+      return localStorage.getItem("vehicallLang") || "en";
+    }
+
+    function setLang(lang) {
+      localStorage.setItem("vehicallLang", lang);
+      applyLang();
+    }
+
+    function applyLang() {
+      const lang = getLang();
+      const dict = translations[lang];
+
+      document.documentElement.lang = lang;
+      document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
+
+      if (lang === "ar") {
+        document.body.classList.add("rtl");
+      } else {
+        document.body.classList.remove("rtl");
+      }
+
+      document.querySelectorAll("[data-key]").forEach(el => {
+        const key = el.getAttribute("data-key");
+        if (dict[key]) {
+          el.innerText = dict[key];
+        }
+      });
+
+      document.querySelectorAll("[data-placeholder-key]").forEach(el => {
+        const key = el.getAttribute("data-placeholder-key");
+        if (dict[key]) {
+          el.placeholder = dict[key];
+        }
+      });
+
+      document.getElementById("btnEn").classList.toggle("active", lang === "en");
+      document.getElementById("btnAr").classList.toggle("active", lang === "ar");
+    }
+
     function showMessage(message, type = 'success') {
       const box = document.getElementById('messageBox');
       box.innerText = message;
@@ -142,12 +324,13 @@
       });
 
       const data = await res.json();
+      const dict = translations[getLang()];
 
       if (res.ok) {
-        showMessage(data.message || 'Registration successful', 'success');
+        showMessage(data.message || dict.msgRegistrationSuccess, 'success');
         showLogin();
       } else {
-        showMessage(data.message || 'Registration failed', 'error');
+        showMessage(data.message || dict.msgRegistrationFailed, 'error');
       }
     });
 
@@ -166,14 +349,17 @@
       });
 
       const data = await res.json();
+      const dict = translations[getLang()];
 
       if (res.ok) {
         localStorage.setItem('vehicallUser', JSON.stringify(data));
         window.location.href = '/dashboard.html';
       } else {
-        showMessage(data.message || 'Invalid login', 'error');
+        showMessage(data.message || dict.msgInvalidLogin, 'error');
       }
     });
+
+    applyLang();
   </script>
 
 </body>

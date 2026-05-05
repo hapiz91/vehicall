@@ -1,60 +1,140 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" dir="ltr">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Vehicall Dashboard</title>
   <link rel="stylesheet" href="dashboard.css"/>
+
+  <style>
+    .dash-lang-switch {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      margin-left: auto;
+      margin-right: 16px;
+    }
+
+    .dash-lang-switch button {
+      border: 1px solid #cbd5e1;
+      background: #ffffff;
+      color: #0b1f3a;
+      padding: 9px 12px;
+      border-radius: 12px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .dash-lang-switch button.active {
+      background: #0b1f3a;
+      color: #ffffff;
+    }
+
+    body.rtl {
+      direction: rtl;
+      text-align: right;
+      font-family: Arial, Tahoma, sans-serif;
+    }
+
+    body.rtl .brand,
+    body.rtl .dashboard-header,
+    body.rtl .hero-card,
+    body.rtl .detail-row,
+    body.rtl .sticker-top {
+      direction: rtl;
+    }
+
+    body.rtl .dash-lang-switch {
+      margin-left: 16px;
+      margin-right: auto;
+    }
+
+    body.rtl .qr-info ul {
+      padding-right: 20px;
+      padding-left: 0;
+    }
+
+    body.rtl .live-alert-popup {
+      right: auto;
+      left: 22px;
+    }
+
+    body.rtl .close-popup {
+      right: auto;
+      left: 12px;
+    }
+
+    @media (max-width: 950px) {
+      .dash-lang-switch {
+        margin: 10px 0;
+      }
+    }
+  </style>
 </head>
 <body>
+
+<div id="liveAlertPopup" class="live-alert-popup hidden">
+  <div class="live-alert-icon">🚨</div>
+  <div>
+    <h3 data-key="liveTitle">New Vehicall Alert</h3>
+    <p id="liveAlertText">Your vehicle received a new alert.</p>
+    <button onclick="goAlertHistory()" data-key="viewHistory">View Alert History</button>
+  </div>
+  <button class="close-popup" onclick="closeLivePopup()">×</button>
+</div>
 
 <header class="dashboard-header">
   <div class="brand">
     <img src="/logo.png" class="logo"/>
     <div>
       <h2>Vehicall</h2>
-      <p>Smart QR Vehicle Alert System</p>
+      <p data-key="brandSubtitle">Smart QR Vehicle Alert System</p>
     </div>
   </div>
 
-  <button onclick="logout()" class="logout-btn">Logout</button>
+  <div class="dash-lang-switch">
+    <button id="btnEn" onclick="setLang('en')">EN</button>
+    <button id="btnAr" onclick="setLang('ar')">العربية</button>
+  </div>
+
+  <button onclick="logout()" class="logout-btn" data-key="logout">Logout</button>
 </header>
 
 <main class="container">
 
   <section class="hero-card">
     <div>
-      <span class="welcome-badge">Vehicle Dashboard</span>
+      <span class="welcome-badge" data-key="vehicleDashboard">Vehicle Dashboard</span>
       <h1 id="vehicleNumber">Vehicle</h1>
-      <p>
+      <p data-key="heroText">
         Manage your QR sticker, alert limits, plan validity and privacy-first vehicle notifications.
       </p>
     </div>
 
     <div class="plan-pill">
-      <span>Current Plan</span>
+      <span data-key="currentPlan">Current Plan</span>
       <b id="planInfo">-</b>
     </div>
   </section>
 
   <section class="stats-grid">
     <div class="stat-card">
-      <span>Alerts Used</span>
+      <span data-key="alertsUsedLabel">Alerts Used</span>
       <h2 id="alertsUsed">0</h2>
     </div>
 
     <div class="stat-card">
-      <span>Alerts Limit</span>
+      <span data-key="alertsLimitLabel">Alerts Limit</span>
       <h2 id="alertsLimit">0</h2>
     </div>
 
     <div class="stat-card">
-      <span>Plan Expiry</span>
+      <span data-key="planExpiryLabel">Plan Expiry</span>
       <h2 id="planEnd">-</h2>
     </div>
 
     <div class="stat-card">
-      <span>QR Status</span>
+      <span data-key="qrStatusLabel">QR Status</span>
       <h2 id="qrStatus">Pending</h2>
     </div>
   </section>
@@ -62,43 +142,43 @@
   <section class="dashboard-grid">
 
     <div class="panel">
-      <h2>Quick Actions</h2>
+      <h2 data-key="quickActions">Quick Actions</h2>
 
       <div class="action-grid">
-        <button onclick="generateQR()" class="primary-btn">Generate QR</button>
-        <button onclick="downloadSticker()">Download Sticker</button>
-        <button onclick="goUpgrade()">Upgrade Plan</button>
-        <button onclick="manageContacts()">Manage Contacts</button>
-        <button onclick="goAlertHistory()">Alert History</button>
+        <button onclick="generateQR()" class="primary-btn" data-key="generateQR">Generate QR</button>
+        <button onclick="downloadSticker()" data-key="downloadSticker">Download Sticker</button>
+        <button onclick="goUpgrade()" data-key="upgradePlan">Upgrade Plan</button>
+        <button onclick="manageContacts()" data-key="manageContacts">Manage Contacts</button>
+        <button onclick="goAlertHistory()" data-key="alertHistory">Alert History</button>
       </div>
 
       <div class="notice-box">
-        <b>Privacy Reminder</b>
-        <p>Your mobile number is not displayed publicly on the QR sticker.</p>
+        <b data-key="liveMonitoring">Live Alert Monitoring Active</b>
+        <p data-key="liveMonitoringText">Your dashboard checks for new alerts automatically every few seconds.</p>
       </div>
     </div>
 
     <div class="panel">
-      <h2>Plan Details</h2>
+      <h2 data-key="planDetails">Plan Details</h2>
 
       <div class="detail-row">
-        <span>Vehicle Number</span>
+        <span data-key="vehicleNumberLabel">Vehicle Number</span>
         <b id="detailVehicle">-</b>
       </div>
 
       <div class="detail-row">
-        <span>Contacts Allowed</span>
+        <span data-key="contactsAllowed">Contacts Allowed</span>
         <b id="contactsCount">1</b>
       </div>
 
       <div class="detail-row">
-        <span>Location Enabled</span>
+        <span data-key="locationEnabled">Location Enabled</span>
         <b id="locationStatus">No</b>
       </div>
 
       <div class="detail-row">
-        <span>Payment Status</span>
-        <b id="paymentStatus">-</b>
+        <span data-key="paymentStatus">Payment Status</span>
+        <b id="paymentStatusValue">-</b>
       </div>
     </div>
 
@@ -106,17 +186,17 @@
 
   <section class="qr-area">
     <div class="qr-info">
-      <span class="welcome-badge">Smart QR Sticker</span>
-      <h2>Your Vehicall QR Sticker</h2>
-      <p>
+      <span class="welcome-badge" data-key="smartQRSticker">Smart QR Sticker</span>
+      <h2 data-key="yourSticker">Your Vehicall QR Sticker</h2>
+      <p data-key="stickerText">
         Place this sticker on your vehicle where it is clearly visible. Anyone can scan it to alert you
         about blocking, lights on, unlocked vehicle, emergency or other attention-needed cases.
       </p>
 
       <ul>
-        <li>No public mobile number display</li>
-        <li>Vehicall-branded alert flow</li>
-        <li>Designed for Oman vehicle safety use</li>
+        <li data-key="stickerPoint1">No public mobile number display</li>
+        <li data-key="stickerPoint2">Vehicall-branded alert flow</li>
+        <li data-key="stickerPoint3">Designed for Oman vehicle safety use</li>
       </ul>
     </div>
 
@@ -125,30 +205,30 @@
         <img src="/logo.png" class="sticker-logo"/>
         <div>
           <h3>Vehicall</h3>
-          <p>Smart Vehicle Alert</p>
+          <p data-key="smartVehicleAlert">Smart Vehicle Alert</p>
         </div>
       </div>
 
       <div class="sticker-title">
-        <h2>SCAN TO ALERT OWNER</h2>
-        <p>Privacy-first vehicle QR alert system</p>
+        <h2 data-key="scanToAlert">SCAN TO ALERT OWNER</h2>
+        <p data-key="privacyStickerText">Privacy-first vehicle QR alert system</p>
       </div>
 
       <div class="qr-box">
         <img id="qrImage" />
-        <div id="qrPlaceholder">Generate QR</div>
+        <div id="qrPlaceholder" data-key="generateQRPlaceholder">Generate QR</div>
       </div>
 
       <div class="sticker-alerts">
-        <span>🚗 Blocking</span>
-        <span>💡 Lights On</span>
-        <span>🔓 Not Locked</span>
-        <span>🚨 Emergency</span>
+        <span data-key="blocking">🚗 Blocking</span>
+        <span data-key="lightsOn">💡 Lights On</span>
+        <span data-key="notLocked">🔓 Not Locked</span>
+        <span data-key="emergency">🚨 Emergency</span>
       </div>
 
       <div class="sticker-footer">
-        <p>Vehicle owner number is protected</p>
-        <b>Powered by Vehicall Oman</b>
+        <p data-key="numberProtected">Vehicle owner number is protected</p>
+        <b data-key="poweredBy">Powered by Vehicall Oman</b>
       </div>
     </div>
   </section>
@@ -158,11 +238,167 @@
 <canvas id="stickerCanvas" width="900" height="1200" style="display:none;"></canvas>
 
 <script>
+const translations = {
+  en: {
+    brandSubtitle: "Smart QR Vehicle Alert System",
+    logout: "Logout",
+    vehicleDashboard: "Vehicle Dashboard",
+    heroText: "Manage your QR sticker, alert limits, plan validity and privacy-first vehicle notifications.",
+    currentPlan: "Current Plan",
+
+    alertsUsedLabel: "Alerts Used",
+    alertsLimitLabel: "Alerts Limit",
+    planExpiryLabel: "Plan Expiry",
+    qrStatusLabel: "QR Status",
+    active: "Active",
+    pending: "Pending",
+    yes: "Yes",
+    no: "No",
+
+    quickActions: "Quick Actions",
+    generateQR: "Generate QR",
+    downloadSticker: "Download Sticker",
+    upgradePlan: "Upgrade Plan",
+    manageContacts: "Manage Contacts",
+    alertHistory: "Alert History",
+
+    liveMonitoring: "Live Alert Monitoring Active",
+    liveMonitoringText: "Your dashboard checks for new alerts automatically every few seconds.",
+    planDetails: "Plan Details",
+    vehicleNumberLabel: "Vehicle Number",
+    contactsAllowed: "Contacts Allowed",
+    locationEnabled: "Location Enabled",
+    paymentStatus: "Payment Status",
+
+    smartQRSticker: "Smart QR Sticker",
+    yourSticker: "Your Vehicall QR Sticker",
+    stickerText: "Place this sticker on your vehicle where it is clearly visible. Anyone can scan it to alert you about blocking, lights on, unlocked vehicle, emergency or other attention-needed cases.",
+    stickerPoint1: "No public mobile number display",
+    stickerPoint2: "Vehicall-branded alert flow",
+    stickerPoint3: "Designed for Oman vehicle safety use",
+
+    smartVehicleAlert: "Smart Vehicle Alert",
+    scanToAlert: "SCAN TO ALERT OWNER",
+    privacyStickerText: "Privacy-first vehicle QR alert system",
+    generateQRPlaceholder: "Generate QR",
+    blocking: "🚗 Blocking",
+    lightsOn: "💡 Lights On",
+    notLocked: "🔓 Not Locked",
+    emergency: "🚨 Emergency",
+    numberProtected: "Vehicle owner number is protected",
+    poweredBy: "Powered by Vehicall Oman",
+
+    liveTitle: "New Vehicall Alert",
+    liveDefault: "Your vehicle received a new alert.",
+    viewHistory: "View Alert History",
+
+    qrReady: "Vehicall branded QR sticker is ready.",
+    qrFailed: "QR generation failed",
+    generateFirst: "Generate QR first"
+  },
+
+  ar: {
+    brandSubtitle: "نظام تنبيه ذكي للمركبات عبر QR",
+    logout: "تسجيل الخروج",
+    vehicleDashboard: "لوحة تحكم المركبة",
+    heroText: "إدارة ملصق QR، حدود التنبيهات، صلاحية الباقة وتنبيهات المركبة مع الحفاظ على الخصوصية.",
+    currentPlan: "الباقة الحالية",
+
+    alertsUsedLabel: "التنبيهات المستخدمة",
+    alertsLimitLabel: "حد التنبيهات",
+    planExpiryLabel: "انتهاء الباقة",
+    qrStatusLabel: "حالة QR",
+    active: "نشط",
+    pending: "قيد الانتظار",
+    yes: "نعم",
+    no: "لا",
+
+    quickActions: "الإجراءات السريعة",
+    generateQR: "إنشاء QR",
+    downloadSticker: "تحميل الملصق",
+    upgradePlan: "ترقية الباقة",
+    manageContacts: "إدارة جهات الاتصال",
+    alertHistory: "سجل التنبيهات",
+
+    liveMonitoring: "مراقبة التنبيهات المباشرة مفعلة",
+    liveMonitoringText: "تقوم لوحة التحكم بالتحقق من التنبيهات الجديدة تلقائياً كل بضع ثوانٍ.",
+    planDetails: "تفاصيل الباقة",
+    vehicleNumberLabel: "رقم المركبة",
+    contactsAllowed: "عدد جهات الاتصال المسموح",
+    locationEnabled: "الموقع مفعل",
+    paymentStatus: "حالة الدفع",
+
+    smartQRSticker: "ملصق QR الذكي",
+    yourSticker: "ملصق Vehicall QR الخاص بك",
+    stickerText: "ضع هذا الملصق على مركبتك في مكان واضح. يمكن لأي شخص مسحه لتنبيهك عن إعاقة الطريق، الأنوار، عدم إغلاق المركبة، الحالات الطارئة أو أي حالة تحتاج إلى انتباه.",
+    stickerPoint1: "لا يتم عرض رقم الهاتف للعامة",
+    stickerPoint2: "تدفق تنبيه بعلامة Vehicall",
+    stickerPoint3: "مصمم لاستخدام سلامة المركبات في عُمان",
+
+    smartVehicleAlert: "تنبيه ذكي للمركبة",
+    scanToAlert: "امسح لتنبيه مالك المركبة",
+    privacyStickerText: "نظام تنبيه QR يحافظ على الخصوصية",
+    generateQRPlaceholder: "إنشاء QR",
+    blocking: "🚗 إعاقة الطريق",
+    lightsOn: "💡 الأنوار تعمل",
+    notLocked: "🔓 المركبة غير مغلقة",
+    emergency: "🚨 حالة طارئة",
+    numberProtected: "رقم مالك المركبة محمي",
+    poweredBy: "مدعوم من Vehicall عُمان",
+
+    liveTitle: "تنبيه جديد من Vehicall",
+    liveDefault: "تم استلام تنبيه جديد لمركبتك.",
+    viewHistory: "عرض سجل التنبيهات",
+
+    qrReady: "ملصق QR الخاص بـ Vehicall جاهز.",
+    qrFailed: "فشل إنشاء QR",
+    generateFirst: "يرجى إنشاء QR أولاً"
+  }
+};
+
 let user = JSON.parse(localStorage.getItem('vehicallUser'));
 let currentQRImage = '';
+let lastKnownAlertId = localStorage.getItem('vehicallLastAlertId') || null;
+let firstAlertCheckDone = false;
 
 if (!user) {
   window.location.href = '/login.html';
+}
+
+function getLang() {
+  return localStorage.getItem("vehicallLang") || "en";
+}
+
+function setLang(lang) {
+  localStorage.setItem("vehicallLang", lang);
+  applyLang();
+  loadUserData();
+}
+
+function t(key) {
+  const lang = getLang();
+  return translations[lang][key] || translations.en[key] || key;
+}
+
+function applyLang() {
+  const lang = getLang();
+
+  document.documentElement.lang = lang;
+  document.documentElement.dir = lang === "ar" ? "rtl" : "ltr";
+
+  if (lang === "ar") {
+    document.body.classList.add("rtl");
+  } else {
+    document.body.classList.remove("rtl");
+  }
+
+  document.querySelectorAll("[data-key]").forEach(el => {
+    const key = el.getAttribute("data-key");
+    el.innerText = t(key);
+  });
+
+  document.getElementById("btnEn").classList.toggle("active", lang === "en");
+  document.getElementById("btnAr").classList.toggle("active", lang === "ar");
 }
 
 function loadUserData() {
@@ -172,12 +408,13 @@ function loadUserData() {
   document.getElementById('alertsUsed').innerText = user.alertsUsed || 0;
   document.getElementById('alertsLimit').innerText = user.alertsLimit || 0;
   document.getElementById('planEnd').innerText = user.planEnd ? new Date(user.planEnd).toLocaleDateString() : '-';
-  document.getElementById('qrStatus').innerText = user.qr_generated ? 'Active' : 'Pending';
+  document.getElementById('qrStatus').innerText = user.qr_generated ? t('active') : t('pending');
   document.getElementById('contactsCount').innerText = user.contactsLimit || 1;
-  document.getElementById('locationStatus').innerText = user.locationEnabled ? 'Yes' : 'No';
-  document.getElementById('paymentStatus').innerText = user.paymentStatus || '-';
+  document.getElementById('locationStatus').innerText = user.locationEnabled ? t('yes') : t('no');
+  document.getElementById('paymentStatusValue').innerText = user.paymentStatus || '-';
 }
 
+applyLang();
 loadUserData();
 
 async function refreshUser() {
@@ -187,6 +424,84 @@ async function refreshUser() {
     user = await res.json();
     localStorage.setItem('vehicallUser', JSON.stringify(user));
     loadUserData();
+  }
+}
+
+async function checkLiveAlerts() {
+  if (!user || !user.vehicleNumber) return;
+
+  try {
+    const res = await fetch('/owner-alerts/' + encodeURIComponent(user.vehicleNumber));
+
+    if (!res.ok) return;
+
+    const alerts = await res.json();
+
+    if (!alerts || alerts.length === 0) return;
+
+    const latestAlert = alerts[0];
+
+    if (!firstAlertCheckDone) {
+      firstAlertCheckDone = true;
+
+      if (!lastKnownAlertId) {
+        lastKnownAlertId = latestAlert.id;
+        localStorage.setItem('vehicallLastAlertId', latestAlert.id);
+      }
+
+      return;
+    }
+
+    if (latestAlert.id && latestAlert.id !== lastKnownAlertId) {
+      lastKnownAlertId = latestAlert.id;
+      localStorage.setItem('vehicallLastAlertId', latestAlert.id);
+
+      await refreshUser();
+      showLiveAlert(latestAlert);
+      playAlertSound();
+    }
+
+  } catch (error) {
+    console.log('Live alert check failed:', error);
+  }
+}
+
+function showLiveAlert(alert) {
+  const popup = document.getElementById('liveAlertPopup');
+  const text = document.getElementById('liveAlertText');
+
+  text.innerText = `${alert.alertLabel || alert.alertType || t('liveDefault')} - ${alert.vehicleNumber || user.vehicleNumber}`;
+
+  popup.classList.remove('hidden');
+
+  setTimeout(() => {
+    popup.classList.add('hidden');
+  }, 12000);
+}
+
+function closeLivePopup() {
+  document.getElementById('liveAlertPopup').classList.add('hidden');
+}
+
+function playAlertSound() {
+  try {
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+
+    oscillator.frequency.value = 880;
+    oscillator.type = 'sine';
+
+    gainNode.gain.setValueAtTime(0.12, audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.8);
+
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + 0.8);
+  } catch (err) {
+    console.log('Sound not available');
   }
 }
 
@@ -206,9 +521,9 @@ async function generateQR() {
     document.getElementById('qrPlaceholder').style.display = 'none';
 
     await refreshUser();
-    alert('Vehicall branded QR sticker is ready.');
+    alert(t('qrReady'));
   } else {
-    alert(data.message || 'QR generation failed');
+    alert(data.message || t('qrFailed'));
   }
 }
 
@@ -226,6 +541,7 @@ function goAlertHistory() {
 
 function logout() {
   localStorage.removeItem('vehicallUser');
+  localStorage.removeItem('vehicallLastAlertId');
   window.location.href = '/login.html';
 }
 
@@ -243,7 +559,7 @@ async function downloadSticker() {
   const qrSrc = document.getElementById('qrImage').src;
 
   if (!qrSrc) {
-    alert('Generate QR first');
+    alert(t('generateFirst'));
     return;
   }
 
@@ -266,20 +582,21 @@ async function downloadSticker() {
 
   ctx.fillStyle = '#0b1f3a';
   ctx.font = 'bold 52px Arial';
+  ctx.textAlign = 'left';
   ctx.fillText('Vehicall', 245, 165);
 
   ctx.fillStyle = '#667085';
   ctx.font = '26px Arial';
-  ctx.fillText('Smart Vehicle Alert System', 245, 205);
+  ctx.fillText(t('smartVehicleAlert'), 245, 205);
 
   ctx.fillStyle = '#0b1f3a';
   ctx.font = 'bold 42px Arial';
   ctx.textAlign = 'center';
-  ctx.fillText('SCAN TO ALERT OWNER', 450, 305);
+  ctx.fillText(t('scanToAlert'), 450, 305);
 
   ctx.fillStyle = '#475467';
   ctx.font = '26px Arial';
-  ctx.fillText('Privacy-first vehicle QR alert system', 450, 345);
+  ctx.fillText(t('privacyStickerText'), 450, 345);
 
   const qr = await loadImage(qrSrc);
   ctx.fillStyle = '#f4f7fb';
@@ -288,16 +605,16 @@ async function downloadSticker() {
 
   ctx.fillStyle = '#0b1f3a';
   ctx.font = 'bold 24px Arial';
-  ctx.fillText('🚗 Blocking   💡 Lights On', 450, 900);
-  ctx.fillText('🔓 Not Locked   🚨 Emergency', 450, 940);
+  ctx.fillText(`${t('blocking')}   ${t('lightsOn')}`, 450, 900);
+  ctx.fillText(`${t('notLocked')}   ${t('emergency')}`, 450, 940);
 
   ctx.fillStyle = '#667085';
   ctx.font = '24px Arial';
-  ctx.fillText('Vehicle owner number is protected', 450, 1010);
+  ctx.fillText(t('numberProtected'), 450, 1010);
 
   ctx.fillStyle = '#0b1f3a';
   ctx.font = 'bold 28px Arial';
-  ctx.fillText('Powered by Vehicall Oman', 450, 1060);
+  ctx.fillText(t('poweredBy'), 450, 1060);
 
   ctx.textAlign = 'left';
 
@@ -324,6 +641,9 @@ function roundRect(ctx, x, y, width, height, radius, fill) {
     ctx.fill();
   }
 }
+
+checkLiveAlerts();
+setInterval(checkLiveAlerts, 10000);
 </script>
 
 </body>

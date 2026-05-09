@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vehicall Fleet Users</title>
+<style>
+body{margin:0;font-family:Arial,sans-serif;background:#07111f;color:#fff}
+.header{display:flex;justify-content:space-between;align-items:center;padding:18px 30px;background:#0b1b2d;border-bottom:1px solid #1d3553}
+.brand{display:flex;align-items:center;gap:14px}.brand img{height:46px}.brand h2{margin:0}.brand p{margin:2px 0 0;color:#9fb0c5;font-size:13px}
+.nav a{color:#6ecbff;margin-left:16px;text-decoration:none;font-size:14px}
+.container{max-width:1250px;margin:30px auto;padding:0 20px}
+.card{background:#0f1f33;border:1px solid #20344d;border-radius:20px;padding:24px;margin-bottom:24px}
+.form-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+label{display:block;margin-bottom:8px;color:#9fb0c5}
+input,select{width:100%;padding:13px;border-radius:10px;border:1px solid #29496d;background:#081827;color:#fff;box-sizing:border-box}
+button{padding:13px 18px;border:none;border-radius:12px;background:linear-gradient(135deg,#00c2ff,#0066ff);color:#fff;font-weight:bold;cursor:pointer}
+.user-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+.user-card{background:#081827;border:1px solid #223854;border-radius:16px;padding:18px}
+.user-card h3{margin:0 0 10px;color:#6ecbff}.user-card p{margin:7px 0;color:#d6e2f0;font-size:14px}.user-card strong{color:#8fb3d9}
+.badge{display:inline-block;padding:6px 12px;border-radius:999px;font-size:12px;font-weight:bold;text-transform:uppercase}
+.active{background:rgba(0,180,120,.15);color:#70ffc8}.inactive{background:rgba(255,70,70,.15);color:#ff9c9c}
+#message{display:none;margin-bottom:18px;padding:13px;border-radius:12px}.success{display:block!important;background:rgba(0,180,120,.15);color:#70ffc8}.error{display:block!important;background:rgba(255,70,70,.15);color:#ff9c9c}
+@media(max-width:900px){.form-grid,.user-grid{grid-template-columns:1fr}.header{flex-direction:column;align-items:flex-start;gap:12px}}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="brand">
+    <img src="/logo.png">
+    <div>
+      <h2>Fleet Users & Roles</h2>
+      <p>Create users with role-based limitations</p>
+    </div>
+  </div>
+  <div class="nav">
+    <a href="/fleet-dashboard">Dashboard</a>
+    <a href="/fleet-vehicles">Vehicles</a>
+    <a href="/fleet-drivers">Drivers</a>
+    <a href="/api/fleet/logout">Logout</a>
+  </div>
+</div>
+
+<div class="container">
+  <div id="message"></div>
+
+  <div class="card">
+    <h2>Create Fleet User</h2>
+
+    <form id="userForm">
+      <div class="form-grid">
+        <div>
+          <label>Full Name</label>
+          <input name="name" required>
+        </div>
+
+        <div>
+          <label>Email</label>
+          <input type="email" name="email" required>
+        </div>
+
+        <div>
+          <label>Mobile</label>
+          <input name="mobile" placeholder="968XXXXXXXX">
+        </div>
+
+        <div>
+          <label>Password</label>
+          <input type="password" name="password" required>
+        </div>
+
+        <div>
+          <label>Role</label>
+          <select name="role" required>
+            <option value="">Select Role</option>
+            <option value="fleet_owner">Fleet Owner</option>
+            <option value="fleet_manager">Fleet Manager</option>
+            <option value="dispatcher">Dispatcher</option>
+            <option value="maintenance_officer">Maintenance Officer</option>
+            <option value="driver">Driver</option>
+            <option value="viewer">Viewer</option>
+          </select>
+        </div>
+
+        <div>
+          <label>Status</label>
+          <select name="status">
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
+        </div>
+
+        <div style="display:flex;align-items:end;">
+          <button type="submit" style="width:100%;">Create User</button>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <div class="card">
+    <h2>Fleet Users</h2>
+    <div id="usersList" class="user-grid">Loading...</div>
+  </div>
+</div>
+
+<script>
+const form=document.getElementById("userForm");
+const usersList=document.getElementById("usersList");
+const messageBox=document.getElementById("message");
+
+function showMessage(text,type){
+  messageBox.className=type;
+  messageBox.textContent=text;
+  messageBox.style.display="block";
+  setTimeout(()=>{messageBox.className="";messageBox.style.display="none"},4000);
+}
+
+function roleLabel(role){
+  const labels={
+    fleet_owner:"Fleet Owner",
+    fleet_manager:"Fleet Manager",
+    dispatcher:"Dispatcher",
+    maintenance_officer:"Maintenance Officer",
+    driver:"Driver",
+    viewer:"Viewer"
+  };
+  return labels[role] || role || "-";
+}
+
+async function loadUsers(){
+  try{
+    const res=await fetch("/api/fleet/users");
+    const data=await res.json();
+
+    usersList.innerHTML="";
+
+    if(!data.success){
+      usersList.innerHTML="Please login to Fleet Dashboard.";
+      return;
+    }
+
+    if(!data.users.length){
+      usersList.innerHTML=`<div class="user-card">No users created yet.</div>`;
+      return;
+    }
+
+    data.users.forEach(user=>{
+      usersList.innerHTML+=`
+        <div class="user-card">
+          <h3>${user.name || "-"}</h3>
+          <p><strong>Email:</strong> ${user.email || "-"}</p>
+          <p><strong>Mobile:</strong> ${user.mobile || "-"}</p>
+          <p><strong>Role:</strong> ${roleLabel(user.role)}</p>
+          <p><strong>Permissions:</strong> ${Object.keys(user.permissions || {}).filter(k=>user.permissions[k]).join(", ") || "-"}</p>
+          <span class="badge ${user.status === "inactive" ? "inactive" : "active"}">${user.status || "active"}</span>
+        </div>
+      `;
+    });
+
+  }catch(err){
+    console.error(err);
+    usersList.innerHTML="Unable to load users.";
+  }
+}
+
+form.addEventListener("submit",async e=>{
+  e.preventDefault();
+
+  const formData=new FormData(form);
+  const data=Object.fromEntries(formData.entries());
+
+  try{
+    const res=await fetch("/api/fleet/users",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify(data)
+    });
+
+    const result=await res.json();
+
+    if(result.success){
+      showMessage(result.message,"success");
+      form.reset();
+      loadUsers();
+    }else{
+      showMessage(result.message || "Unable to create user","error");
+    }
+  }catch(err){
+    console.error(err);
+    showMessage("Server error while creating user","error");
+  }
+});
+
+loadUsers();
+</script>
+
+</body>
+</html>

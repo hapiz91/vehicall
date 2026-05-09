@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vehicall Fleet Fuel</title>
+<style>
+body{margin:0;font-family:Arial,sans-serif;background:#07111f;color:#fff}
+.header{display:flex;justify-content:space-between;align-items:center;padding:18px 30px;background:#0b1b2d;border-bottom:1px solid #1d3553}
+.brand{display:flex;align-items:center;gap:14px}.brand img{height:46px}.brand h2{margin:0}.brand p{margin:2px 0 0;color:#9fb0c5;font-size:13px}
+.nav a{color:#6ecbff;margin-left:16px;text-decoration:none;font-size:14px}
+.container{max-width:1250px;margin:30px auto;padding:0 20px}
+.card{background:#0f1f33;border:1px solid #20344d;border-radius:20px;padding:24px;margin-bottom:24px}
+.form-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+label{display:block;margin-bottom:8px;color:#9fb0c5}
+input,select,textarea{width:100%;padding:13px;border-radius:10px;border:1px solid #29496d;background:#081827;color:#fff;box-sizing:border-box}
+textarea{min-height:80px}
+button{padding:13px 18px;border:none;border-radius:12px;background:linear-gradient(135deg,#00c2ff,#0066ff);color:#fff;font-weight:bold;cursor:pointer}
+.fuel-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+.fuel-card{background:#081827;border:1px solid #223854;border-radius:16px;padding:18px}
+.fuel-card h3{margin:0 0 10px;color:#6ecbff}.fuel-card p{margin:7px 0;color:#d6e2f0;font-size:14px}.fuel-card strong{color:#8fb3d9}
+#message{display:none;margin-bottom:18px;padding:13px;border-radius:12px}.success{display:block!important;background:rgba(0,180,120,.15);color:#70ffc8}.error{display:block!important;background:rgba(255,70,70,.15);color:#ff9c9c}
+@media(max-width:900px){.form-grid,.fuel-grid{grid-template-columns:1fr}.header{flex-direction:column;align-items:flex-start;gap:12px}}
+.badge{display:inline-block;padding:6px 10px;border-radius:999px;font-size:12px;font-weight:bold;margin-bottom:8px}
+.badge-pending{background:rgba(255,193,7,.15);color:#ffd666}
+.badge-approved{background:rgba(0,200,120,.15);color:#70ffc8}
+.badge-rejected{background:rgba(255,70,70,.15);color:#ff9c9c}
+.action-row{display:flex;gap:8px;margin-top:12px}
+.btn-approve{background:linear-gradient(135deg,#16a34a,#22c55e)}
+.btn-reject{background:linear-gradient(135deg,#dc2626,#ef4444)}
+.btn-edit{
+  background:#475569;
+}
+
+.modal-overlay{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.75);
+  z-index:9999;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+}
+
+.modal-box{
+  width:100%;
+  max-width:760px;
+  background:#0f1f33;
+  border:1px solid #29496d;
+  border-radius:20px;
+  padding:22px;
+  box-shadow:0 20px 60px rgba(0,0,0,.5);
+}
+
+.modal-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:14px;
+}
+
+.modal-actions{
+  display:flex;
+  gap:12px;
+  margin-top:18px;
+}
+
+.btn-save{background:#2563eb}
+.btn-save-approve{background:#16a34a}
+.btn-cancel{background:#475569}
+
+@media(max-width:700px){
+  .modal-grid{grid-template-columns:1fr}
+  .modal-actions{flex-direction:column}
+}
+
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="brand">
+    <img src="/logo.png">
+    <div>
+      <h2>Fleet Fuel Management</h2>
+      <p>Track fuel, oil, AdBlue and vehicle consumption</p>
+    </div>
+  </div>
+  <div class="nav">
+    <a href="/fleet-dashboard">Dashboard</a>
+    <a href="/fleet-vehicles">Vehicles</a>
+    <a href="/fleet-drivers">Drivers</a>
+    <a href="/api/fleet/logout">Logout</a>
+  </div>
+</div>
+
+<div class="container">
+  <div id="message"></div>
+
+  <div class="card">
+    <h2>Add Fuel / Oil Entry</h2>
+
+    <form id="fuelForm">
+      <div class="form-grid">
+
+        <div>
+          <label>Select Vehicle</label>
+          <select name="vehicleId" id="vehicleSelect" required>
+            <option value="">Loading...</option>
+          </select>
+        </div>
+
+        <div>
+          <label>Select Driver</label>
+          <select name="driverId" id="driverSelect">
+            <option value="">Loading...</option>
+          </select>
+        </div>
+
+        <div>
+          <label>Entry Type</label>
+          <select name="entryType" required>
+            <option value="Fuel">Fuel</option>
+            <option value="Engine Oil">Engine Oil</option>
+            <option value="AdBlue">AdBlue</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+
+        <div>
+          <label>Fuel Type</label>
+          <select name="fuelType">
+            <option value="">Select</option>
+            <option value="Petrol">Petrol</option>
+            <option value="Diesel">Diesel</option>
+            <option value="Super">Super</option>
+            <option value="Regular">Regular</option>
+          </select>
+        </div>
+
+        <div>
+          <label>Liters / Quantity</label>
+          <input type="number" step="0.001" name="liters" placeholder="0.000">
+        </div>
+
+        <div>
+          <label>Amount OMR</label>
+          <input type="number" step="0.001" name="amount" placeholder="0.000" required>
+        </div>
+
+        <div>
+          <label>Odometer Reading</label>
+          <input type="number" name="odometerReading" placeholder="KM reading">
+        </div>
+
+        <div>
+          <label>Fuel Station / Supplier</label>
+          <input name="fuelStation" placeholder="OQ, Shell, Oman Oil, Workshop">
+        </div>
+
+        <div>
+          <label>Payment Method</label>
+          <select name="paymentMethod">
+            <option value="Company Card">Company Card</option>
+            <option value="Cash">Cash</option>
+            <option value="Driver Paid">Driver Paid</option>
+            <option value="Credit Account">Credit Account</option>
+          </select>
+        </div>
+
+        <div>
+          <label>Receipt / Invoice No.</label>
+          <input name="receiptNo" placeholder="Optional">
+        </div>
+
+        <div>
+          <label>Entry Date</label>
+          <input type="date" name="entryDate">
+        </div>
+
+        <div style="grid-column:span 3;">
+          <label>Remarks</label>
+          <textarea name="remarks" placeholder="Any fuel, oil or payment remarks"></textarea>
+        </div>
+
+        <div>
+          <button type="submit">Save Fuel Entry</button>
+        </div>
+
+      </div>
+    </form>
+  </div>
+
+  <div class="card">
+    <h2>Fuel / Oil Records</h2>
+    <div id="fuelList" class="fuel-grid">Loading...</div>
+  </div>
+</div>
+
+<script>
+const form=document.getElementById("fuelForm");
+const messageBox=document.getElementById("message");
+const fuelList=document.getElementById("fuelList");
+const vehicleSelect=document.getElementById("vehicleSelect");
+const driverSelect=document.getElementById("driverSelect");
+
+let fuelRecords = [];
+
+function showMessage(text,type){
+  messageBox.className=type;
+  messageBox.textContent=text;
+  messageBox.style.display="block";
+  setTimeout(()=>{messageBox.className="";messageBox.style.display="none"},4000);
+}
+
+async function loadVehicles(){
+  const res=await fetch("/api/fleet/vehicles");
+  const data=await res.json();
+  vehicleSelect.innerHTML='<option value="">Select Vehicle</option>';
+  if(data.success){
+    data.vehicles.forEach(v=>{
+      vehicleSelect.innerHTML+=`<option value="${v.id}">${v.vehicleNumber}</option>`;
+    });
+  }
+}
+
+async function loadDrivers(){
+  const res=await fetch("/api/fleet/drivers");
+  const data=await res.json();
+  driverSelect.innerHTML='<option value="">Select Driver</option>';
+  if(data.success){
+    data.drivers.forEach(d=>{
+      driverSelect.innerHTML+=`<option value="${d.id}">${d.driverName}</option>`;
+    });
+  }
+}
+
+async function loadFuel(){
+  const res=await fetch("/api/fleet/fuel");
+  const data=await res.json();
+
+  fuelList.innerHTML="";
+
+  if(!data.success){
+    fuelList.innerHTML="Unable to load fuel records.";
+    return;
+  }
+
+  if(!data.records.length){
+    fuelList.innerHTML=`<div class="fuel-card">No fuel records yet.</div>`;
+    return;
+  }
+
+  fuelRecords = data.records;
+
+fuelRecords.sort((a,b)=>{
+  const order = {
+    pending: 1,
+    pending_approval: 1,
+    rejected: 2,
+    approved: 3
+  };
+
+  const aStatus = a.approvalStatus || a.status || "approved";
+  const bStatus = b.approvalStatus || b.status || "approved";
+
+  return (order[aStatus] || 9) - (order[bStatus] || 9);
+});
+
+fuelRecords.forEach(item=>{
+    const approvalStatus = item.approvalStatus || item.status || "approved";
+
+    let badgeClass = "badge-approved";
+    let badgeText = "Approved";
+
+    if(approvalStatus === "pending" || approvalStatus === "pending_approval"){
+      badgeClass = "badge-pending";
+      badgeText = "Pending Approval";
+    }
+
+    if(approvalStatus === "rejected"){
+      badgeClass = "badge-rejected";
+      badgeText = "Rejected";
+    }
+
+    let actionButtons = "";
+
+    if(approvalStatus === "pending" || approvalStatus === "pending_approval"){
+      actionButtons = `
+        <div class="action-row">
+          <button class="btn-edit" onclick="openFuelEditModal('${item.id}')">Edit</button>
+          <button class="btn-approve" onclick="approveFuel('${item.id}')">Approve</button>
+          <button class="btn-reject" onclick="rejectFuel('${item.id}')">Reject</button>
+        </div>
+      `;
+    }
+
+    fuelList.innerHTML+=`
+      <div class="fuel-card">
+        <span class="badge ${badgeClass}">${badgeText}</span>
+        <h3>${item.vehicleNumber || "-"}</h3>
+        <p><strong>Driver:</strong> ${item.driverName || "-"}</p>
+        <p><strong>Entry Type:</strong> ${item.entryType || "-"}</p>
+        <p><strong>Fuel Type:</strong> ${item.fuelType || "-"}</p>
+        <p><strong>Liters/Qty:</strong> ${item.liters || "-"}</p>
+        <p><strong>Amount:</strong> ${item.amount || "0"} OMR</p>
+        <p><strong>Odometer:</strong> ${item.odometerReading || "-"}</p>
+        <p><strong>Station/Supplier:</strong> ${item.fuelStation || "-"}</p>
+        <p><strong>Payment:</strong> ${item.paymentMethod || "-"}</p>
+        <p><strong>Receipt:</strong> ${item.receiptNo || "-"}</p>
+        <p><strong>Date:</strong> ${item.entryDate || "-"}</p>
+        <p><strong>Remarks:</strong> ${item.remarks || "-"}</p>
+        ${item.rejectionReason ? `<p><strong>Rejection Reason:</strong> ${item.rejectionReason}</p>` : ""}
+        ${actionButtons}
+      </div>
+    `;
+  });
+}
+
+async function approveFuel(fuelId){
+  if(!confirm("Approve this fuel entry?")) return;
+
+  const res = await fetch(`/api/fleet/fuel/${fuelId}/approve`, {
+    method: "POST",
+    headers: {"Content-Type":"application/json"}
+  });
+
+  const result = await res.json();
+
+  if(result.success){
+    showMessage(result.message, "success");
+    loadFuel();
+  }else{
+    showMessage(result.message || "Unable to approve fuel entry", "error");
+  }
+}
+
+async function rejectFuel(fuelId){
+  const rejectionReason = prompt("Enter rejection reason:");
+
+  if(!rejectionReason){
+    showMessage("Rejection reason is required", "error");
+    return;
+  }
+
+  const res = await fetch(`/api/fleet/fuel/${fuelId}/reject`, {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify({ rejectionReason })
+  });
+
+  const result = await res.json();
+
+  if(result.success){
+    showMessage(result.message, "success");
+    loadFuel();
+  }else{
+    showMessage(result.message || "Unable to reject fuel entry", "error");
+  }
+}
+
+form.addEventListener("submit",async e=>{
+  e.preventDefault();
+
+  const data=Object.fromEntries(new FormData(form).entries());
+
+  const res=await fetch("/api/fleet/fuel",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify(data)
+  });
+
+  const result=await res.json();
+
+  if(result.success){
+    showMessage(result.message,"success");
+    form.reset();
+    loadFuel();
+  }else{
+    showMessage(result.message || "Unable to save fuel entry","error");
+  }
+});
+
+loadVehicles();
+loadDrivers();
+loadFuel();
+
+function openFuelEditModal(fuelId){
+  const item = fuelRecords.find(x => x.id === fuelId);
+
+  if(!item){
+    showMessage("Fuel record not found","error");
+    return;
+  }
+
+  document.getElementById("editFuelId").value = item.id;
+  document.getElementById("editEntryType").value = item.entryType || "Fuel";
+  document.getElementById("editFuelType").value = item.fuelType || "";
+  document.getElementById("editLiters").value = item.liters || "";
+  document.getElementById("editAmount").value = item.amount || "";
+  document.getElementById("editOdometerReading").value = item.odometerReading || "";
+  document.getElementById("editFuelStation").value = item.fuelStation || "";
+  document.getElementById("editPaymentMethod").value = item.paymentMethod || "Company Card";
+  document.getElementById("editReceiptNo").value = item.receiptNo || "";
+  document.getElementById("editRemarks").value = item.remarks || "";
+  document.getElementById("editCorrectionReason").value = "";
+
+  document.getElementById("fuelEditModal").style.display = "flex";
+}
+
+function closeFuelEditModal(){
+  document.getElementById("fuelEditModal").style.display = "none";
+}
+
+async function saveFuelChanges(approveAfterSave){
+  const fuelId = document.getElementById("editFuelId").value;
+
+  const payload = {
+    entryType: document.getElementById("editEntryType").value,
+    fuelType: document.getElementById("editFuelType").value,
+    liters: document.getElementById("editLiters").value,
+    amount: document.getElementById("editAmount").value,
+    odometerReading: document.getElementById("editOdometerReading").value,
+    fuelStation: document.getElementById("editFuelStation").value,
+    paymentMethod: document.getElementById("editPaymentMethod").value,
+    receiptNo: document.getElementById("editReceiptNo").value,
+    remarks: document.getElementById("editRemarks").value,
+    correctionReason: document.getElementById("editCorrectionReason").value
+  };
+
+  if(!payload.amount){
+    showMessage("Amount is required","error");
+    return;
+  }
+
+  if(!payload.correctionReason){
+    showMessage("Correction reason is required","error");
+    return;
+  }
+
+  const updateRes = await fetch(`/api/fleet/fuel/${fuelId}/update`, {
+    method: "POST",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify(payload)
+  });
+
+  const updateResult = await updateRes.json();
+
+  if(!updateResult.success){
+    showMessage(updateResult.message || "Unable to update fuel entry","error");
+    return;
+  }
+
+  if(approveAfterSave){
+    const approveRes = await fetch(`/api/fleet/fuel/${fuelId}/approve`, {
+      method: "POST",
+      headers: {"Content-Type":"application/json"}
+    });
+
+    const approveResult = await approveRes.json();
+
+    if(!approveResult.success){
+      showMessage(approveResult.message || "Updated, but approval failed","error");
+      return;
+    }
+
+    showMessage("Fuel entry corrected and approved successfully","success");
+  }else{
+    showMessage("Fuel entry corrected successfully","success");
+  }
+
+  closeFuelEditModal();
+  loadFuel();
+}
+
+
+</script>
+
+<div id="fuelEditModal" class="modal-overlay">
+  <div class="modal-box">
+    <h2 style="color:#6ecbff;margin-top:0;">Edit Fuel Entry Before Approval</h2>
+
+    <input type="hidden" id="editFuelId">
+
+    <div class="modal-grid">
+      <div>
+        <label>Entry Type</label>
+        <select id="editEntryType">
+          <option value="Fuel">Fuel</option>
+          <option value="Engine Oil">Engine Oil</option>
+          <option value="AdBlue">AdBlue</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+
+      <div>
+        <label>Fuel Type</label>
+        <select id="editFuelType">
+          <option value="">Select</option>
+          <option value="Petrol">Petrol</option>
+          <option value="Diesel">Diesel</option>
+          <option value="Super">Super</option>
+          <option value="Regular">Regular</option>
+        </select>
+      </div>
+
+      <div>
+        <label>Liters / Quantity</label>
+        <input type="number" step="0.001" id="editLiters">
+      </div>
+
+      <div>
+        <label>Amount OMR</label>
+        <input type="number" step="0.001" id="editAmount">
+      </div>
+
+      <div>
+        <label>Odometer Reading</label>
+        <input type="number" id="editOdometerReading">
+      </div>
+
+      <div>
+        <label>Fuel Station / Supplier</label>
+        <input id="editFuelStation">
+      </div>
+
+      <div>
+        <label>Payment Method</label>
+        <select id="editPaymentMethod">
+          <option value="Company Card">Company Card</option>
+          <option value="Cash">Cash</option>
+          <option value="Driver Paid">Driver Paid</option>
+          <option value="Credit Account">Credit Account</option>
+        </select>
+      </div>
+
+      <div>
+        <label>Receipt / Invoice No.</label>
+        <input id="editReceiptNo">
+      </div>
+
+      <div style="grid-column:span 2;">
+        <label>Remarks</label>
+        <textarea id="editRemarks"></textarea>
+      </div>
+
+      <div style="grid-column:span 2;">
+        <label>Correction Reason <span style="color:#ff9c9c">*</span></label>
+        <textarea id="editCorrectionReason" placeholder="Explain why this driver entry is being corrected"></textarea>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeFuelEditModal()">Cancel</button>
+      <button class="btn-save" onclick="saveFuelChanges(false)">Save Changes</button>
+      <button class="btn-save-approve" onclick="saveFuelChanges(true)">Save & Approve</button>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

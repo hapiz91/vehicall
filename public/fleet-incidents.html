@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Vehicall Fleet Incidents</title>
+
+  <style>
+    body { margin:0; font-family:Arial,sans-serif; background:#07111f; color:#fff; }
+    .header { display:flex; justify-content:space-between; align-items:center; padding:18px 30px; background:#0b1b2d; border-bottom:1px solid #1d3553; }
+    .brand { display:flex; align-items:center; gap:14px; }
+    .brand img { height:46px; }
+    .brand h2 { margin:0; font-size:21px; }
+    .brand p { margin:2px 0 0; color:#9fb0c5; font-size:13px; }
+    .nav a { color:#6ecbff; margin-left:16px; text-decoration:none; font-size:14px; }
+    .container { max-width:1250px; margin:30px auto; padding:0 20px; }
+    .hero,.card { background:#0f1f33; border:1px solid #20344d; border-radius:20px; padding:24px; margin-bottom:24px; }
+    .hero h1 { margin:0 0 8px; }
+    .hero p { margin:0; color:#b7c4d4; line-height:1.5; }
+    .form-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+    label { display:block; margin-bottom:8px; color:#9fb0c5; font-size:14px; }
+    input,select,textarea { width:100%; padding:13px; border-radius:10px; border:1px solid #29496d; background:#081827; color:#fff; box-sizing:border-box; }
+    textarea { min-height:95px; resize:vertical; }
+    button { padding:13px 18px; border:none; border-radius:12px; background:linear-gradient(135deg,#00c2ff,#0066ff); color:#fff; font-weight:bold; cursor:pointer; }
+    .close-btn { background:linear-gradient(135deg,#00c853,#009624); margin-top:12px; }
+    .full { grid-column:span 3; }
+    #message { display:none; margin-bottom:18px; padding:13px; border-radius:12px; }
+    .success { display:block!important; background:rgba(0,180,120,.15); color:#70ffc8; border:1px solid rgba(0,180,120,.35); }
+    .error { display:block!important; background:rgba(255,70,70,.15); color:#ff9c9c; border:1px solid rgba(255,70,70,.35); }
+    .incident-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:16px; }
+    .incident-card { background:#081827; border:1px solid #223854; border-radius:16px; padding:18px; }
+    .incident-card h3 { margin:0 0 10px; color:#6ecbff; }
+    .incident-card p { margin:7px 0; color:#d6e2f0; font-size:14px; }
+    .incident-card strong { color:#8fb3d9; }
+    .badge { display:inline-block; margin-top:8px; padding:6px 12px; border-radius:999px; font-size:12px; font-weight:bold; text-transform:uppercase; }
+    .open { background:rgba(255,193,7,.15); color:#ffd86b; border:1px solid rgba(255,193,7,.35); }
+    .closed { background:rgba(0,180,120,.15); color:#70ffc8; border:1px solid rgba(0,180,120,.35); }
+    .high { background:rgba(255,70,70,.15); color:#ff9c9c; border:1px solid rgba(255,70,70,.35); }
+    .medium { background:rgba(255,193,7,.15); color:#ffd86b; border:1px solid rgba(255,193,7,.35); }
+    .low { background:rgba(0,180,120,.15); color:#70ffc8; border:1px solid rgba(0,180,120,.35); }
+    .close-box { margin-top:15px; padding-top:15px; border-top:1px solid #223854; }
+    @media(max-width:900px){ .form-grid,.incident-grid{grid-template-columns:1fr;} .full{grid-column:span 1;} }
+    @media(max-width:600px){ .header{flex-direction:column; align-items:flex-start; gap:12px;} .brand img{height:40px;} .nav a{display:inline-block; margin:8px 12px 0 0;} }
+  </style>
+</head>
+
+<body>
+  <div class="header">
+    <div class="brand">
+      <img src="/logo.png" alt="Vehicall Logo">
+      <div>
+        <h2>Vehicall Fleet Incidents</h2>
+        <p>Smart Alerts, Fleet Operations & Driver Accountability</p>
+      </div>
+    </div>
+
+    <div class="nav">
+      <a href="/fleet-dashboard">Dashboard</a>
+      <a href="/fleet-vehicles">Vehicles</a>
+      <a href="/fleet-drivers">Drivers</a>
+      <a href="/fleet-assignments">Assignments</a>
+      <a href="/fleet-checklist">Checklist</a>
+      <a href="/api/fleet/logout">Logout</a>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="hero">
+      <h1>Incident Management</h1>
+      <p>
+        Record, monitor and close fleet incidents including accidents, vehicle damage,
+        unsafe driving, emergency cases, breakdowns and internal reports.
+      </p>
+    </div>
+
+    <div id="message"></div>
+
+    <div class="card">
+      <h2>Create New Incident</h2>
+
+      <form id="incidentForm">
+        <div class="form-grid">
+
+          <div>
+            <label>Select Vehicle</label>
+            <select name="vehicleId" id="vehicleSelect">
+              <option value="">Loading vehicles...</option>
+            </select>
+          </div>
+
+          <div>
+            <label>Select Driver</label>
+            <select name="driverId" id="driverSelect">
+              <option value="">Loading drivers...</option>
+            </select>
+          </div>
+
+          <div>
+            <label>Incident Type</label>
+            <select name="incidentType" required>
+              <option value="">Select Incident Type</option>
+              <option value="Accident">Accident</option>
+              <option value="Vehicle Damage">Vehicle Damage</option>
+              <option value="Unsafe Driving">Unsafe Driving</option>
+              <option value="Emergency">Emergency</option>
+              <option value="Breakdown">Breakdown</option>
+              <option value="Traffic Fine">Traffic Fine</option>
+              <option value="Public Complaint">Public Complaint</option>
+              <option value="Internal Report">Internal Report</option>
+            </select>
+          </div>
+
+          <div>
+            <label>Priority</label>
+            <select name="priority">
+              <option value="medium">Medium</option>
+              <option value="high">High</option>
+              <option value="low">Low</option>
+            </select>
+          </div>
+
+          <div>
+            <label>Incident Date & Time</label>
+            <input type="datetime-local" name="incidentDate">
+          </div>
+
+          <div>
+            <label>Location / Area</label>
+            <input type="text" name="location" placeholder="Enter location or area">
+          </div>
+
+          <div class="full">
+            <label>Incident Description</label>
+            <textarea name="description" placeholder="Describe what happened, damage details, complaint details or emergency remarks" required></textarea>
+          </div>
+
+          <div style="display:flex; align-items:end;">
+            <button type="submit" style="width:100%;">
+              Create Incident
+            </button>
+          </div>
+
+        </div>
+      </form>
+    </div>
+
+    <div class="card">
+      <h2>Incident Records</h2>
+      <div id="incidentsList" class="incident-grid">Loading...</div>
+    </div>
+  </div>
+
+  <script>
+    const form = document.getElementById("incidentForm");
+    const messageBox = document.getElementById("message");
+    const vehicleSelect = document.getElementById("vehicleSelect");
+    const driverSelect = document.getElementById("driverSelect");
+    const incidentsList = document.getElementById("incidentsList");
+
+    function showMessage(text, type) {
+      messageBox.className = type;
+      messageBox.textContent = text;
+      setTimeout(() => {
+        messageBox.className = "";
+        messageBox.style.display = "none";
+      }, 4000);
+    }
+
+    function formatDate(value) {
+      if (!value) return "-";
+      try { return new Date(value).toLocaleString(); } catch { return value; }
+    }
+
+    function badgeClass(value) {
+      if (!value) return "medium";
+      return String(value).toLowerCase();
+    }
+
+    async function loadVehiclesAndDrivers() {
+      try {
+        const [vehicleRes, driverRes] = await Promise.all([
+          fetch("/api/fleet/vehicles"),
+          fetch("/api/fleet/drivers")
+        ]);
+
+        const vehicleData = await vehicleRes.json();
+        const driverData = await driverRes.json();
+
+        vehicleSelect.innerHTML = `<option value="">Select Vehicle (Optional)</option>`;
+        driverSelect.innerHTML = `<option value="">Select Driver (Optional)</option>`;
+
+        if (vehicleData.success && vehicleData.vehicles.length) {
+          vehicleData.vehicles.forEach(vehicle => {
+            vehicleSelect.innerHTML += `
+              <option value="${vehicle.id}">
+                ${vehicle.vehicleNumber || "-"} ${vehicle.assignedDriverName ? "- " + vehicle.assignedDriverName : ""}
+              </option>
+            `;
+          });
+        }
+
+        if (driverData.success && driverData.drivers.length) {
+          driverData.drivers.forEach(driver => {
+            driverSelect.innerHTML += `
+              <option value="${driver.id}">
+                ${driver.driverName || "-"} ${driver.assignedVehicleNumber ? "- " + driver.assignedVehicleNumber : ""}
+              </option>
+            `;
+          });
+        }
+
+      } catch (error) {
+        console.error(error);
+        showMessage("Unable to load vehicles or drivers.", "error");
+      }
+    }
+
+    async function loadIncidents() {
+      try {
+        const res = await fetch("/api/fleet/incidents");
+        const data = await res.json();
+
+        if (!data.success) {
+          incidentsList.innerHTML = "Please login to Fleet Dashboard.";
+          return;
+        }
+
+        incidentsList.innerHTML = "";
+
+        if (!data.incidents.length) {
+          incidentsList.innerHTML = `
+            <div class="incident-card">
+              No incidents recorded yet.
+            </div>
+          `;
+          return;
+        }
+
+        data.incidents.forEach(item => {
+          const statusClass = item.status === "closed" ? "closed" : "open";
+          const priorityClass = badgeClass(item.priority);
+
+          incidentsList.innerHTML += `
+            <div class="incident-card">
+              <h3>${item.incidentType || "Incident"} ${item.vehicleNumber ? "- " + item.vehicleNumber : ""}</h3>
+
+              <p><strong>Driver:</strong> ${item.driverName || "-"}</p>
+              <p><strong>Location:</strong> ${item.location || "-"}</p>
+              <p><strong>Incident Date:</strong> ${formatDate(item.incidentDate)}</p>
+              <p><strong>Description:</strong> ${item.description || "-"}</p>
+              <p><strong>Source:</strong> ${item.source || "internal"}</p>
+              <p><strong>Created:</strong> ${formatDate(item.createdAt)}</p>
+
+              <span class="badge ${statusClass}">${item.status || "open"}</span>
+              <span class="badge ${priorityClass}">${item.priority || "medium"}</span>
+
+              ${
+                item.status !== "closed"
+                ? `
+                  <div class="close-box">
+                    <label>Resolution Notes</label>
+                    <textarea id="resolution-${item.id}" placeholder="Enter how this incident was resolved"></textarea>
+
+                    <button class="close-btn" onclick="closeIncident('${item.id}')">
+                      Close Incident
+                    </button>
+                  </div>
+                `
+                : `
+                  <p><strong>Resolution:</strong> ${item.resolutionNotes || "-"}</p>
+                  <p><strong>Closed At:</strong> ${formatDate(item.closedAt)}</p>
+                `
+              }
+            </div>
+          `;
+        });
+
+      } catch (error) {
+        console.error(error);
+        incidentsList.innerHTML = "Unable to load incidents.";
+      }
+    }
+
+    async function closeIncident(incidentId) {
+      const resolutionNotes = document.getElementById(`resolution-${incidentId}`).value;
+
+      if (!resolutionNotes) {
+        showMessage("Resolution notes are required to close incident.", "error");
+        return;
+      }
+
+      try {
+        const res = await fetch(`/api/fleet/incidents/${incidentId}/close`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ resolutionNotes })
+        });
+
+        const result = await res.json();
+
+        if (result.success) {
+          showMessage(result.message, "success");
+          loadIncidents();
+        } else {
+          showMessage(result.message || "Unable to close incident.", "error");
+        }
+
+      } catch (error) {
+        console.error(error);
+        showMessage("Server error while closing incident.", "error");
+      }
+    }
+
+    form.addEventListener("submit", async function(e) {
+      e.preventDefault();
+
+      const formData = new FormData(form);
+      const data = Object.fromEntries(formData.entries());
+
+      try {
+        const res = await fetch("/api/fleet/incidents", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data)
+        });
+
+        const result = await res.json();
+
+        if (result.success) {
+          showMessage(result.message, "success");
+          form.reset();
+          loadIncidents();
+        } else {
+          showMessage(result.message || "Unable to create incident.", "error");
+        }
+
+      } catch (error) {
+        console.error(error);
+        showMessage("Server error while creating incident.", "error");
+      }
+    });
+
+    loadVehiclesAndDrivers();
+    loadIncidents();
+  </script>
+</body>
+</html>

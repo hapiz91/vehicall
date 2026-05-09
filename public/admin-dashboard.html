@@ -2,138 +2,420 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Vehicall Admin Dashboard</title>
-  <link rel="stylesheet" href="admin.css" />
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #07111f;
+      color: #ffffff;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 18px 30px;
+      background: #0b1b2d;
+      border-bottom: 1px solid #1d3553;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .brand img {
+      height: 48px;
+      width: auto;
+    }
+
+    .brand-text h2 {
+      margin: 0;
+      font-size: 22px;
+    }
+
+    .brand-text p {
+      margin: 2px 0 0;
+      color: #9fb0c5;
+      font-size: 13px;
+    }
+
+    .logout-btn {
+      background: #10243a;
+      border: 1px solid #29496d;
+      color: #ffffff;
+      padding: 10px 18px;
+      border-radius: 10px;
+      text-decoration: none;
+      font-size: 14px;
+    }
+
+    .container {
+      max-width: 1250px;
+      margin: 30px auto;
+      padding: 0 20px;
+    }
+
+    .hero {
+      background: linear-gradient(135deg, #10243d, #0a1727);
+      border: 1px solid #20344d;
+      border-radius: 22px;
+      padding: 35px;
+      margin-bottom: 28px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero::after {
+      content: "";
+      position: absolute;
+      right: -50px;
+      top: -50px;
+      width: 220px;
+      height: 220px;
+      background: rgba(0, 150, 255, 0.08);
+      border-radius: 50%;
+    }
+
+    .hero h1 {
+      margin: 0 0 10px;
+      font-size: 34px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .hero p {
+      margin: 0;
+      color: #b7c4d4;
+      line-height: 1.6;
+      position: relative;
+      z-index: 2;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 18px;
+      margin-bottom: 28px;
+    }
+
+    .stat-card {
+      background: #0f1f33;
+      border: 1px solid #20344d;
+      border-radius: 18px;
+      padding: 22px;
+    }
+
+    .stat-card span {
+      color: #8fa8c2;
+      font-size: 13px;
+    }
+
+    .stat-card h3 {
+      margin: 10px 0 0;
+      font-size: 30px;
+      color: #6ecbff;
+    }
+
+    .workspace-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 22px;
+      margin-bottom: 28px;
+    }
+
+    .workspace-card {
+      background: #0f1f33;
+      border: 1px solid #20344d;
+      border-radius: 22px;
+      padding: 28px;
+      transition: 0.25s ease;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .workspace-card:hover {
+      transform: translateY(-4px);
+      border-color: #00aaff;
+      box-shadow: 0 12px 35px rgba(0,0,0,0.3);
+    }
+
+    .workspace-card::after {
+      content: "";
+      position: absolute;
+      right: -30px;
+      top: -30px;
+      width: 160px;
+      height: 160px;
+      background: rgba(0, 170, 255, 0.06);
+      border-radius: 50%;
+    }
+
+    .workspace-card h2 {
+      margin-top: 0;
+      position: relative;
+      z-index: 2;
+    }
+
+    .workspace-card p {
+      color: #b7c4d4;
+      line-height: 1.6;
+      position: relative;
+      z-index: 2;
+    }
+
+    .workspace-card ul {
+      padding-left: 18px;
+      color: #d5e4f4;
+      line-height: 1.8;
+      position: relative;
+      z-index: 2;
+    }
+
+    .workspace-card button {
+      margin-top: 20px;
+      padding: 13px 20px;
+      border: none;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #00c2ff, #0066ff);
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      position: relative;
+      z-index: 2;
+    }
+
+    .recent-section {
+      background: #0f1f33;
+      border: 1px solid #20344d;
+      border-radius: 22px;
+      padding: 24px;
+    }
+
+    .recent-section h2 {
+      margin-top: 0;
+      margin-bottom: 18px;
+    }
+
+    .recent-list {
+      display: grid;
+      gap: 14px;
+    }
+
+    .recent-item {
+      background: #081827;
+      border: 1px solid #223854;
+      padding: 16px;
+      border-radius: 14px;
+    }
+
+    .recent-item strong {
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    .recent-item small {
+      color: #8fa8c2;
+    }
+
+    @media (max-width: 900px) {
+      .workspace-grid,
+      .stats {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 14px;
+      }
+
+      .hero h1 {
+        font-size: 28px;
+      }
+
+      .brand img {
+        height: 40px;
+      }
+    }
+  </style>
 </head>
+
 <body>
 
-  <div class="admin-layout">
-    <aside class="sidebar">
-      <h2>Vehicall</h2>
-      <p>Admin Panel</p>
+  <div class="header">
+    <div class="brand">
+      <img src="/logo.png" alt="Vehicall Logo">
 
-      <nav>
-        <a class="active" href="/admin-dashboard.html">Dashboard</a>
-        <a href="/admin-users.html">Users</a>
-        <a href="/admin-qr.html">QR Management</a>
-        <a href="#">Plans</a>
-        <a href="/admin-alerts.html">Alert Logs</a>
-        <a href="/admin/logout">Logout</a>
-      </nav>
-    </aside>
+      <div class="brand-text">
+        <h2>Vehicall Admin</h2>
+        <p>Smart Vehicle Communication & Fleet Operations Platform</p>
+      </div>
+    </div>
 
-    <main class="main">
-      <div class="topbar">
-        <div>
-          <h1>Dashboard Overview</h1>
-          <p>Manage Vehicall users, QR codes, plans and alerts.</p>
-        </div>
-        <div class="admin-badge">Admin</div>
+    <a href="/admin/logout" class="logout-btn">Logout</a>
+  </div>
+
+  <div class="container">
+
+    <div class="hero">
+      <h1>Vehicall Control Center</h1>
+
+      <p>
+        Manage Smart Alert users, Fleet B2B customers, QR systems,
+        fleet operations, incidents, subscriptions, and operational analytics
+        from one centralized Vehicall ecosystem.
+      </p>
+    </div>
+
+    <div class="stats">
+      <div class="stat-card">
+        <span>Total Smart Alert Users</span>
+        <h3 id="totalUsers">0</h3>
       </div>
 
-      <section class="stats-grid">
-        <div class="stat-card">
-          <span>Total Users</span>
-          <h2 id="totalUsers">0</h2>
-        </div>
+      <div class="stat-card">
+        <span>Total Fleet Companies</span>
+        <h3 id="fleetCompanies">0</h3>
+      </div>
 
-        <div class="stat-card">
-          <span>QR Generated</span>
-          <h2 id="qrGenerated">0</h2>
-        </div>
+      <div class="stat-card">
+        <span>Total Fleet Vehicles</span>
+        <h3 id="fleetVehicles">0</h3>
+      </div>
 
-        <div class="stat-card">
-          <span>Total Alerts</span>
-          <h2 id="totalAlerts">0</h2>
-        </div>
+      <div class="stat-card">
+        <span>Open Fleet Incidents</span>
+        <h3 id="fleetIncidents">0</h3>
+      </div>
+    </div>
 
-        <div class="stat-card">
-          <span>Expired Plans</span>
-          <h2 id="expiredPlans">0</h2>
-        </div>
-      </section>
+    <div class="workspace-grid">
 
-      <section class="content-grid">
-        <div class="panel">
-          <h2>Plan Summary</h2>
-          <div class="plan-list">
-            <div><span>Welcome</span><b id="planWelcome">0</b></div>
-            <div><span>Basic</span><b id="planBasic">0</b></div>
-            <div><span>Plus</span><b id="planPlus">0</b></div>
-            <div><span>Premium</span><b id="planPremium">0</b></div>
-          </div>
-        </div>
+      <div class="workspace-card">
+        <h2>Smart Alert System</h2>
 
-        <div class="panel">
-          <h2>Quick Actions</h2>
-          <div class="quick-actions">
-            <a href="/admin-users.html">View Users</a>
-            <a href="#">Manage QR Codes</a>
-            <a href="#">Review Alerts</a>
-          </div>
-        </div>
-      </section>
+        <p>
+          Manage personal Vehicall users, QR activations,
+          subscriptions, alerts, and Smart Alert operations.
+        </p>
 
-      <section class="panel">
-        <h2>Recent Users</h2>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Vehicle</th>
-                <th>Name</th>
-                <th>Mobile</th>
-                <th>Plan</th>
-                <th>Alerts</th>
-                <th>QR</th>
-              </tr>
-            </thead>
-            <tbody id="recentUsersBody"></tbody>
-          </table>
-        </div>
-      </section>
-    </main>
+        <ul>
+          <li>Personal user management</li>
+          <li>QR activation control</li>
+          <li>Alert monitoring</li>
+          <li>Subscription plans</li>
+          <li>Plan renewals</li>
+        </ul>
+
+        <button onclick="window.location.href='/admin-users.html'">
+          Open Smart Alert Admin
+        </button>
+      </div>
+
+      <div class="workspace-card">
+        <h2>Fleet B2B Management</h2>
+
+        <p>
+          Manage Fleet companies, dashboard activations,
+          operational accounts, fleet packages, and enterprise customers.
+        </p>
+
+        <ul>
+          <li>Fleet company approval</li>
+          <li>Fleet package management</li>
+          <li>Vehicle limit control</li>
+          <li>Incident monitoring</li>
+          <li>Fleet operations analytics</li>
+        </ul>
+
+        <button onclick="window.location.href='/admin-fleet'">
+          Open Fleet B2B Admin
+        </button>
+      </div>
+
+    </div>
+
+    <div class="recent-section">
+      <h2>Recent Fleet Companies</h2>
+
+      <div class="recent-list" id="recentFleetCompanies">
+        Loading...
+      </div>
+    </div>
+
   </div>
 
   <script>
-    async function loadDashboard() {
-      const res = await fetch('/admin/dashboard-data');
+    async function loadDashboardData() {
+      try {
+        const response = await fetch('/admin/dashboard-data');
+        const data = await response.json();
 
-      if (res.redirected) {
-        window.location.href = res.url;
-        return;
+        document.getElementById('totalUsers').textContent =
+          data.totalUsers || 0;
+
+        document.getElementById('fleetCompanies').textContent =
+          data.fleetStats?.totalFleetCompanies || 0;
+
+        document.getElementById('fleetVehicles').textContent =
+          data.fleetStats?.totalFleetVehicles || 0;
+
+        document.getElementById('fleetIncidents').textContent =
+          data.fleetStats?.openFleetIncidents || 0;
+
+        const container = document.getElementById('recentFleetCompanies');
+
+        if (!data.recentFleetCompanies || !data.recentFleetCompanies.length) {
+          container.innerHTML = `
+            <div class="recent-item">
+              No Fleet B2B companies registered yet.
+            </div>
+          `;
+          return;
+        }
+
+        container.innerHTML = '';
+
+        data.recentFleetCompanies.forEach(company => {
+          container.innerHTML += `
+            <div class="recent-item">
+              <strong>${company.companyName || ''}</strong>
+
+              Package:
+              ${company.packageLabel || company.packageType || '-'}
+
+              <br><br>
+
+              Status:
+              ${company.status || 'pending'}
+
+              <br><br>
+
+              <small>
+                Contact:
+                ${company.contactPerson || '-'}
+              </small>
+            </div>
+          `;
+        });
+
+      } catch (error) {
+        console.error(error);
       }
-
-      const data = await res.json();
-
-      document.getElementById('totalUsers').innerText = data.totalUsers;
-      document.getElementById('qrGenerated').innerText = data.qrGenerated;
-      document.getElementById('totalAlerts').innerText = data.totalAlerts;
-      document.getElementById('expiredPlans').innerText = data.expiredPlans;
-
-      document.getElementById('planWelcome').innerText = data.planCounts.Welcome;
-      document.getElementById('planBasic').innerText = data.planCounts.Basic;
-      document.getElementById('planPlus').innerText = data.planCounts.Plus;
-      document.getElementById('planPremium').innerText = data.planCounts.Premium;
-
-      const tbody = document.getElementById('recentUsersBody');
-      tbody.innerHTML = '';
-
-      data.recentUsers.forEach(user => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `
-          <td>${user.vehicleNumber || '-'}</td>
-          <td>${user.name || '-'}</td>
-          <td>${user.mobile || '-'}</td>
-          <td><span class="badge">${user.plan || '-'}</span></td>
-          <td>${user.alertsUsed || 0}/${user.alertsLimit || 0}</td>
-          <td>${user.qr_generated ? 'Active' : 'Not Generated'}</td>
-        `;
-        tbody.appendChild(tr);
-      });
     }
 
-    loadDashboard();
+    loadDashboardData();
   </script>
 
 </body>

@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+  <title>Vehicall Fleet Alert</title>
+
+  <style>
+
+    body{
+      margin:0;
+      font-family:Arial,sans-serif;
+      background:#07111f;
+      color:#ffffff;
+    }
+
+    .container{
+      max-width:700px;
+      margin:40px auto;
+      padding:20px;
+    }
+
+    .card{
+      background:#0f1f33;
+      border:1px solid #20344d;
+      border-radius:24px;
+      padding:30px;
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:14px;
+      margin-bottom:25px;
+    }
+
+    .brand img{
+      height:60px;
+    }
+
+    .brand h1{
+      margin:0;
+      font-size:28px;
+    }
+
+    .brand p{
+      margin:4px 0 0;
+      color:#9fb0c5;
+      font-size:14px;
+    }
+
+    .vehicle-box{
+      background:#081827;
+      border:1px solid #223854;
+      border-radius:18px;
+      padding:18px;
+      margin-bottom:25px;
+    }
+
+    .vehicle-box h2{
+      margin:0 0 10px;
+      color:#6ecbff;
+    }
+
+    .vehicle-box p{
+      margin:6px 0;
+      color:#d6e2f0;
+    }
+
+    .alert-grid{
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:14px;
+      margin-top:20px;
+    }
+
+    .alert-btn{
+      border:none;
+      border-radius:16px;
+      padding:18px;
+      background:#081827;
+      border:1px solid #29496d;
+      color:#ffffff;
+      cursor:pointer;
+      font-size:15px;
+      transition:0.2s;
+      text-align:left;
+    }
+
+    .alert-btn:hover{
+      border-color:#00c2ff;
+      transform:translateY(-2px);
+    }
+
+    .alert-btn.active{
+      background:linear-gradient(135deg,#00c2ff,#0066ff);
+      border-color:#00c2ff;
+    }
+
+    .location-box{
+      margin-top:20px;
+    }
+
+    label{
+      display:block;
+      margin-bottom:8px;
+      color:#9fb0c5;
+    }
+
+    input{
+      width:100%;
+      padding:13px;
+      border-radius:12px;
+      border:1px solid #29496d;
+      background:#081827;
+      color:#ffffff;
+      box-sizing:border-box;
+    }
+
+    .send-btn{
+      width:100%;
+      margin-top:25px;
+      padding:15px;
+      border:none;
+      border-radius:14px;
+      background:linear-gradient(135deg,#00c2ff,#0066ff);
+      color:#ffffff;
+      font-size:16px;
+      font-weight:bold;
+      cursor:pointer;
+    }
+
+    #message{
+      margin-top:20px;
+      padding:15px;
+      border-radius:14px;
+      display:none;
+    }
+
+    .success{
+      display:block !important;
+      background:rgba(0,180,120,.15);
+      color:#70ffc8;
+      border:1px solid rgba(0,180,120,.35);
+    }
+
+    .error{
+      display:block !important;
+      background:rgba(255,70,70,.15);
+      color:#ff9c9c;
+      border:1px solid rgba(255,70,70,.35);
+    }
+
+    .footer-note{
+      margin-top:25px;
+      text-align:center;
+      color:#8fa5bb;
+      font-size:13px;
+      line-height:1.6;
+    }
+
+    @media(max-width:700px){
+
+      .alert-grid{
+        grid-template-columns:1fr;
+      }
+
+      .brand{
+        flex-direction:column;
+        align-items:flex-start;
+      }
+
+      .brand img{
+        height:50px;
+      }
+    }
+
+  </style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <div class="card">
+
+    <div class="brand">
+
+      <img src="/logo.png" alt="Vehicall Logo"/>
+
+      <div>
+        <h1>Vehicall Fleet Alert</h1>
+        <p>Commercial Fleet Public Reporting System</p>
+      </div>
+
+    </div>
+
+    <div class="vehicle-box">
+
+      <h2 id="vehicleNumber">Loading...</h2>
+
+      <p>
+        Company:
+        <strong id="companyName">Loading...</strong>
+      </p>
+
+      <p>
+        Vehicle Type:
+        <strong id="vehicleType">Loading...</strong>
+      </p>
+
+    </div>
+
+    <h3>Select Alert Type</h3>
+
+    <div class="alert-grid">
+
+      <button class="alert-btn" data-type="WRONG_PARKING">
+        🚫 Wrong / Unsafe Parking
+      </button>
+
+      <button class="alert-btn" data-type="BLOCKING_ACCESS">
+        🚗 Vehicle Blocking Access
+      </button>
+
+      <button class="alert-btn" data-type="RASH_DRIVING">
+        ⚠️ Rash / Unsafe Driving
+      </button>
+
+      <button class="alert-btn" data-type="VEHICLE_DAMAGE">
+        🔧 Vehicle Damage Noticed
+      </button>
+
+      <button class="alert-btn" data-type="BREAKDOWN">
+        🛠 Vehicle Breakdown
+      </button>
+
+      <button class="alert-btn" data-type="EMERGENCY">
+        🚨 Emergency / Accident
+      </button>
+
+      <button class="alert-btn" data-type="DELIVERY_COMPLAINT">
+        📦 Delivery / Service Complaint
+      </button>
+
+      <button class="alert-btn" data-type="GENERAL_FEEDBACK">
+        💬 General Fleet Feedback
+      </button>
+
+    </div>
+
+    <div class="location-box">
+
+      <label>Optional Location</label>
+
+      <input
+        type="text"
+        id="location"
+        placeholder="Optional landmark or location"
+      />
+
+    </div>
+
+    <button class="send-btn" id="sendBtn">
+      Send Fleet Alert
+    </button>
+
+    <div id="message"></div>
+
+    <div class="footer-note">
+      Public users cannot directly contact the driver or company.<br>
+      Vehicall securely routes alerts to assigned fleet management teams.
+    </div>
+
+  </div>
+
+</div>
+
+<script>
+
+const params = new URLSearchParams(window.location.search);
+
+const qr = params.get('qr');
+
+let selectedAlert = '';
+
+const vehicleNumber = document.getElementById('vehicleNumber');
+const companyName = document.getElementById('companyName');
+const vehicleType = document.getElementById('vehicleType');
+
+const messageBox = document.getElementById('message');
+
+function showMessage(text,type){
+
+  messageBox.className = type;
+  messageBox.innerHTML = text;
+
+  setTimeout(()=>{
+    messageBox.className='';
+    messageBox.style.display='none';
+  },5000);
+}
+
+async function loadVehicle(){
+
+  try{
+
+    const res = await fetch(`/fleet-owner/${qr}`);
+    const data = await res.json();
+
+    if(!res.ok){
+
+      showMessage(data.message || 'Vehicle not found','error');
+
+      return;
+    }
+
+    vehicleNumber.innerText = data.vehicleNumber || '-';
+    companyName.innerText = data.companyName || '-';
+    vehicleType.innerText = data.vehicleType || '-';
+
+  }catch(error){
+
+    console.error(error);
+
+    showMessage('Unable to load vehicle','error');
+  }
+}
+
+document.querySelectorAll('.alert-btn').forEach(btn=>{
+
+  btn.addEventListener('click',()=>{
+
+    document.querySelectorAll('.alert-btn')
+      .forEach(b=>b.classList.remove('active'));
+
+    btn.classList.add('active');
+
+    selectedAlert = btn.dataset.type;
+  });
+
+});
+
+document.getElementById('sendBtn').addEventListener('click',async ()=>{
+
+  if(!selectedAlert){
+
+    showMessage('Please select an alert type','error');
+
+    return;
+  }
+
+  try{
+
+    const res = await fetch('/send-fleet-alert',{
+
+      method:'POST',
+
+      headers:{
+        'Content-Type':'application/json'
+      },
+
+      body:JSON.stringify({
+
+        qr_id: qr,
+
+        alert_type: selectedAlert,
+
+        location: document.getElementById('location').value || ''
+      })
+    });
+
+    const data = await res.json();
+
+    if(res.ok){
+
+      showMessage(`
+        ✅ Fleet alert sent successfully.<br><br>
+
+        Vehicle:
+        <strong>${data.vehicleNumber}</strong><br>
+
+        Issue:
+        <strong>${data.issue}</strong><br><br>
+
+        ${data.driverNotificationReady
+          ? 'Assigned driver has been notified.'
+          : 'Fleet management team has been notified.'
+        }
+
+      `,'success');
+
+    }else{
+
+      showMessage(data.message || 'Unable to send alert','error');
+    }
+
+  }catch(error){
+
+    console.error(error);
+
+    showMessage('Server error','error');
+  }
+
+});
+
+loadVehicle();
+
+</script>
+
+</body>
+</html>

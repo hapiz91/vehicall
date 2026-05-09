@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Vehicall Fleet Upgrade</title>
+  <style>
+    body{margin:0;font-family:Arial,sans-serif;background:#07111f;color:#fff}
+    .header{display:flex;justify-content:space-between;align-items:center;padding:18px 30px;background:#0b1b2d;border-bottom:1px solid #1d3553}
+    .brand{display:flex;align-items:center;gap:14px}.brand img{height:46px}.brand h2{margin:0}.brand p{margin:2px 0 0;color:#9fb0c5;font-size:13px}
+    .nav a{color:#6ecbff;margin-left:16px;text-decoration:none;font-size:14px}
+    .container{max-width:1200px;margin:30px auto;padding:0 20px}
+    .hero,.card{background:#0f1f33;border:1px solid #20344d;border-radius:22px;padding:26px;margin-bottom:24px}
+    .hero h1{margin:0 0 8px}.hero p{margin:0;color:#b7c4d4;line-height:1.6}
+    .plans{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+    .plan{background:#081827;border:1px solid #223854;border-radius:20px;padding:22px;cursor:pointer}
+    .plan.selected{border-color:#00c2ff;box-shadow:0 0 0 2px rgba(0,194,255,.25)}
+    .plan h2{margin-top:0;color:#6ecbff}.price{font-size:28px;font-weight:bold;margin:12px 0}.plan ul{padding-left:20px;color:#d6e2f0;line-height:1.8}
+    label{display:block;margin:14px 0 8px;color:#9fb0c5}
+    select,textarea{width:100%;padding:13px;border-radius:12px;border:1px solid #29496d;background:#081827;color:#fff;box-sizing:border-box}
+    textarea{min-height:90px}
+    button{padding:14px 20px;border:none;border-radius:14px;background:linear-gradient(135deg,#00c2ff,#0066ff);color:#fff;font-weight:bold;cursor:pointer}
+    #message{display:none;margin-bottom:18px;padding:14px;border-radius:12px}.success{display:block!important;background:rgba(0,180,120,.15);color:#70ffc8;border:1px solid rgba(0,180,120,.35)}.error{display:block!important;background:rgba(255,70,70,.15);color:#ff9c9c;border:1px solid rgba(255,70,70,.35)}
+    @media(max-width:900px){.plans{grid-template-columns:1fr}.header{flex-direction:column;align-items:flex-start;gap:12px}}
+  </style>
+</head>
+<body>
+
+<div class="header">
+  <div class="brand">
+    <img src="/logo.png" alt="Vehicall Logo">
+    <div>
+      <h2>Vehicall Fleet Upgrade</h2>
+      <p>Upgrade vehicle limit, alerts and fleet features</p>
+    </div>
+  </div>
+  <div class="nav">
+    <a href="/fleet-dashboard">Dashboard</a>
+    <a href="/api/fleet/logout">Logout</a>
+  </div>
+</div>
+
+<div class="container">
+  <div class="hero">
+    <h1>Upgrade Fleet Package</h1>
+    <p>Select a higher fleet package or request Vehicall Public Alerts activation. Upgrade requests will be reviewed and activated by Vehicall Admin after payment confirmation.</p>
+  </div>
+
+  <div id="message"></div>
+
+  <div class="plans">
+    <div class="plan" onclick="selectPackage('starter', this)">
+      <h2>Starter Fleet</h2>
+      <div class="price">Up to 10 Vehicles</div>
+      <ul>
+        <li>1 branch</li>
+        <li>1 manager</li>
+        <li>Fleet operations basics</li>
+        <li>Reports foundation</li>
+      </ul>
+    </div>
+
+    <div class="plan" onclick="selectPackage('business', this)">
+      <h2>Business Fleet</h2>
+      <div class="price">Up to 50 Vehicles</div>
+      <ul>
+        <li>3 branches</li>
+        <li>5 managers</li>
+        <li>Advanced operations</li>
+        <li>Best for growing companies</li>
+      </ul>
+    </div>
+
+    <div class="plan" onclick="selectPackage('enterprise', this)">
+      <h2>Enterprise Fleet</h2>
+      <div class="price">Up to 100 Vehicles</div>
+      <ul>
+        <li>10 branches</li>
+        <li>10 managers</li>
+        <li>Enterprise reporting</li>
+        <li>Best for large fleets</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Upgrade Request Details</h2>
+
+    <label>Vehicall Public Alerts Option</label>
+    <select id="alertOption">
+      <option value="without_alerts">Fleet Management Only</option>
+      <option value="with_alerts">Fleet Management + Vehicall Public Alerts</option>
+    </select>
+
+    <label>Billing Preference</label>
+    <select id="billingCycle">
+      <option value="monthly">Monthly</option>
+      <option value="yearly">Yearly</option>
+      <option value="custom">Custom / Enterprise Discussion</option>
+    </select>
+
+    <label>Remarks / Requirement</label>
+    <textarea id="remarks" placeholder="Mention vehicle count, branches, alerts requirement or special request"></textarea>
+
+    <br><br>
+    <button onclick="submitUpgrade()">Submit Upgrade Request</button>
+  </div>
+</div>
+
+<script>
+let selectedPackage = "";
+
+function showMessage(text,type){
+  const box=document.getElementById("message");
+  box.className=type;
+  box.textContent=text;
+  setTimeout(()=>{box.className="";box.style.display="none"},5000);
+}
+
+function selectPackage(packageType, el){
+  selectedPackage = packageType;
+  document.querySelectorAll(".plan").forEach(p=>p.classList.remove("selected"));
+  el.classList.add("selected");
+}
+
+async function submitUpgrade(){
+  if(!selectedPackage){
+    showMessage("Please select a fleet package.","error");
+    return;
+  }
+
+  const payload = {
+    packageType: selectedPackage,
+    alertOption: document.getElementById("alertOption").value,
+    billingCycle: document.getElementById("billingCycle").value,
+    remarks: document.getElementById("remarks").value
+  };
+
+  const res = await fetch("/api/fleet/request-upgrade", {
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body:JSON.stringify(payload)
+  });
+
+  const data = await res.json();
+
+  if(data.success){
+    showMessage(data.message || "Upgrade request submitted successfully.","success");
+  }else{
+    showMessage(data.message || "Unable to submit upgrade request.","error");
+  }
+}
+</script>
+
+</body>
+</html>

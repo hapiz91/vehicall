@@ -11,10 +11,6 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
 
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
-
 app.use(session({
   secret: process.env.SESSION_SECRET || 'vehicall_admin_secret',
   resave: false,
@@ -24,17 +20,101 @@ app.use(session({
   }
 }));
 
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+app.get('/fleet-forgot-password', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'fleet-forgot-password.html'));
+});
+
 function requireAdmin(req, res, next) {
-  if (req.session && req.session.adminLoggedIn) {
-    return next();
-  }
+  if (req.session && req.session.adminLoggedIn) return next();
   return res.redirect('/admin-login.html');
 }
 
+app.get('/fleet-users', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'fleet-users.html'));
+});
+
+function requireFleet(req, res, next) {
+  if (req.session && req.session.fleetLoggedIn && req.session.fleetCompanyId) return next();
+
+  return res.status(401).json({
+    success: false,
+    message: 'Fleet login required'
+  });
+}
+
+/* PAGE ROUTES */
+app.get('/fleet-register', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'fleet-register.html'));
+});
+
+app.get('/fleet-login', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'fleet-login.html'));
+});
+
+app.get('/fleet-dashboard', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'fleet-dashboard.html'));
+});
+
+app.get('/fleet-vehicles', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'fleet-vehicles.html'));
+});
+
+app.get('/fleet-drivers', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'fleet-drivers.html'));
+});
+
+app.get('/driver-trip', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'driver-trip.html'));
+});
+
+app.get('/driver-fuel', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'driver-fuel.html'));
+});
+
+app.get('/fleet-assignments', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'fleet-assignments.html'));
+});
+
+app.get('/fleet-fuel', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'fleet-fuel.html'));
+});
+
+app.get('/fleet-daily-trips', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'fleet-daily-trips.html'));
+});
+
+app.get('/fleet-checklist', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'fleet-checklist.html'));
+});
+
+app.get('/fleet-incidents', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'fleet-incidents.html'));
+});
+
+app.get('/fleet-maintenance', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'fleet-maintenance.html'));
+});
+
+app.get('/fleet-reports', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'fleet-reports.html'));
+});
+
+app.get('/fleet-upgrade', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'fleet-upgrade.html'));
+});
+
+app.get('/admin-fleet', requireAdmin, (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'admin-fleet.html'));
+});
+
+/* PLANS */
 const plans = {
   Welcome: {
     label: 'Welcome Plan',
-    free: true,
     validityMonths: 2,
     alertsLimit: 3,
     contactsLimit: 1,
@@ -64,6 +144,28 @@ const plans = {
   }
 };
 
+const fleetPackages = {
+  starter: {
+    label: 'Starter Fleet',
+    vehicleLimit: 10,
+    branchLimit: 1,
+    managerLimit: 1
+  },
+  business: {
+    label: 'Business Fleet',
+    vehicleLimit: 50,
+    branchLimit: 3,
+    managerLimit: 5
+  },
+  enterprise: {
+    label: 'Enterprise Fleet',
+    vehicleLimit: 100,
+    branchLimit: 10,
+    managerLimit: 10
+  }
+};
+
+/* HELPERS */
 function addMonths(date, months) {
   const d = new Date(date);
   d.setMonth(d.getMonth() + months);
@@ -92,25 +194,39 @@ function getPlanDetails(plan, billingCycle) {
   };
 }
 
+function getFleetPackageDetails(packageType) {
+  return fleetPackages[packageType] || fleetPackages.starter;
+}
+
 function generateQrId(vehicleNumber) {
-  const cleanVehicle = vehicleNumber.replace(/[^A-Z0-9]/g, '');
+  const cleanVehicle = String(vehicleNumber || '').replace(/[^A-Z0-9]/g, '');
   const randomPart = Math.random().toString(36).substring(2, 8).toUpperCase();
   return `VHCL-${cleanVehicle}-${randomPart}`;
 }
 
-function formatAlert(type) {
-  switch (type) {
-    case 'EMERGENCY': return '🚨 Emergency / Accident';
-    case 'BLOCKING': return '🚗 Your Car is Blocking';
-    case 'LIGHTS_ON': return '💡 Lights ON';
-    case 'NOT_LOCKED': return '🔓 Vehicle Not Locked';
-    case 'NEED_ATTENTION': return '⚠️ Vehicle Needs Attention';
-    default: return type;
-  }
+function generateFleetQrId(vehicleNumber) {
+  const cleanVehicle = String(vehicleNumber || '').replace(/[^A-Z0-9]/g, '');
+  const randomPart = Math.random().toString(36).substring(2, 8).toUpperCase();
+  return `FLT-${cleanVehicle}-${randomPart}`;
 }
 
 function cleanMobile(mobile) {
   return String(mobile || '').replace(/\D/g, '');
+}
+
+function normalizeVehicleNumber(vehicleNumber) {
+  return String(vehicleNumber || '')
+    .toUpperCase()
+    .trim()
+    .replace(/\s+/g, '')
+    .replace(/_/g, '-');
+}
+
+function buildOmanVehicleNumber(plateCode, plateNumber) {
+  const code = String(plateCode || '').toUpperCase().trim();
+  const number = String(plateNumber || '').replace(/\D/g, '').trim();
+  if (!code || !number) return '';
+  return `${code}-${number}`;
 }
 
 function makePrimaryContact(name, mobile) {
@@ -123,21 +239,50 @@ function makePrimaryContact(name, mobile) {
 }
 
 function normalizeContacts(user) {
-  if (Array.isArray(user.contacts) && user.contacts.length > 0) {
-    return user.contacts;
-  }
-
-  return [
-    makePrimaryContact(user.name, user.mobile)
-  ];
+  if (Array.isArray(user.contacts) && user.contacts.length > 0) return user.contacts;
+  return [makePrimaryContact(user.name, user.mobile)];
 }
 
-/* REGISTER */
+function formatAlert(type) {
+  switch (type) {
+    case 'EMERGENCY': return '🚨 Emergency / Accident';
+    case 'BLOCKING': return '🚗 Your Car is Blocking';
+    case 'LIGHTS_ON': return '💡 Lights ON';
+    case 'NOT_LOCKED': return '🔓 Vehicle Not Locked';
+    case 'NEED_ATTENTION': return '⚠️ Vehicle Needs Attention';
+    case 'RASH_DRIVING': return '⚠️ Rash / Unsafe Driving';
+    case 'WRONG_PARKING': return '🚫 Wrong Parking';
+    case 'VEHICLE_DAMAGE': return '🔧 Vehicle Damage';
+    case 'BREAKDOWN': return '🛠 Vehicle Breakdown';
+    default: return type;
+  }
+}
+
+function formatFleetAlert(type) {
+  const fleetAlertTypes = {
+    WRONG_PARKING: '🚫 Wrong / Unsafe Parking',
+    BLOCKING_ACCESS: '🚗 Vehicle Blocking Access',
+    RASH_DRIVING: '⚠️ Rash / Unsafe Driving',
+    VEHICLE_DAMAGE: '🔧 Vehicle Damage Noticed',
+    BREAKDOWN: '🛠 Vehicle Breakdown',
+    EMERGENCY: '🚨 Emergency / Accident',
+    DELIVERY_COMPLAINT: '📦 Delivery / Service Complaint',
+    GENERAL_FEEDBACK: '💬 General Fleet Feedback'
+  };
+
+  return fleetAlertTypes[type] || null;
+}
+/* =========================================================
+   PERSONAL SMART ALERT SYSTEM
+========================================================= */
+
 app.post('/register', async (req, res) => {
   try {
     let {
       name,
       mobile,
+      plateCode,
+      plateNumber,
       vehicleNumber,
       password,
       consentAccepted,
@@ -145,8 +290,12 @@ app.post('/register', async (req, res) => {
       acceptedDocuments
     } = req.body;
 
+    vehicleNumber = buildOmanVehicleNumber(plateCode, plateNumber) || normalizeVehicleNumber(vehicleNumber);
+
     if (!name || !mobile || !vehicleNumber || !password) {
-      return res.status(400).json({ message: 'All fields are required' });
+      return res.status(400).json({
+        message: 'Name, mobile, plate code, plate number and password are required'
+      });
     }
 
     if (!consentAccepted) {
@@ -165,7 +314,6 @@ app.post('/register', async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
     const qr_id = generateQrId(vehicleNumber);
-
     const now = new Date().toISOString();
     const welcomeDetails = getPlanDetails('Welcome', 'trial');
 
@@ -173,6 +321,8 @@ app.post('/register', async (req, res) => {
       name,
       mobile,
       vehicleNumber,
+      plateCode: plateCode || '',
+      plateNumber: plateNumber || '',
       password: hashedPassword,
 
       qr_id,
@@ -218,7 +368,6 @@ app.post('/register', async (req, res) => {
   }
 });
 
-/* LOGIN */
 app.post('/login', async (req, res) => {
   try {
     let { vehicleNumber, password } = req.body;
@@ -229,7 +378,7 @@ app.post('/login', async (req, res) => {
       });
     }
 
-    vehicleNumber = vehicleNumber.toUpperCase().trim();
+    vehicleNumber = normalizeVehicleNumber(vehicleNumber);
 
     const userDoc = await db.collection('users').doc(vehicleNumber).get();
 
@@ -240,7 +389,9 @@ app.post('/login', async (req, res) => {
     const user = userDoc.data();
 
     if (user.accountStatus === 'suspended') {
-      return res.status(403).json({ message: 'Your account is suspended. Please contact Vehicall support.' });
+      return res.status(403).json({
+        message: 'Your account is suspended. Please contact Vehicall support.'
+      });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
@@ -257,10 +408,9 @@ app.post('/login', async (req, res) => {
   }
 });
 
-/* OWNER DATA */
 app.get('/owner/:vehicleNumber', async (req, res) => {
   try {
-    const vehicleNumber = req.params.vehicleNumber.toUpperCase().trim();
+    const vehicleNumber = normalizeVehicleNumber(req.params.vehicleNumber);
     const userDoc = await db.collection('users').doc(vehicleNumber).get();
 
     if (!userDoc.exists) {
@@ -278,10 +428,9 @@ app.get('/owner/:vehicleNumber', async (req, res) => {
   }
 });
 
-/* RECENT ALERTS */
 app.get('/owner-alerts/:vehicleNumber', async (req, res) => {
   try {
-    const vehicleNumber = req.params.vehicleNumber.toUpperCase().trim();
+    const vehicleNumber = normalizeVehicleNumber(req.params.vehicleNumber);
 
     const snapshot = await db.collection('alerts')
       .where('vehicleNumber', '==', vehicleNumber)
@@ -299,7 +448,6 @@ app.get('/owner-alerts/:vehicleNumber', async (req, res) => {
   }
 });
 
-/* UPDATE PLAN */
 app.post('/update-plan', async (req, res) => {
   try {
     let { vehicleNumber, plan, billingCycle } = req.body;
@@ -308,7 +456,7 @@ app.post('/update-plan', async (req, res) => {
       return res.status(400).json({ message: 'Vehicle number and plan are required' });
     }
 
-    vehicleNumber = vehicleNumber.toUpperCase().trim();
+    vehicleNumber = normalizeVehicleNumber(vehicleNumber);
 
     if (!plans[plan]) {
       return res.status(400).json({ message: 'Invalid plan selected' });
@@ -364,7 +512,6 @@ app.post('/update-plan', async (req, res) => {
   }
 });
 
-/* UPDATE CONTACTS */
 app.post('/update-contacts', async (req, res) => {
   try {
     let { vehicleNumber, contacts } = req.body;
@@ -373,7 +520,7 @@ app.post('/update-contacts', async (req, res) => {
       return res.status(400).json({ message: 'Vehicle number is required' });
     }
 
-    vehicleNumber = vehicleNumber.toUpperCase().trim();
+    vehicleNumber = normalizeVehicleNumber(vehicleNumber);
 
     const userRef = db.collection('users').doc(vehicleNumber);
     const userDoc = await userRef.get();
@@ -423,7 +570,6 @@ app.post('/update-contacts', async (req, res) => {
   }
 });
 
-/* GENERATE QR */
 app.post('/generate-qr', async (req, res) => {
   try {
     let { vehicleNumber } = req.body;
@@ -432,7 +578,7 @@ app.post('/generate-qr', async (req, res) => {
       return res.status(400).json({ message: 'Vehicle number is required' });
     }
 
-    vehicleNumber = vehicleNumber.toUpperCase().trim();
+    vehicleNumber = normalizeVehicleNumber(vehicleNumber);
 
     const userRef = db.collection('users').doc(vehicleNumber);
     const userDoc = await userRef.get();
@@ -476,7 +622,6 @@ app.post('/generate-qr', async (req, res) => {
   }
 });
 
-/* SEND ALERT */
 app.post('/send-alert', async (req, res) => {
   try {
     const { qr_id, alert_type } = req.body;
@@ -523,7 +668,6 @@ app.post('/send-alert', async (req, res) => {
 
     const contacts = normalizeContacts(user);
     const activeContacts = contacts.filter(c => c.primary || c.active);
-
     const now = new Date().toLocaleString();
 
     const alertMessage = `Vehicall Alert
@@ -541,6 +685,7 @@ Time: ${now}`;
       alertLabel: formatAlert(alert_type),
       message: alertMessage,
       status: 'created',
+      source: 'personal',
       createdAt: new Date().toISOString()
     });
 
@@ -563,7 +708,3248 @@ Time: ${now}`;
   }
 });
 
-/* ADMIN LOGIN */
+app.post('/reset-password', async (req, res) => {
+  try {
+    let { vehicleNumber, mobile, newPassword } = req.body;
+
+    if (!vehicleNumber || !mobile || !newPassword) {
+      return res.status(400).json({
+        message: 'Vehicle number, mobile number and new password are required'
+      });
+    }
+
+    vehicleNumber = normalizeVehicleNumber(vehicleNumber);
+    mobile = cleanMobile(mobile);
+
+    const userRef = db.collection('users').doc(vehicleNumber);
+    const userDoc = await userRef.get();
+
+    if (!userDoc.exists) {
+      return res.status(404).json({
+        message: 'Vehicle account not found'
+      });
+    }
+
+    const user = userDoc.data();
+    const registeredMobile = cleanMobile(user.mobile);
+
+    if (registeredMobile !== mobile) {
+      return res.status(401).json({
+        message: 'Mobile number does not match registered vehicle account'
+      });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({
+        message: 'Password must be at least 6 characters'
+      });
+    }
+
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    await userRef.update({
+      password: hashedPassword,
+      passwordResetAt: new Date().toISOString()
+    });
+
+    res.json({
+      success: true,
+      message: 'Password reset successfully. Please login with your new password.'
+    });
+
+  } catch (err) {
+    console.error('Password reset error:', err);
+    res.status(500).json({
+      message: 'Password reset error'
+    });
+  }
+});
+/* =========================================================
+   FLEET MANAGEMENT SYSTEM
+========================================================= */
+
+app.post('/api/fleet/register', async (req, res) => {
+  try {
+    const {
+      companyName,
+      contactPerson,
+      mobile,
+      email,
+      password
+    } = req.body;
+
+    if (!companyName || !contactPerson || !mobile || !email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: 'All fields are required'
+      });
+    }
+
+    const existing = await db.collection('fleetCompanies')
+      .where('email', '==', email.toLowerCase().trim())
+      .limit(1)
+      .get();
+
+    if (!existing.empty) {
+      return res.status(400).json({
+        success: false,
+        message: 'Fleet company already exists'
+      });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const packageData = getFleetPackageDetails('starter');
+    const now = new Date().toISOString();
+
+    const companyRef = await db.collection('fleetCompanies').add({
+      companyName,
+      contactPerson,
+      mobile: cleanMobile(mobile),
+      email: email.toLowerCase().trim(),
+      password: hashedPassword,
+
+      packageType: 'starter',
+      packageLabel: packageData.label,
+      vehicleLimit: packageData.vehicleLimit,
+      branchLimit: packageData.branchLimit,
+      managerLimit: packageData.managerLimit,
+
+      alertOption: 'without_alerts',
+      alertsEnabled: false,
+
+      usedVehicles: 0,
+      activeDrivers: 0,
+
+      paymentStatus: 'pending',
+      status: 'pending',
+      approved: false,
+
+      createdAt: now
+    });
+
+    res.json({
+      success: true,
+      message: 'Fleet registration submitted successfully',
+      companyId: companyRef.id
+    });
+
+  } catch (err) {
+    console.error('Fleet register error:', err);
+    res.status(500).json({
+      success: false,
+      message: 'Fleet registration error'
+    });
+  }
+});
+
+app.post('/api/fleet/login', async (req, res) => {
+  try {
+    let { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email and password are required'
+      });
+    }
+
+    email = String(email).toLowerCase().trim();
+
+    const companySnapshot = await db.collection('fleetCompanies')
+      .where('email', '==', email)
+      .limit(1)
+      .get();
+
+    if (companySnapshot.empty) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid fleet login'
+      });
+    }
+
+    const companyDoc = companySnapshot.docs[0];
+    const companyId = companyDoc.id;
+    const company = companyDoc.data();
+
+    const validPassword = await bcrypt.compare(password, company.password || '');
+
+    if (!validPassword) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid fleet login'
+      });
+    }
+
+    if (company.status === 'suspended') {
+      return res.status(403).json({
+        success: false,
+        message: 'Fleet account suspended'
+      });
+    }
+
+    if (company.status !== 'active') {
+      return res.status(403).json({
+        success: false,
+        message: 'Fleet company dashboard is not active yet. Please contact Vehicall Admin.'
+      });
+    }
+
+    req.session.fleetLoggedIn = true;
+    req.session.fleetCompanyId = companyId;
+    req.session.fleetUserId = companyId;
+
+    res.json({
+      success: true,
+      message: 'Fleet login successful',
+      companyId,
+      company
+    });
+
+  } catch (err) {
+    console.error('Fleet login error:', err);
+    res.status(500).json({
+      success: false,
+      message: 'Fleet login error'
+    });
+  }
+});
+
+app.post('/api/fleet/reset-password', async (req, res) => {
+  try {
+    let { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({
+        success:false,
+        message:'Email and password required'
+      });
+    }
+
+    email = String(email).toLowerCase().trim();
+
+    const snapshot = await db.collection('fleetCompanies')
+      .where('email','==',email)
+      .limit(1)
+      .get();
+
+    if (snapshot.empty) {
+      return res.status(404).json({
+        success:false,
+        message:'Fleet account not found'
+      });
+    }
+
+    const doc = snapshot.docs[0];
+    const hashedPassword = await bcrypt.hash(password,10);
+
+    await db.collection('fleetCompanies').doc(doc.id).update({
+      password: hashedPassword,
+      passwordResetAt: new Date().toISOString()
+    });
+
+    res.json({
+      success:true,
+      message:'Fleet password reset successfully'
+    });
+
+  } catch(err) {
+    console.error(err);
+    res.status(500).json({
+      success:false,
+      message:'Fleet password reset error'
+    });
+  }
+});
+
+app.post('/api/fleet/users', requireFleet, async (req, res) => {
+  try {
+    const companyId = req.session.fleetCompanyId;
+    let { name, email, mobile, password, role, status } = req.body;
+
+    if (!name || !email || !password || !role) {
+      return res.status(400).json({
+        success: false,
+        message: 'Name, email, password and role are required'
+      });
+    }
+
+    email = String(email).toLowerCase().trim();
+
+    const existing = await db.collection('fleetUsers')
+      .where('companyId', '==', companyId)
+      .where('email', '==', email)
+      .limit(1)
+      .get();
+
+    if (!existing.empty) {
+      return res.status(400).json({
+        success: false,
+        message: 'User already exists with this email'
+      });
+    }
+
+    const permissionsByRole = {
+      fleet_owner: {
+        vehicles: true, drivers: true, assignments: true, checklist: true,
+        fuel: true, maintenance: true, incidents: true, reports: true, users: true
+      },
+      fleet_manager: {
+        vehicles: true, drivers: true, assignments: true, checklist: true,
+        fuel: true, maintenance: true, incidents: true, reports: true, users: false
+      },
+      dispatcher: {
+        vehicles: true, drivers: true, assignments: true, checklist: true,
+        fuel: false, maintenance: false, incidents: true, reports: false, users: false
+      },
+      maintenance_officer: {
+        vehicles: true, drivers: false, assignments: false, checklist: true,
+        fuel: true, maintenance: true, incidents: true, reports: false, users: false
+      },
+      driver: {
+        vehicles: false, drivers: false, assignments: true, checklist: true,
+        fuel: true, maintenance: false, incidents: true, reports: false, users: false
+      },
+      viewer: {
+        vehicles: true, drivers: true, assignments: true, checklist: true,
+        fuel: true, maintenance: true, incidents: true, reports: true, users: false
+      }
+    };
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    await db.collection('fleetUsers').add({
+      companyId,
+      name,
+      email,
+      mobile: cleanMobile(mobile),
+      password: hashedPassword,
+      role,
+      permissions: permissionsByRole[role] || permissionsByRole.viewer,
+      status: status || 'active',
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    });
+
+    res.json({
+      success: true,
+      message: 'Fleet user created successfully'
+    });
+
+  } catch (err) {
+    console.error('Fleet user create error:', err);
+    res.status(500).json({
+      success: false,
+      message: 'Fleet user create error'
+    });
+  }
+});
+
+app.get('/api/fleet/users', requireFleet, async (req, res) => {
+  try {
+    const companyId = req.session.fleetCompanyId;
+
+    const snapshot = await db.collection('fleetUsers')
+      .where('companyId', '==', companyId)
+      .get();
+
+    const users = snapshot.docs.map(doc => {
+      const data = doc.data();
+      delete data.password;
+      return { id: doc.id, ...data };
+    });
+
+    users.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+
+    res.json({
+      success: true,
+      users
+    });
+
+  } catch (err) {
+    console.error('Fleet users fetch error:', err);
+    res.status(500).json({
+      success: false,
+      message: 'Fleet users fetch error'
+    });
+  }
+});
+
+app.get('/api/fleet/logout', (req, res) => {
+  req.session.destroy(() => {
+    res.redirect('/fleet-login');
+  });
+});
+
+app.get('/api/fleet/dashboard-data', requireFleet, async (req, res) => {
+  try {
+    const companyId = req.session.fleetCompanyId;
+
+    const companyDoc = await db.collection('fleetCompanies').doc(companyId).get();
+
+    if (!companyDoc.exists) {
+      return res.status(404).json({
+        success: false,
+        message: 'Fleet company not found'
+      });
+    }
+
+    const company = companyDoc.data();
+
+let loggedUserRole = 'fleet_owner';
+
+let loggedUserPermissions = {
+  vehicles: true,
+  drivers: true,
+  assignments: true,
+  checklist: true,
+  fuel: true,
+  maintenance: true,
+  incidents: true,
+  reports: true,
+  users: true
+};
+
+if (req.session.fleetUserId && req.session.fleetUserId !== companyId) {
+  const fleetUserDoc = await db.collection('fleetUsers')
+    .doc(req.session.fleetUserId)
+    .get();
+
+  if (fleetUserDoc.exists) {
+    const fleetUser = fleetUserDoc.data();
+    loggedUserRole = fleetUser.role || 'viewer';
+    loggedUserPermissions = fleetUser.permissions || {};
+  }
+}
+
+    const vehicleSnapshot = await db.collection('fleetVehicles')
+      .where('companyId', '==', companyId)
+      .get();
+
+    const driverSnapshot = await db.collection('fleetDrivers')
+      .where('companyId', '==', companyId)
+      .get();
+
+    const assignmentSnapshot = await db.collection('fleetAssignments')
+      .where('companyId', '==', companyId)
+      .get();
+
+    const incidentSnapshot = await db.collection('fleetIncidents')
+      .where('companyId', '==', companyId)
+      .get();
+
+    const stats = {
+      totalVehicles: vehicleSnapshot.size,
+      activeDrivers: driverSnapshot.size,
+      activeAssignments: assignmentSnapshot.size,
+      incidents: incidentSnapshot.size,
+      complianceAlerts: 0
+    };
+
+    res.json({
+      success: true,
+      company: {
+        id: companyId,
+        companyName: company.companyName,
+        packageType: company.packageType,
+        packageLabel: company.packageLabel,
+        vehicleLimit: company.vehicleLimit,
+        usedVehicles: vehicleSnapshot.size,
+        alertOption: company.alertOption || 'without_alerts',
+        alertsEnabled: !!company.alertsEnabled,
+        status: company.status || 'active'
+      },
+user: {
+  role: loggedUserRole,
+  permissions: loggedUserPermissions
+},
+      stats
+    });
+
+  } catch (err) {
+    console.error('Fleet dashboard error:', err);
+    res.status(500).json({
+      success: false,
+      message: 'Fleet dashboard error'
+    });
+  }
+});
+
+app.post('/api/fleet/request-upgrade', requireFleet, async (req, res) => {
+  try {
+    const companyId = req.session.fleetCompanyId;
+
+    let {
+      packageType,
+      alertOption,
+      billingCycle,
+      remarks
+    } = req.body;
+
+    if (!packageType || !alertOption) {
+      return res.status(400).json({
+        success: false,
+        message: 'Package type and alert option are required'
+      });
+    }
+
+    packageType = String(packageType).toLowerCase().trim();
+
+    const packageData = getFleetPackageDetails(packageType);
+
+    const companyDoc = await db.collection('fleetCompanies').doc(companyId).get();
+
+    if (!companyDoc.exists) {
+      return res.status(404).json({
+        success: false,
+        message: 'Fleet company not found'
+      });
+    }
+
+    const company = companyDoc.data();
+    const now = new Date().toISOString();
+
+    const requestRef = await db.collection('fleetUpgradeRequests').add({
+      companyId,
+
+      companyName: company.companyName || '',
+      companyEmail: company.email || '',
+      companyMobile: company.mobile || '',
+
+      currentPackageType: company.packageType || '',
+      currentPackageLabel: company.packageLabel || '',
+
+      requestedPackageType: packageType,
+      requestedPackageLabel: packageData.label,
+      requestedVehicleLimit: packageData.vehicleLimit,
+      requestedBranchLimit: packageData.branchLimit,
+      requestedManagerLimit: packageData.managerLimit,
+
+      requestedAlertOption: alertOption,
+      requestedAlertsEnabled: alertOption === 'with_alerts',
+
+      billingCycle: billingCycle || 'monthly',
+      remarks: remarks || '',
+
+      status: 'pending',
+      paymentStatus: 'pending',
+
+      createdAt: now,
+      updatedAt: now
+    });
+
+    await db.collection('fleetCompanies').doc(companyId).update({
+      upgradeRequestStatus: 'pending',
+      lastUpgradeRequestId: requestRef.id,
+      lastUpgradeRequestedAt: now
+    });
+
+    res.json({
+      success: true,
+      message: 'Upgrade request submitted successfully'
+    });
+
+  } catch (err) {
+    console.error('Fleet upgrade request error:', err);
+    res.status(500).json({
+      success: false,
+      message: 'Fleet upgrade request error'
+    });
+  }
+});
+
+app.post('/api/fleet/vehicles', requireFleet, async (req, res) => {
+  try {
+    const companyId = req.session.fleetCompanyId;
+
+    let {
+  plateCode,
+  plateNumber,
+  vehicleType,
+  brand,
+  model,
+  year,
+  color,
+  mulkiyaExpiry,
+  insuranceExpiry,
+  ownershipType,
+  rentalCompanyName,
+  rentalAgreementNo,
+  rentalStartDate,
+  rentalExpiryDate,
+  vehicleCategory
+} = req.body;
+
+    const vehicleNumber = buildOmanVehicleNumber(plateCode, plateNumber);
+
+    if (!vehicleNumber) {
+      return res.status(400).json({
+        success: false,
+        message: 'Plate code and plate number required'
+      });
+    }
+
+    const companyDoc = await db.collection('fleetCompanies').doc(companyId).get();
+
+    if (!companyDoc.exists) {
+      return res.status(404).json({
+        success: false,
+        message: 'Fleet company not found'
+      });
+    }
+
+    const company = companyDoc.data();
+
+    const vehicleSnapshot = await db.collection('fleetVehicles')
+      .where('companyId', '==', companyId)
+      .get();
+
+    if (vehicleSnapshot.size >= (company.vehicleLimit || 0)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Vehicle limit reached. Please upgrade package.'
+      });
+    }
+
+    const now = new Date().toISOString();
+
+    await db.collection('fleetVehicles').add({
+      companyId,
+
+      plateCode,
+      plateNumber,
+
+      vehicleNumber,
+      vehicleType,
+      brand,
+      model,
+      year,
+      color,
+
+      mulkiyaExpiry,
+      insuranceExpiry,
+
+ownershipType: ownershipType || 'Company Owned',
+rentalCompanyName: ownershipType === 'Rented' ? (rentalCompanyName || '') : '',
+rentalAgreementNo: ownershipType === 'Rented' ? (rentalAgreementNo || '') : '',
+rentalStartDate: ownershipType === 'Rented' ? (rentalStartDate || '') : '',
+rentalExpiryDate: ownershipType === 'Rented' ? (rentalExpiryDate || '') : '',
+
+vehicleCategory: vehicleCategory || 'normal',
+
+      qr_id: generateFleetQrId(vehicleNumber),
+      qr_generated: false,
+
+      status: vehicleCategory === 'replacement' ? 'available_replacement' : 'active',
+      createdAt: now
+    });
+
+    res.json({
+      success: true,
+      message: 'Fleet vehicle added successfully'
+    });
+
+  } catch (err) {
+    console.error('Fleet vehicle add error:', err);
+    res.status(500).json({
+      success: false,
+      message: 'Fleet vehicle add error'
+    });
+  }
+});
+
+app.get('/api/fleet/vehicles', requireFleet, async (req, res) => {
+  try {
+    const companyId = req.session.fleetCompanyId;
+
+    const snapshot = await db.collection('fleetVehicles')
+      .where('companyId', '==', companyId)
+      .get();
+
+    const vehicles = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
+    vehicles.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+
+    res.json({
+      success: true,
+      vehicles
+    });
+
+  } catch (err) {
+    console.error('Fleet vehicle fetch error:', err);
+    res.status(500).json({
+      success: false,
+      message: 'Fleet vehicle fetch error'
+    });
+  }
+});
+
+app.post('/api/fleet/vehicles/:vehicleId/generate-qr', requireFleet, async (req, res) => {
+  try {
+    const companyId = req.session.fleetCompanyId;
+    const { vehicleId } = req.params;
+
+    const vehicleRef = db.collection('fleetVehicles').doc(vehicleId);
+    const vehicleDoc = await vehicleRef.get();
+
+    if (!vehicleDoc.exists) {
+      return res.status(404).json({
+        success: false,
+        message: 'Fleet vehicle not found'
+      });
+    }
+
+    const vehicle = vehicleDoc.data();
+
+    if (vehicle.companyId !== companyId) {
+      return res.status(403).json({
+        success: false,
+        message: 'Unauthorized fleet vehicle'
+      });
+    }
+
+    const companyDoc = await db.collection('fleetCompanies').doc(companyId).get();
+    const company = companyDoc.data();
+
+    if (!company.alertsEnabled) {
+      return res.status(400).json({
+        success: false,
+        message: 'Vehicall public alerts are not enabled for this fleet package'
+      });
+    }
+
+    const alertUrl = `${req.protocol}://${req.get('host')}/fleet-alert.html?qr=${vehicle.qr_id}`;
+
+    const qrImage = await QRCode.toDataURL(alertUrl, {
+      width: 360,
+      margin: 2,
+      color: {
+        dark: '#081827',
+        light: '#FFFFFF'
+      }
+    });
+
+    await vehicleRef.update({
+      qr_generated: true,
+      qrGeneratedAt: new Date().toISOString(),
+      alertUrl
+    });
+
+    res.json({
+      success: true,
+      qrImage,
+      alertUrl,
+      qr_id: vehicle.qr_id
+    });
+
+  } catch (err) {
+    console.error('Fleet QR generation error:', err);
+    res.status(500).json({
+      success: false,
+      message: 'Fleet QR generation error'
+    });
+  }
+});
+/* FLEET DRIVERS */
+app.post('/api/fleet/drivers', requireFleet, async (req, res) => {
+  try {
+    const companyId = req.session.fleetCompanyId;
+
+    let {
+      driverName,
+      employeeId,
+      mobile,
+      licenseNumber,
+      licenseExpiry,
+      status,
+      createLogin,
+      loginEmail,
+      loginPassword,
+      confirmPassword
+    } = req.body;
+
+    if (!driverName || !mobile) {
+      return res.status(400).json({
+        success: false,
+        message: 'Driver name and mobile are required'
+      });
+    }
+
+    mobile = cleanMobile(mobile);
+    const now = new Date().toISOString();
+
+    if (createLogin === 'yes') {
+      if (!loginEmail || !loginPassword || !confirmPassword) {
+        return res.status(400).json({
+          success: false,
+          message: 'Login email, password and confirm password are required'
+        });
+      }
+
+      loginEmail = String(loginEmail).toLowerCase().trim();
+
+      if (loginPassword !== confirmPassword) {
+        return res.status(400).json({
+          success: false,
+          message: 'Login password and confirm password do not match'
+        });
+      }
+
+      if (loginPassword.length < 6) {
+        return res.status(400).json({
+          success: false,
+          message: 'Login password must be at least 6 characters'
+        });
+      }
+
+      const existingUser = await db.collection('fleetUsers')
+        .where('companyId', '==', companyId)
+        .where('email', '==', loginEmail)
+        .limit(1)
+        .get();
+
+      if (!existingUser.empty) {
+        return res.status(400).json({
+          success: false,
+          message: 'A fleet user already exists with this login email'
+        });
+      }
+    }
+
+    const driverRef = await db.collection('fleetDrivers').add({
+      companyId,
+      driverName,
+      employeeId: employeeId || '',
+      mobile,
+      licenseNumber: licenseNumber || '',
+      licenseExpiry: licenseExpiry || '',
+      status: status || 'active',
+
+      assignedVehicleId: '',
+      assignedVehicleNumber: '',
+
+      loginEnabled: false,
+      linkedUserId: '',
+
+      createdAt: now,
+      updatedAt: now
+    });
+
+    let linkedUserId = '';
+
+    if (createLogin === 'yes') {
+      const permissions = {
+        vehicles: false,
+        drivers: false,
+        assignments: true,
+        checklist: true,
+        fuel: true,
+        maintenance: false,
+        incidents: true,
+        reports: false,
+        users: false
+      };
+
+      const hashedPassword = await bcrypt.hash(loginPassword, 10);
+
+      const userRef = await db.collection('fleetUsers').add({
+        companyId,
+        linkedDriverId: driverRef.id,
+
+        name: driverName,
+        email: loginEmail,
+        mobile,
+        password: hashedPassword,
+
+        role: 'driver',
+        permissions,
+        status: status === 'active' ? 'active' : 'inactive',
+
+        createdAt: now,
+        updatedAt: now
+      });
+
+      linkedUserId = userRef.id;
+
+      await driverRef.update({
+        loginEnabled: true,
+        linkedUserId,
+        loginEmail,
+        updatedAt: now
+      });
+    }
+
+    res.json({
+      success: true,
+      message: createLogin === 'yes'
+        ? 'Driver and login user created successfully'
+        : 'Driver added successfully',
+      driverId: driverRef.id,
+      linkedUserId
+    });
+
+  } catch (err) {
+    console.error('Fleet driver add error:', err);
+    res.status(500).json({
+      success: false,
+      message: 'Fleet driver add error'
+    });
+  }
+});
+
+app.get('/api/fleet/drivers', requireFleet, async (req, res) => {
+  try {
+    const companyId = req.session.fleetCompanyId;
+
+    const snapshot = await db.collection('fleetDrivers')
+      .where('companyId', '==', companyId)
+      .get();
+
+    const drivers = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
+    drivers.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+
+    res.json({
+      success: true,
+      drivers
+    });
+
+  } catch (err) {
+    console.error('Fleet driver fetch error:', err);
+    res.status(500).json({
+      success: false,
+      message: 'Fleet driver fetch error'
+    });
+  }
+});
+
+app.get('/driver-login', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'driver-login.html'));
+});
+
+app.get('/driver-dashboard', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'driver-dashboard.html'));
+});
+
+function requireDriver(req, res, next) {
+  if (req.session && req.session.driverLoggedIn && req.session.driverUserId) return next();
+
+  return res.status(401).json({
+    success: false,
+    message: 'Driver login required'
+  });
+}
+
+/* =========================================================
+   DRIVER PORTAL SYSTEM
+========================================================= */
+
+app.post('/api/driver/login', async (req, res) => {
+  try {
+    let { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email and password are required'
+      });
+    }
+
+    email = String(email).toLowerCase().trim();
+
+    const snapshot = await db.collection('fleetUsers')
+      .where('email', '==', email)
+      .where('role', '==', 'driver')
+      .limit(1)
+      .get();
+
+    if (snapshot.empty) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid driver login'
+      });
+    }
+
+    const driverDoc = snapshot.docs[0];
+    const driverUser = driverDoc.data();
+
+    if (driverUser.status !== 'active') {
+      return res.status(403).json({
+        success: false,
+        message: 'Driver account is not active'
+      });
+    }
+
+    const validPassword = await bcrypt.compare(password, driverUser.password || '');
+
+    if (!validPassword) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid driver login'
+      });
+    }
+
+    const companyDoc = await db.collection('fleetCompanies')
+      .doc(driverUser.companyId)
+      .get();
+
+    if (!companyDoc.exists || companyDoc.data().status !== 'active') {
+      return res.status(403).json({
+        success: false,
+        message: 'Fleet company is not active'
+      });
+    }
+
+    req.session.driverLoggedIn = true;
+    req.session.driverUserId = driverDoc.id;
+    req.session.driverCompanyId = driverUser.companyId;
+    req.session.driverRole = 'driver';
+
+    req.session.fleetLoggedIn = true;
+    req.session.fleetCompanyId = driverUser.companyId;
+    req.session.fleetUserId = driverDoc.id;
+
+    res.json({
+      success: true,
+      message: 'Driver login successful'
+    });
+
+  } catch (err) {
+    console.error('Driver login error:', err);
+    res.status(500).json({
+      success: false,
+      message: 'Driver login error'
+    });
+  }
+});
+
+app.get('/api/driver/dashboard', requireDriver, async (req, res) => {
+  try {
+    const driverUserId = req.session.driverUserId;
+    const companyId = req.session.driverCompanyId;
+
+    const driverUserDoc = await db.collection('fleetUsers').doc(driverUserId).get();
+
+    if (!driverUserDoc.exists) {
+      return res.status(404).json({
+        success: false,
+        message: 'Driver not found'
+      });
+    }
+
+    const driverUser = driverUserDoc.data();
+
+    const companyDoc = await db.collection('fleetCompanies').doc(companyId).get();
+
+    if (!companyDoc.exists) {
+      return res.status(404).json({
+        success: false,
+        message: 'Company not found'
+      });
+    }
+
+    const company = companyDoc.data();
+
+    const driverSnapshot = await db.collection('fleetDrivers')
+      .where('companyId', '==', companyId)
+      .where('mobile', '==', cleanMobile(driverUser.mobile))
+      .limit(1)
+      .get();
+
+    let assignedVehicle = {
+  vehicleNumber: 'Not assigned',
+  status: '-'
+};
+
+let workingVehicle = {
+  vehicleNumber: 'Not assigned',
+  status: '-',
+  useType: 'original'
+};
+
+let driverRecordId = '';
+
+    if (!driverSnapshot.empty) {
+      const driverRecordDoc = driverSnapshot.docs[0];
+      const driverRecord = driverRecordDoc.data();
+      driverRecordId = driverRecordDoc.id;
+
+      if (driverRecord.assignedVehicleId) {
+        const vehicleDoc = await db.collection('fleetVehicles')
+          .doc(driverRecord.assignedVehicleId)
+          .get();
+
+        if (vehicleDoc.exists) {
+  const vehicle = vehicleDoc.data();
+
+  assignedVehicle = {
+    vehicleId: driverRecord.assignedVehicleId,
+    vehicleNumber: vehicle.vehicleNumber || 'Not assigned',
+    status: vehicle.status || '-'
+  };
+
+  workingVehicle = {
+    vehicleId: driverRecord.assignedVehicleId,
+    vehicleNumber: vehicle.vehicleNumber || 'Not assigned',
+    status: vehicle.status || '-',
+    useType: 'original'
+  };
+
+  if (driverRecord.activeReplacementId) {
+    const replacementDoc = await db.collection('fleetReplacements')
+      .doc(driverRecord.activeReplacementId)
+      .get();
+
+    if (
+      replacementDoc.exists &&
+      replacementDoc.data().companyId === companyId &&
+      replacementDoc.data().status === 'active'
+    ) {
+      const replacement = replacementDoc.data();
+
+      workingVehicle = {
+        vehicleId: '',
+        vehicleNumber: replacement.replacementVehicleNumber || 'Replacement Vehicle',
+        status: 'active_replacement',
+        useType: 'replacement',
+        replacementId: driverRecord.activeReplacementId,
+        originalVehicleId: replacement.originalVehicleId || '',
+        originalVehicleNumber: replacement.originalVehicleNumber || ''
+      };
+    }
+  }
+}
+      }
+    }
+
+    let openTrips = 0;
+    let openIncidents = 0;
+
+    if (driverRecordId) {
+      const tripsSnapshot = await db.collection('fleetDailyTrips')
+        .where('companyId', '==', companyId)
+        .where('driverId', '==', driverRecordId)
+        .where('status', '==', 'active')
+        .get();
+
+      const incidentsSnapshot = await db.collection('fleetIncidents')
+        .where('companyId', '==', companyId)
+        .where('driverId', '==', driverRecordId)
+        .get();
+
+      openTrips = tripsSnapshot.size;
+      openIncidents = incidentsSnapshot.docs.filter(doc => doc.data().status !== 'closed').length;
+    }
+
+    res.json({
+      success: true,
+      driver: {
+        id: driverUserId,
+        name: driverUser.name,
+        email: driverUser.email,
+        mobile: driverUser.mobile
+      },
+      company: {
+        companyName: company.companyName
+      },
+      assignedVehicle,
+workingVehicle,
+stats: {
+        openTrips,
+        openIncidents
+      }
+    });
+
+  } catch (err) {
+    console.error('Driver dashboard error:', err);
+    res.status(500).json({
+      success: false,
+      message: 'Driver dashboard error'
+    });
+  }
+});
+
+app.get('/api/driver/my-active-trip', requireDriver, async (req, res) => {
+  try {
+    const companyId = req.session.driverCompanyId;
+    const driverUserId = req.session.driverUserId;
+
+    const driverUserDoc = await db.collection('fleetUsers').doc(driverUserId).get();
+
+    if (!driverUserDoc.exists) {
+      return res.status(404).json({ success: false, message: 'Driver user not found' });
+    }
+
+    const driverUser = driverUserDoc.data();
+    const linkedDriverId = driverUser.linkedDriverId || '';
+
+    if (!linkedDriverId) {
+      return res.json({ success: true, trip: null });
+    }
+
+    const snapshot = await db.collection('fleetDailyTrips')
+      .where('companyId', '==', companyId)
+      .where('driverId', '==', linkedDriverId)
+      .where('status', '==', 'active')
+      .limit(1)
+      .get();
+
+    if (snapshot.empty) {
+      return res.json({ success: true, trip: null });
+    }
+
+    res.json({
+      success: true,
+      trip: {
+        id: snapshot.docs[0].id,
+        ...snapshot.docs[0].data()
+      }
+    });
+
+  } catch (err) {
+    console.error('Driver active trip error:', err);
+    res.status(500).json({ success: false, message: 'Driver active trip error' });
+  }
+});
+
+app.post('/api/driver/start-trip', requireDriver, async (req, res) => {
+  try {
+    const companyId = req.session.driverCompanyId;
+    const driverUserId = req.session.driverUserId;
+    const { openingKm, openingFuel, openingNotes } = req.body;
+
+    if (!openingKm) {
+      return res.status(400).json({ success: false, message: 'Opening KM is required' });
+    }
+
+    const driverUserDoc = await db.collection('fleetUsers').doc(driverUserId).get();
+
+    if (!driverUserDoc.exists) {
+      return res.status(404).json({ success: false, message: 'Driver user not found' });
+    }
+
+    const driverUser = driverUserDoc.data();
+    const linkedDriverId = driverUser.linkedDriverId || '';
+
+    if (!linkedDriverId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Driver account is not linked to driver profile'
+      });
+    }
+
+    const driverDoc = await db.collection('fleetDrivers').doc(linkedDriverId).get();
+
+    if (!driverDoc.exists || driverDoc.data().companyId !== companyId) {
+      return res.status(404).json({ success: false, message: 'Driver profile not found' });
+    }
+
+    const driver = driverDoc.data();
+
+    if (!driver.assignedVehicleId) {
+      return res.status(400).json({
+        success: false,
+        message: 'No vehicle assigned to this driver'
+      });
+    }
+
+    const existingTrip = await db.collection('fleetDailyTrips')
+      .where('companyId', '==', companyId)
+      .where('driverId', '==', linkedDriverId)
+      .where('status', '==', 'active')
+      .limit(1)
+      .get();
+
+    if (!existingTrip.empty) {
+      return res.status(400).json({
+        success: false,
+        message: 'You already have an active trip. Please close it first.'
+      });
+    }
+
+    const vehicleDoc = await db.collection('fleetVehicles').doc(driver.assignedVehicleId).get();
+
+    if (!vehicleDoc.exists || vehicleDoc.data().companyId !== companyId) {
+      return res.status(404).json({ success: false, message: 'Assigned vehicle not found' });
+    }
+
+    const vehicle = vehicleDoc.data();
+    const now = new Date().toISOString();
+
+    await db.collection('fleetDailyTrips').add({
+      companyId,
+      vehicleId: driver.assignedVehicleId,
+      vehicleNumber: vehicle.vehicleNumber,
+      driverId: linkedDriverId,
+      driverName: driver.driverName,
+      shift: 'Driver Portal',
+      tripDate: now.slice(0, 10),
+      openingKm,
+      openingFuel: openingFuel || '',
+      openingTyre: '',
+      openingLights: '',
+      openingDamage: '',
+      openingNotes: openingNotes || '',
+      closingKm: '',
+      closingFuel: '',
+      closingNotes: '',
+      status: 'active',
+      source: 'driver_portal',
+      createdAt: now,
+      updatedAt: now
+    });
+
+    res.json({
+      success: true,
+      message: 'Trip started successfully for your assigned vehicle'
+    });
+
+  } catch (err) {
+    console.error('Driver start trip error:', err);
+    res.status(500).json({ success: false, message: 'Driver start trip error' });
+  }
+});
+
+app.post('/api/driver/close-trip', requireDriver, async (req, res) => {
+  try {
+    const companyId = req.session.driverCompanyId;
+    const driverUserId = req.session.driverUserId;
+    const { closingKm, closingFuel, closingNotes } = req.body;
+
+    if (!closingKm) {
+      return res.status(400).json({ success: false, message: 'Closing KM is required' });
+    }
+
+    const driverUserDoc = await db.collection('fleetUsers').doc(driverUserId).get();
+
+    if (!driverUserDoc.exists) {
+      return res.status(404).json({ success: false, message: 'Driver user not found' });
+    }
+
+    const driverUser = driverUserDoc.data();
+    const linkedDriverId = driverUser.linkedDriverId || '';
+
+    const activeTrip = await db.collection('fleetDailyTrips')
+      .where('companyId', '==', companyId)
+      .where('driverId', '==', linkedDriverId)
+      .where('status', '==', 'active')
+      .limit(1)
+      .get();
+
+    if (activeTrip.empty) {
+      return res.status(404).json({
+        success: false,
+        message: 'No active trip found'
+      });
+    }
+
+    await activeTrip.docs[0].ref.update({
+      closingKm,
+      closingFuel: closingFuel || '',
+      closingNotes: closingNotes || '',
+      status: 'closed',
+      closedAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    });
+
+    res.json({
+      success: true,
+      message: 'Trip closed successfully'
+    });
+
+  } catch (err) {
+    console.error('Driver close trip error:', err);
+    res.status(500).json({ success: false, message: 'Driver close trip error' });
+  }
+});
+
+app.post('/api/driver/fuel', requireDriver, async (req, res) => {
+  try {
+
+    const companyId = req.session.driverCompanyId;
+    const driverUserId = req.session.driverUserId;
+
+    const {
+      entryType,
+      fuelType,
+      liters,
+      amount,
+      odometerReading,
+      fuelStation,
+      paymentMethod,
+      receiptNo,
+      remarks
+    } = req.body;
+
+    if (!amount) {
+      return res.status(400).json({
+        success:false,
+        message:'Amount is required'
+      });
+    }
+
+    const driverUserDoc = await db.collection('fleetUsers')
+      .doc(driverUserId)
+      .get();
+
+    if (!driverUserDoc.exists) {
+      return res.status(404).json({
+        success:false,
+        message:'Driver user not found'
+      });
+    }
+
+    const driverUser = driverUserDoc.data();
+
+    const linkedDriverId = driverUser.linkedDriverId || '';
+
+    if (!linkedDriverId) {
+      return res.status(400).json({
+        success:false,
+        message:'Driver account not linked properly'
+      });
+    }
+
+    const driverDoc = await db.collection('fleetDrivers')
+      .doc(linkedDriverId)
+      .get();
+
+    if (!driverDoc.exists) {
+      return res.status(404).json({
+        success:false,
+        message:'Driver profile not found'
+      });
+    }
+
+    const driver = driverDoc.data();
+
+    if (!driver.assignedVehicleId) {
+      return res.status(400).json({
+        success:false,
+        message:'No vehicle assigned to driver'
+      });
+    }
+
+    const vehicleDoc = await db.collection('fleetVehicles')
+  .doc(driver.assignedVehicleId)
+  .get();
+
+if (!vehicleDoc.exists) {
+  return res.status(404).json({
+    success:false,
+    message:'Assigned vehicle not found'
+  });
+}
+
+const vehicle = vehicleDoc.data();
+
+let fuelVehicleId = driver.assignedVehicleId;
+let fuelVehicleNumber = vehicle.vehicleNumber;
+let vehicleUseType = 'original';
+let replacementRecordId = '';
+let originalVehicleId = '';
+let originalVehicleNumber = '';
+
+if (driver.activeReplacementId) {
+  const replacementDoc = await db.collection('fleetReplacements')
+    .doc(driver.activeReplacementId)
+    .get();
+
+  if (
+    replacementDoc.exists &&
+    replacementDoc.data().companyId === companyId &&
+    replacementDoc.data().status === 'active'
+  ) {
+    const replacement = replacementDoc.data();
+
+    fuelVehicleId = '';
+    fuelVehicleNumber = replacement.replacementVehicleNumber || vehicle.vehicleNumber;
+    vehicleUseType = 'replacement';
+    replacementRecordId = driver.activeReplacementId;
+    originalVehicleId = replacement.originalVehicleId || driver.assignedVehicleId;
+    originalVehicleNumber = replacement.originalVehicleNumber || vehicle.vehicleNumber;
+  }
+}
+
+const now = new Date().toISOString();
+
+await db.collection('fleetFuelLogs').add({
+
+  companyId,
+
+  vehicleId: fuelVehicleId,
+  vehicleNumber: fuelVehicleNumber,
+
+  vehicleUseType,
+  replacementRecordId,
+  originalVehicleId,
+  originalVehicleNumber,
+
+      driverId: linkedDriverId,
+      driverName: driver.driverName,
+
+      entryType: entryType || 'Fuel',
+      fuelType: fuelType || '',
+      liters: Number(liters || 0),
+      amount: Number(amount || 0),
+      odometerReading: odometerReading || '',
+      fuelStation: fuelStation || '',
+      paymentMethod: paymentMethod || '',
+      receiptNo: receiptNo || '',
+      remarks: remarks || '',
+
+      source: 'driver_portal',
+
+      createdBy: driverUserId,
+      createdByRole: 'driver',
+
+      lastModifiedBy: driverUserId,
+      lastModifiedByRole: 'driver',
+
+      correctionReason: '',
+      editHistory: [],
+
+      status: 'pending_approval',
+      approvalStatus: 'pending',
+      approvedBy: '',
+      approvedAt: '',
+      rejectedBy: '',
+      rejectedAt: '',
+      rejectionReason: '',
+
+      createdAt: now,
+      updatedAt: now,
+      modifiedAt: now
+    });
+
+    res.json({
+      success:true,
+      message:'Fuel entry saved successfully'
+    });
+
+  } catch(err){
+
+    console.error('Driver fuel entry error:', err);
+
+    res.status(500).json({
+      success:false,
+      message:'Driver fuel entry error'
+    });
+  }
+});
+
+/* DRIVER FUEL APPROVAL SYSTEM */
+
+app.post('/api/fleet/fuel/:fuelId/approve', requireFleet, async (req, res) => {
+  try {
+    const companyId = req.session.fleetCompanyId;
+    const fuelId = req.params.fuelId;
+
+    const fuelRef = db.collection('fleetFuelLogs').doc(fuelId);
+    const fuelDoc = await fuelRef.get();
+
+    if (!fuelDoc.exists) {
+      return res.status(404).json({
+        success: false,
+        message: 'Fuel entry not found'
+      });
+    }
+
+    const fuel = fuelDoc.data();
+
+    if (fuel.companyId !== companyId) {
+      return res.status(403).json({
+        success: false,
+        message: 'Unauthorized fuel entry'
+      });
+    }
+
+    if (fuel.approvalStatus === 'approved') {
+      return res.status(400).json({
+        success: false,
+        message: 'Fuel entry already approved'
+      });
+    }
+
+    const now = new Date().toISOString();
+
+    await fuelRef.update({
+      status: 'approved',
+      approvalStatus: 'approved',
+      approvedBy: req.session.fleetUserId || companyId,
+      approvedAt: now,
+      lastModifiedBy: req.session.fleetUserId || companyId,
+      lastModifiedByRole: 'fleet_admin',
+      modifiedAt: now,
+      updatedAt: now
+    });
+
+    res.json({
+      success: true,
+      message: 'Fuel entry approved successfully'
+    });
+
+  } catch (err) {
+    console.error('Fuel approve error:', err);
+    res.status(500).json({
+      success: false,
+      message: 'Fuel approve error'
+    });
+  }
+});
+
+
+app.post('/api/fleet/fuel/:fuelId/reject', requireFleet, async (req, res) => {
+  try {
+    const companyId = req.session.fleetCompanyId;
+    const fuelId = req.params.fuelId;
+    const { rejectionReason } = req.body;
+
+    if (!rejectionReason) {
+      return res.status(400).json({
+        success: false,
+        message: 'Rejection reason is required'
+      });
+    }
+
+    const fuelRef = db.collection('fleetFuelLogs').doc(fuelId);
+    const fuelDoc = await fuelRef.get();
+
+    if (!fuelDoc.exists) {
+      return res.status(404).json({
+        success: false,
+        message: 'Fuel entry not found'
+      });
+    }
+
+    const fuel = fuelDoc.data();
+
+    if (fuel.companyId !== companyId) {
+      return res.status(403).json({
+        success: false,
+        message: 'Unauthorized fuel entry'
+      });
+    }
+
+    const now = new Date().toISOString();
+
+    await fuelRef.update({
+      status: 'rejected',
+      approvalStatus: 'rejected',
+      rejectedBy: req.session.fleetUserId || companyId,
+      rejectedAt: now,
+      rejectionReason,
+      lastModifiedBy: req.session.fleetUserId || companyId,
+      lastModifiedByRole: 'fleet_admin',
+      modifiedAt: now,
+      updatedAt: now
+    });
+
+    res.json({
+      success: true,
+      message: 'Fuel entry rejected successfully'
+    });
+
+  } catch (err) {
+    console.error('Fuel reject error:', err);
+    res.status(500).json({
+      success: false,
+      message: 'Fuel reject error'
+    });
+  }
+});
+
+app.post('/api/fleet/fuel/:fuelId/update', requireFleet, async (req, res) => {
+  try {
+    const companyId = req.session.fleetCompanyId;
+    const fuelId = req.params.fuelId;
+
+    const {
+      entryType,
+      fuelType,
+      liters,
+      amount,
+      odometerReading,
+      fuelStation,
+      paymentMethod,
+      receiptNo,
+      remarks,
+      correctionReason
+    } = req.body;
+
+    if (!correctionReason) {
+      return res.status(400).json({
+        success: false,
+        message: 'Correction reason is required'
+      });
+    }
+
+    if (!amount) {
+      return res.status(400).json({
+        success: false,
+        message: 'Amount is required'
+      });
+    }
+
+    const fuelRef = db.collection('fleetFuelLogs').doc(fuelId);
+    const fuelDoc = await fuelRef.get();
+
+    if (!fuelDoc.exists) {
+      return res.status(404).json({
+        success: false,
+        message: 'Fuel entry not found'
+      });
+    }
+
+    const oldData = fuelDoc.data();
+
+    if (oldData.companyId !== companyId) {
+      return res.status(403).json({
+        success: false,
+        message: 'Unauthorized fuel entry'
+      });
+    }
+
+    if (oldData.approvalStatus === 'approved' || oldData.status === 'approved') {
+      return res.status(400).json({
+        success: false,
+        message: 'Approved fuel entry cannot be modified'
+      });
+    }
+
+    const now = new Date().toISOString();
+
+    const historyItem = {
+      modifiedBy: req.session.fleetUserId || companyId,
+      modifiedByRole: 'fleet_admin',
+      modifiedAt: now,
+      correctionReason,
+      oldData
+    };
+
+    await fuelRef.update({
+      entryType: entryType || oldData.entryType || 'Fuel',
+      fuelType: fuelType || '',
+      liters: Number(liters || 0),
+      amount: Number(amount || 0),
+      odometerReading: odometerReading || '',
+      fuelStation: fuelStation || '',
+      paymentMethod: paymentMethod || oldData.paymentMethod || '',
+      receiptNo: receiptNo || '',
+      remarks: remarks || '',
+
+      correctionReason,
+      editHistory: [...(oldData.editHistory || []), historyItem],
+
+      status: oldData.status || 'pending_approval',
+      approvalStatus: oldData.approvalStatus || 'pending',
+
+      lastModifiedBy: req.session.fleetUserId || companyId,
+      lastModifiedByRole: 'fleet_admin',
+      modifiedAt: now,
+      updatedAt: now
+    });
+
+    res.json({
+      success: true,
+      message: 'Fuel entry updated successfully'
+    });
+
+  } catch (err) {
+    console.error('Fuel update error:', err);
+    res.status(500).json({
+      success: false,
+      message: 'Fuel update error'
+    });
+  }
+});
+
+app.get('/api/driver/logout', (req, res) => {
+  req.session.driverLoggedIn = false;
+  req.session.driverUserId = null;
+  req.session.driverCompanyId = null;
+
+  req.session.fleetLoggedIn = false;
+  req.session.fleetCompanyId = null;
+  req.session.fleetUserId = null;
+
+  res.redirect('/driver-login');
+});
+
+/* FLEET ASSIGNMENTS */
+app.post('/api/fleet/assignments', requireFleet, async (req, res) => {
+  try {
+    const companyId = req.session.fleetCompanyId;
+
+    const {
+      vehicleId,
+      driverId,
+      assignmentDate,
+      shift,
+      openingKm,
+      notes
+    } = req.body;
+
+    if (!vehicleId || !driverId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Vehicle and driver are required'
+      });
+    }
+
+    const vehicleRef = db.collection('fleetVehicles').doc(vehicleId);
+    const driverRef = db.collection('fleetDrivers').doc(driverId);
+
+    const vehicleDoc = await vehicleRef.get();
+    const driverDoc = await driverRef.get();
+
+    if (!vehicleDoc.exists || !driverDoc.exists) {
+      return res.status(404).json({
+        success: false,
+        message: 'Vehicle or driver not found'
+      });
+    }
+
+    const vehicle = vehicleDoc.data();
+    const driver = driverDoc.data();
+
+    if (vehicle.companyId !== companyId || driver.companyId !== companyId) {
+      return res.status(403).json({
+        success: false,
+        message: 'Unauthorized assignment'
+      });
+    }
+
+    const now = new Date().toISOString();
+
+    const assignmentRef = await db.collection('fleetAssignments').add({
+      companyId,
+
+      vehicleId,
+      vehicleNumber: vehicle.vehicleNumber,
+
+      driverId,
+      driverName: driver.driverName,
+      driverMobile: driver.mobile || '',
+
+      assignmentDate: assignmentDate || now,
+      shift: shift || '',
+      openingKm: openingKm || '',
+      notes: notes || '',
+
+      status: 'active',
+
+      createdAt: now,
+      updatedAt: now
+    });
+
+    await vehicleRef.update({
+      assignedDriverId: driverId,
+      assignedDriverName: driver.driverName,
+      currentAssignmentId: assignmentRef.id,
+      updatedAt: now
+    });
+
+    await driverRef.update({
+      assignedVehicleId: vehicleId,
+      assignedVehicleNumber: vehicle.vehicleNumber,
+      currentAssignmentId: assignmentRef.id,
+      updatedAt: now
+    });
+
+    res.json({
+      success: true,
+      message: 'Vehicle assigned to driver successfully'
+    });
+
+  } catch (err) {
+    console.error('Fleet assignment error:', err);
+    res.status(500).json({
+      success: false,
+      message: 'Fleet assignment error'
+    });
+  }
+});
+
+app.get('/api/fleet/assignments', requireFleet, async (req, res) => {
+  try {
+    const companyId = req.session.fleetCompanyId;
+
+    const snapshot = await db.collection('fleetAssignments')
+      .where('companyId', '==', companyId)
+      .get();
+
+    const assignments = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
+    assignments.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+
+    res.json({
+      success: true,
+      assignments
+    });
+
+  } catch (err) {
+    console.error('Fleet assignments fetch error:', err);
+    res.status(500).json({
+      success: false,
+      message: 'Fleet assignments fetch error'
+    });
+  }
+});
+
+/* FLEET CHECKLIST */
+app.post('/api/fleet/checklists', requireFleet, async (req, res) => {
+  try {
+    const companyId = req.session.fleetCompanyId;
+
+    const {
+      checklistDate,
+      vehicleId,
+      driverId,
+      checklistType,
+      openingKm,
+      closingKm,
+      kmUsed,
+      tireCheck,
+      brakeCheck,
+      lightsCheck,
+      fuelLevel,
+      damageFound,
+      safetyConfirmed,
+      damageNotes,
+      remarks
+    } = req.body;
+
+    if (!checklistDate || !vehicleId || !driverId || !closingKm) {
+      return res.status(400).json({
+        success: false,
+        message: 'Checklist date, vehicle, driver and closing KM are required'
+      });
+    }
+
+    if (Number(closingKm) < Number(openingKm || 0)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Closing KM cannot be less than opening KM'
+      });
+    }
+
+    const vehicleDoc = await db.collection('fleetVehicles').doc(vehicleId).get();
+    const driverDoc = await db.collection('fleetDrivers').doc(driverId).get();
+
+    if (!vehicleDoc.exists || !driverDoc.exists) {
+      return res.status(404).json({
+        success: false,
+        message: 'Vehicle or driver not found'
+      });
+    }
+
+    const vehicle = vehicleDoc.data();
+    const driver = driverDoc.data();
+
+    if (vehicle.companyId !== companyId || driver.companyId !== companyId) {
+      return res.status(403).json({
+        success: false,
+        message: 'Unauthorized checklist'
+      });
+    }
+
+    const now = new Date().toISOString();
+
+    await db.collection('fleetChecklists').add({
+      companyId,
+
+      checklistDate,
+      vehicleId,
+      vehicleNumber: vehicle.vehicleNumber,
+
+      driverId,
+      driverName: driver.driverName,
+
+      checklistType: checklistType || 'closing',
+
+      openingKm: Number(openingKm || 0),
+      closingKm: Number(closingKm || 0),
+      kmUsed: Number(kmUsed || (Number(closingKm) - Number(openingKm || 0))),
+
+      tireCheck: !!tireCheck,
+      brakeCheck: !!brakeCheck,
+      lightsCheck: !!lightsCheck,
+
+      fuelLevel: fuelLevel || '',
+      damageFound: !!damageFound,
+      safetyConfirmed: !!safetyConfirmed,
+
+      damageNotes: damageNotes || '',
+      remarks: remarks || '',
+
+      createdBy: req.session.fleetUserId || companyId,
+      createdByRole: 'fleet_admin',
+
+      createdAt: now,
+      updatedAt: now
+    });
+
+    await db.collection('fleetVehicles').doc(vehicleId).update({
+      currentKm: Number(closingKm || 0),
+      lastChecklistDate: checklistDate,
+      updatedAt: now
+    });
+
+    res.json({
+      success: true,
+      message: 'Daily checklist saved successfully'
+    });
+
+  } catch (err) {
+    console.error('Fleet checklist error:', err);
+    res.status(500).json({
+      success: false,
+      message: 'Fleet checklist error'
+    });
+  }
+});
+
+app.get('/api/fleet/checklists', requireFleet, async (req, res) => {
+  try {
+    const companyId = req.session.fleetCompanyId;
+
+    const snapshot = await db.collection('fleetChecklists')
+      .where('companyId', '==', companyId)
+      .get();
+
+    const checklists = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
+    checklists.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+
+    res.json({
+      success: true,
+      checklists
+    });
+
+  } catch (err) {
+    console.error('Fleet checklist fetch error:', err);
+    res.status(500).json({
+      success: false,
+      message: 'Fleet checklist fetch error'
+    });
+  }
+});
+/* FLEET INCIDENTS */
+app.post('/api/fleet/incidents', requireFleet, async (req, res) => {
+  try {
+    const companyId = req.session.fleetCompanyId;
+
+    const {
+      vehicleId,
+      driverId,
+      incidentType,
+      priority,
+      description,
+      location,
+      incidentDate
+    } = req.body;
+
+    if (!incidentType || !description) {
+      return res.status(400).json({
+        success: false,
+        message: 'Incident type and description are required'
+      });
+    }
+
+    let vehicleNumber = '';
+    let driverName = '';
+
+    if (vehicleId) {
+      const vehicleDoc = await db.collection('fleetVehicles').doc(vehicleId).get();
+      if (vehicleDoc.exists && vehicleDoc.data().companyId === companyId) {
+        vehicleNumber = vehicleDoc.data().vehicleNumber || '';
+      }
+    }
+
+    if (driverId) {
+      const driverDoc = await db.collection('fleetDrivers').doc(driverId).get();
+      if (driverDoc.exists && driverDoc.data().companyId === companyId) {
+        driverName = driverDoc.data().driverName || '';
+      }
+    }
+
+    const now = new Date().toISOString();
+
+    const incidentRef = await db.collection('fleetIncidents').add({
+      companyId,
+      vehicleId: vehicleId || '',
+      vehicleNumber,
+      driverId: driverId || '',
+      driverName,
+      incidentType,
+      priority: priority || 'medium',
+      description,
+      location: location || '',
+      incidentDate: incidentDate || now,
+      status: 'open',
+      source: 'internal',
+      createdAt: now,
+      updatedAt: now
+    });
+
+    res.json({
+      success: true,
+      message: 'Incident created successfully',
+      incidentId: incidentRef.id
+    });
+
+  } catch (err) {
+    console.error('Incident error:', err);
+    res.status(500).json({
+      success: false,
+      message: 'Incident error'
+    });
+  }
+});
+
+app.get('/api/fleet/incidents', requireFleet, async (req, res) => {
+  try {
+    const companyId = req.session.fleetCompanyId;
+
+    const snapshot = await db.collection('fleetIncidents')
+      .where('companyId', '==', companyId)
+      .get();
+
+    const incidents = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
+    incidents.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+
+    res.json({
+      success: true,
+      incidents
+    });
+
+  } catch (err) {
+    console.error('Fleet incidents fetch error:', err);
+    res.status(500).json({
+      success: false,
+      message: 'Incident list error'
+    });
+  }
+});
+
+app.post('/api/fleet/incidents/:incidentId/close', requireFleet, async (req, res) => {
+  try {
+    const companyId = req.session.fleetCompanyId;
+    const { incidentId } = req.params;
+    const { resolutionNotes } = req.body;
+
+    const incidentRef = db.collection('fleetIncidents').doc(incidentId);
+    const incidentDoc = await incidentRef.get();
+
+    if (!incidentDoc.exists || incidentDoc.data().companyId !== companyId) {
+      return res.status(404).json({
+        success: false,
+        message: 'Incident not found'
+      });
+    }
+
+    await incidentRef.update({
+      status: 'closed',
+      resolutionNotes: resolutionNotes || '',
+      closedAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    });
+
+    res.json({
+      success: true,
+      message: 'Incident closed successfully'
+    });
+
+  } catch (err) {
+    console.error('Close incident error:', err);
+    res.status(500).json({
+      success: false,
+      message: 'Close incident error'
+    });
+  }
+});
+
+/* FLEET MAINTENANCE */
+app.post('/api/fleet/maintenance', requireFleet, async (req, res) => {
+  try {
+    const companyId = req.session.fleetCompanyId;
+
+    const {
+      vehicleId,
+      maintenanceType,
+      serviceDate,
+      nextDueDate,
+      currentKm,
+      workshopName,
+      cost,
+      downtime,
+      ownershipType,
+      rentalCompanyName,
+      maintenanceResponsibility,
+      rentalAgreementExpiry,
+      notes,
+      status
+    } = req.body;
+
+    if (!vehicleId || !maintenanceType) {
+      return res.status(400).json({
+        success: false,
+        message: 'Vehicle and maintenance type are required'
+      });
+    }
+
+    const vehicleDoc = await db.collection('fleetVehicles').doc(vehicleId).get();
+
+    if (!vehicleDoc.exists || vehicleDoc.data().companyId !== companyId) {
+      return res.status(404).json({
+        success: false,
+        message: 'Fleet vehicle not found'
+      });
+    }
+
+    const vehicle = vehicleDoc.data();
+    const now = new Date().toISOString();
+
+    const maintenanceRef = await db.collection('fleetMaintenance').add({
+      companyId,
+
+      vehicleId,
+      vehicleNumber: vehicle.vehicleNumber,
+
+      maintenanceType,
+      serviceDate: serviceDate || '',
+      nextDueDate: nextDueDate || '',
+      currentKm: currentKm || '',
+      workshopName: workshopName || '',
+      cost: Number(cost || 0),
+      downtime: downtime || 'No',
+
+      ownershipType: ownershipType || 'Company Owned',
+      rentalCompanyName: rentalCompanyName || '',
+      maintenanceResponsibility: maintenanceResponsibility || 'Customer Company',
+      rentalAgreementExpiry: rentalAgreementExpiry || '',
+
+      notes: notes || '',
+      status: status || 'pending',
+
+      createdAt: now,
+      updatedAt: now
+    });
+
+    res.json({
+      success: true,
+      message: 'Maintenance record saved successfully',
+      maintenanceId: maintenanceRef.id
+    });
+
+  } catch (err) {
+    console.error('Maintenance error:', err);
+    res.status(500).json({
+      success: false,
+      message: 'Maintenance error'
+    });
+  }
+});
+
+app.get('/fleet-replacements', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'fleet-replacements.html'));
+});
+
+app.get('/api/fleet/maintenance', requireFleet, async (req, res) => {
+  try {
+    const companyId = req.session.fleetCompanyId;
+
+    const snapshot = await db.collection('fleetMaintenance')
+      .where('companyId', '==', companyId)
+      .get();
+
+    const records = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
+    records.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+
+    res.json({
+      success: true,
+      records
+    });
+
+  } catch (err) {
+    console.error('Maintenance fetch error:', err);
+    res.status(500).json({
+      success: false,
+      message: 'Maintenance fetch error'
+    });
+  }
+});
+
+/* FLEET REPLACEMENT VEHICLES */
+
+app.post('/api/fleet/replacements', requireFleet, async (req, res) => {
+  try {
+    const companyId = req.session.fleetCompanyId;
+
+    const {
+  originalVehicleId,
+  originalVehicleEndKm,
+  originalVehicleSentDate,
+  replacementVehicleNumber,
+  rentalCompanyName,
+  reason,
+  replacementStartKm,
+  expectedReturnDate,
+  assignNow,
+  assignedDriverId,
+  notes
+} = req.body;
+
+    if (!originalVehicleId || !originalVehicleEndKm || !replacementVehicleNumber || !rentalCompanyName || !replacementStartKm) {
+      return res.status(400).json({
+        success: false,
+        message: 'Original vehicle, original end KM, replacement vehicle number, rental company and replacement start KM are required'
+      });
+    }
+
+    const originalVehicleDoc = await db.collection('fleetVehicles').doc(originalVehicleId).get();
+
+    if (!originalVehicleDoc.exists || originalVehicleDoc.data().companyId !== companyId) {
+      return res.status(404).json({
+        success: false,
+        message: 'Original vehicle not found'
+      });
+    }
+
+    const originalVehicle = originalVehicleDoc.data();
+
+    let assignedDriverName = '';
+    let finalStatus = 'available';
+
+    if (assignNow === 'yes' && assignedDriverId) {
+      const driverDoc = await db.collection('fleetDrivers').doc(assignedDriverId).get();
+
+      if (!driverDoc.exists || driverDoc.data().companyId !== companyId) {
+        return res.status(404).json({
+          success: false,
+          message: 'Selected driver not found'
+        });
+      }
+
+      assignedDriverName = driverDoc.data().driverName || '';
+      finalStatus = 'active';
+    }
+
+    const now = new Date().toISOString();
+
+    const replacementRef = await db.collection('fleetReplacements').add({
+      companyId,
+
+      originalVehicleId,
+      originalVehicleNumber: originalVehicle.vehicleNumber || '',
+
+      replacementVehicleNumber: String(replacementVehicleNumber || '').toUpperCase().trim(),
+      rentalCompanyName,
+      reason: reason || 'Original vehicle under service',
+
+      originalVehicleEndKm: Number(originalVehicleEndKm || 0),
+originalVehicleSentDate: originalVehicleSentDate || now.slice(0, 10),
+originalVehicleReturnKm: '',
+originalVehicleReturnDate: '',
+originalVehicleReturnNotes: '',
+
+replacementStartKm: Number(replacementStartKm || 0),
+replacementEndKm: '',
+replacementTotalKmUsed: '',
+
+expectedReturnDate: expectedReturnDate || '',
+replacementReturnedDate: '',
+replacementReturnNotes: '',
+replacementReturnType: '',
+
+      assignNow: assignNow === 'yes',
+      assignedDriverId: assignNow === 'yes' ? assignedDriverId : '',
+      assignedDriverName,
+
+      status: finalStatus, // available / active / returned
+
+      notes: notes || '',
+
+      createdBy: req.session.fleetUserId || companyId,
+      createdByRole: 'fleet_admin',
+      createdAt: now,
+      updatedAt: now
+    });
+
+    if (assignNow === 'yes' && assignedDriverId) {
+      await db.collection('fleetDrivers').doc(assignedDriverId).update({
+        activeReplacementId: replacementRef.id,
+        activeReplacementVehicleNumber: String(replacementVehicleNumber || '').toUpperCase().trim(),
+        updatedAt: now
+      });
+    }
+
+await db.collection('fleetVehicles').doc(originalVehicleId).update({
+  status: 'under_service',
+  currentKm: Number(originalVehicleEndKm || 0),
+  activeReplacementId: replacementRef.id,
+  activeReplacementVehicleNumber: String(replacementVehicleNumber || '').toUpperCase().trim(),
+  updatedAt: now
+});
+
+    res.json({
+      success: true,
+      message: finalStatus === 'active'
+        ? 'Replacement vehicle received and assigned successfully'
+        : 'Replacement vehicle received successfully',
+      replacementId: replacementRef.id
+    });
+
+  } catch (err) {
+    console.error('Replacement vehicle create error:', err);
+    res.status(500).json({
+      success: false,
+      message: 'Replacement vehicle create error'
+    });
+  }
+});
+
+
+app.get('/api/fleet/replacements', requireFleet, async (req, res) => {
+  try {
+    const companyId = req.session.fleetCompanyId;
+
+    const snapshot = await db.collection('fleetReplacements')
+      .where('companyId', '==', companyId)
+      .get();
+
+    const records = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
+    records.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+
+    res.json({
+      success: true,
+      records
+    });
+
+  } catch (err) {
+    console.error('Replacement vehicle fetch error:', err);
+    res.status(500).json({
+      success: false,
+      message: 'Replacement vehicle fetch error'
+    });
+  }
+});
+
+
+app.post('/api/fleet/replacements/:replacementId/assign', requireFleet, async (req, res) => {
+  try {
+    const companyId = req.session.fleetCompanyId;
+    const { replacementId } = req.params;
+    const { assignedDriverId } = req.body;
+
+    if (!assignedDriverId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Driver is required'
+      });
+    }
+
+    const replacementRef = db.collection('fleetReplacements').doc(replacementId);
+    const replacementDoc = await replacementRef.get();
+
+    if (!replacementDoc.exists || replacementDoc.data().companyId !== companyId) {
+      return res.status(404).json({
+        success: false,
+        message: 'Replacement record not found'
+      });
+    }
+
+    const replacement = replacementDoc.data();
+
+    if (replacement.status === 'returned') {
+      return res.status(400).json({
+        success: false,
+        message: 'Returned replacement vehicle cannot be assigned'
+      });
+    }
+
+    const driverRef = db.collection('fleetDrivers').doc(assignedDriverId);
+    const driverDoc = await driverRef.get();
+
+    if (!driverDoc.exists || driverDoc.data().companyId !== companyId) {
+      return res.status(404).json({
+        success: false,
+        message: 'Driver not found'
+      });
+    }
+
+    const driver = driverDoc.data();
+    const now = new Date().toISOString();
+
+    await replacementRef.update({
+      assignedDriverId,
+      assignedDriverName: driver.driverName || '',
+      status: 'active',
+      assignedAt: now,
+      assignedBy: req.session.fleetUserId || companyId,
+      updatedAt: now
+    });
+
+    await driverRef.update({
+      activeReplacementId: replacementId,
+      activeReplacementVehicleNumber: replacement.replacementVehicleNumber || '',
+      updatedAt: now
+    });
+
+    res.json({
+      success: true,
+      message: 'Replacement vehicle assigned successfully'
+    });
+
+  } catch (err) {
+    console.error('Replacement assign error:', err);
+    res.status(500).json({
+      success: false,
+      message: 'Replacement assign error'
+    });
+  }
+});
+
+app.post('/api/fleet/replacements/:replacementId/receive-original', requireFleet, async (req, res) => {
+  try {
+    const companyId = req.session.fleetCompanyId;
+    const { replacementId } = req.params;
+
+    const {
+      originalVehicleReturnKm,
+      originalVehicleReturnDate,
+      originalVehicleReturnNotes
+    } = req.body;
+
+    if (!originalVehicleReturnKm) {
+      return res.status(400).json({
+        success: false,
+        message: 'Original vehicle return KM is required'
+      });
+    }
+
+    const replacementRef = db.collection('fleetReplacements').doc(replacementId);
+    const replacementDoc = await replacementRef.get();
+
+    if (!replacementDoc.exists || replacementDoc.data().companyId !== companyId) {
+      return res.status(404).json({
+        success: false,
+        message: 'Replacement record not found'
+      });
+    }
+
+    const replacement = replacementDoc.data();
+    const now = new Date().toISOString();
+
+    await replacementRef.update({
+      originalVehicleReturnKm: Number(originalVehicleReturnKm || 0),
+      originalVehicleReturnDate: originalVehicleReturnDate || now.slice(0, 10),
+      originalVehicleReturnNotes: originalVehicleReturnNotes || '',
+      originalVehicleReceivedBack: true,
+      originalVehicleReceivedAt: now,
+      originalVehicleReceivedBy: req.session.fleetUserId || companyId,
+      updatedAt: now
+    });
+
+    await db.collection('fleetVehicles').doc(replacement.originalVehicleId).update({
+      status: 'active',
+      currentKm: Number(originalVehicleReturnKm || 0),
+      activeReplacementId: '',
+      activeReplacementVehicleNumber: '',
+      serviceReturnedAt: now,
+      updatedAt: now
+    });
+
+    res.json({
+      success: true,
+      message: 'Original vehicle received back successfully'
+    });
+
+  } catch (err) {
+    console.error('Receive original vehicle error:', err);
+    res.status(500).json({
+      success: false,
+      message: 'Receive original vehicle error'
+    });
+  }
+});
+
+
+app.post('/api/fleet/replacements/:replacementId/return', requireFleet, async (req, res) => {
+  try {
+    const companyId = req.session.fleetCompanyId;
+    const { replacementId } = req.params;
+    const { replacementEndKm, replacementReturnedDate, replacementReturnNotes, replacementReturnType } = req.body;
+
+    if (!replacementEndKm) {
+      return res.status(400).json({
+        success: false,
+        message: 'Return KM is required'
+      });
+    }
+
+    const replacementRef = db.collection('fleetReplacements').doc(replacementId);
+    const replacementDoc = await replacementRef.get();
+
+    if (!replacementDoc.exists || replacementDoc.data().companyId !== companyId) {
+      return res.status(404).json({
+        success: false,
+        message: 'Replacement record not found'
+      });
+    }
+
+    const replacement = replacementDoc.data();
+
+    const startKm = Number(replacement.replacementStartKm || 0);
+const finalEndKm = Number(replacementEndKm || 0);
+
+    if (finalEndKm < startKm) {
+      return res.status(400).json({
+        success: false,
+        message: 'Return KM cannot be less than start KM'
+      });
+    }
+
+    const now = new Date().toISOString();
+
+    await replacementRef.update({
+  replacementEndKm: finalEndKm,
+  replacementTotalKmUsed: finalEndKm - startKm,
+  replacementReturnedDate: replacementReturnedDate || now.slice(0, 10),
+  replacementReturnNotes: replacementReturnNotes || '',
+  replacementReturnType: replacementReturnType || 'permanent_return',
+  status: 'returned',
+      returnedAt: now,
+      returnedBy: req.session.fleetUserId || companyId,
+      updatedAt: now
+    });
+
+    if (replacement.assignedDriverId) {
+      await db.collection('fleetDrivers').doc(replacement.assignedDriverId).update({
+        activeReplacementId: '',
+        activeReplacementVehicleNumber: '',
+        updatedAt: now
+      });
+    }
+
+    res.json({
+      success: true,
+      message: 'Replacement vehicle returned successfully'
+    });
+
+  } catch (err) {
+    console.error('Replacement return error:', err);
+    res.status(500).json({
+      success: false,
+      message: 'Replacement return error'
+    });
+  }
+});
+
+/* FLEET REPORTS */
+app.get('/api/fleet/reports/:reportType', requireFleet, async (req, res) => {
+  try {
+    const companyId = req.session.fleetCompanyId;
+    const { reportType } = req.params;
+
+    const allowedReports = {
+      vehicles: 'fleetVehicles',
+      drivers: 'fleetDrivers',
+      assignments: 'fleetAssignments',
+      checklists: 'fleetChecklists',
+      incidents: 'fleetIncidents',
+      maintenance: 'fleetMaintenance'
+    };
+
+    const collectionName = allowedReports[reportType];
+
+    if (!collectionName) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid report type'
+      });
+    }
+
+    const snapshot = await db.collection(collectionName)
+      .where('companyId', '==', companyId)
+      .get();
+
+    const rows = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
+    rows.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+
+    res.json({
+      success: true,
+      reportType,
+      rows
+    });
+
+  } catch (err) {
+    console.error('Fleet report error:', err);
+    res.status(500).json({
+      success: false,
+      message: 'Fleet report error'
+    });
+  }
+});
+
+/* FLEET FUEL / OIL MANAGEMENT */
+
+app.post('/api/fleet/fuel', requireFleet, async (req, res) => {
+  try {
+    const companyId = req.session.fleetCompanyId;
+
+    const {
+      vehicleId,
+      driverId,
+      entryType,
+      fuelType,
+      liters,
+      amount,
+      odometerReading,
+      fuelStation,
+      paymentMethod,
+      receiptNo,
+      entryDate,
+      remarks
+    } = req.body;
+
+    if (!vehicleId || !entryType || !amount) {
+      return res.status(400).json({
+        success:false,
+        message:'Vehicle, entry type and amount are required'
+      });
+    }
+
+    const vehicleDoc = await db.collection('fleetVehicles').doc(vehicleId).get();
+
+    if (!vehicleDoc.exists || vehicleDoc.data().companyId !== companyId) {
+      return res.status(404).json({
+        success:false,
+        message:'Vehicle not found'
+      });
+    }
+
+    let driverName = '';
+
+    if (driverId) {
+      const driverDoc = await db.collection('fleetDrivers').doc(driverId).get();
+      if (driverDoc.exists && driverDoc.data().companyId === companyId) {
+        driverName = driverDoc.data().driverName || '';
+      }
+    }
+
+    const vehicle = vehicleDoc.data();
+    const now = new Date().toISOString();
+
+    await db.collection('fleetFuelLogs').add({
+      companyId,
+
+      vehicleId,
+      vehicleNumber: vehicle.vehicleNumber,
+
+      driverId: driverId || '',
+      driverName,
+
+      entryType,
+      fuelType: fuelType || '',
+      liters: Number(liters || 0),
+      amount: Number(amount || 0),
+      odometerReading: odometerReading || '',
+      fuelStation: fuelStation || '',
+      paymentMethod: paymentMethod || '',
+      receiptNo: receiptNo || '',
+      entryDate: entryDate || '',
+
+      remarks: remarks || '',
+
+      createdAt: now,
+      updatedAt: now
+    });
+
+    res.json({
+      success:true,
+      message:'Fuel / oil entry saved successfully'
+    });
+
+  } catch(err) {
+    console.error('Fleet fuel save error:', err);
+    res.status(500).json({
+      success:false,
+      message:'Fleet fuel save error'
+    });
+  }
+});
+
+app.get('/api/fleet/fuel', requireFleet, async (req, res) => {
+  try {
+    const companyId = req.session.fleetCompanyId;
+
+    const snapshot = await db.collection('fleetFuelLogs')
+      .where('companyId','==',companyId)
+      .get();
+
+    const records = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
+    records.sort((a,b)=>
+      new Date(b.createdAt || 0) - new Date(a.createdAt || 0)
+    );
+
+    res.json({
+      success:true,
+      records
+    });
+
+  } catch(err) {
+    console.error('Fleet fuel fetch error:', err);
+    res.status(500).json({
+      success:false,
+      message:'Fleet fuel fetch error'
+    });
+  }
+});
+
+/* DAILY TRIPS SYSTEM */
+
+app.post('/api/fleet/daily-trips', requireFleet, async (req, res) => {
+  try {
+
+    const companyId = req.session.fleetCompanyId;
+
+    const {
+      vehicleId,
+      driverId,
+      shift,
+      tripDate,
+      openingKm,
+      openingFuel,
+      openingTyre,
+      openingLights,
+      openingDamage,
+      openingNotes
+    } = req.body;
+
+    if (!vehicleId || !driverId || !openingKm) {
+      return res.status(400).json({
+        success:false,
+        message:'Vehicle, driver and opening KM required'
+      });
+    }
+
+    const vehicleDoc = await db.collection('fleetVehicles')
+      .doc(vehicleId)
+      .get();
+
+    const driverDoc = await db.collection('fleetDrivers')
+      .doc(driverId)
+      .get();
+
+    if (!vehicleDoc.exists || !driverDoc.exists) {
+      return res.status(404).json({
+        success:false,
+        message:'Vehicle or driver not found'
+      });
+    }
+
+    const vehicle = vehicleDoc.data();
+    const driver = driverDoc.data();
+
+    const now = new Date().toISOString();
+
+    await db.collection('fleetDailyTrips').add({
+
+      companyId,
+
+      vehicleId,
+      vehicleNumber: vehicle.vehicleNumber,
+
+      driverId,
+      driverName: driver.driverName,
+
+      shift: shift || '',
+      tripDate: tripDate || '',
+
+      openingKm,
+      openingFuel,
+      openingTyre,
+      openingLights,
+      openingDamage,
+      openingNotes,
+
+      closingKm:'',
+      closingFuel:'',
+      closingNotes:'',
+
+      status:'active',
+
+      createdAt: now,
+      updatedAt: now
+    });
+
+    res.json({
+      success:true,
+      message:'Daily trip started successfully'
+    });
+
+  } catch(err){
+
+    console.error(err);
+
+    res.status(500).json({
+      success:false,
+      message:'Daily trip create error'
+    });
+  }
+});
+
+app.get('/api/fleet/daily-trips', requireFleet, async (req, res) => {
+  try {
+
+    const companyId = req.session.fleetCompanyId;
+
+    const snapshot = await db.collection('fleetDailyTrips')
+      .where('companyId','==',companyId)
+      .get();
+
+    const trips = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
+    trips.sort((a,b)=>
+      new Date(b.createdAt || 0) - new Date(a.createdAt || 0)
+    );
+
+    res.json({
+      success:true,
+      trips
+    });
+
+  } catch(err){
+
+    console.error(err);
+
+    res.status(500).json({
+      success:false,
+      message:'Daily trips fetch error'
+    });
+  }
+});
+
+app.post('/api/fleet/daily-trips/:tripId/close', requireFleet, async (req, res) => {
+  try {
+
+    const companyId = req.session.fleetCompanyId;
+
+    const { tripId } = req.params;
+
+    const {
+      closingKm,
+      closingFuel,
+      closingNotes
+    } = req.body;
+
+    const tripRef = db.collection('fleetDailyTrips').doc(tripId);
+
+    const tripDoc = await tripRef.get();
+
+    if (!tripDoc.exists) {
+      return res.status(404).json({
+        success:false,
+        message:'Trip not found'
+      });
+    }
+
+    const trip = tripDoc.data();
+
+    if (trip.companyId !== companyId) {
+      return res.status(403).json({
+        success:false,
+        message:'Unauthorized trip'
+      });
+    }
+
+    await tripRef.update({
+
+      closingKm: closingKm || '',
+      closingFuel: closingFuel || '',
+      closingNotes: closingNotes || '',
+
+      status:'closed',
+
+      closedAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    });
+
+    res.json({
+      success:true,
+      message:'Daily trip closed successfully'
+    });
+
+  } catch(err){
+
+    console.error(err);
+
+    res.status(500).json({
+      success:false,
+      message:'Daily trip closing error'
+    });
+  }
+});
+
+/* =========================================================
+   FLEET PUBLIC ALERT SYSTEM
+========================================================= */
+
+app.get('/fleet-owner/:qr_id', async (req, res) => {
+  try {
+    const qr_id = req.params.qr_id;
+
+    const vehicleSnapshot = await db.collection('fleetVehicles')
+      .where('qr_id', '==', qr_id)
+      .limit(1)
+      .get();
+
+    if (vehicleSnapshot.empty) {
+      return res.status(404).json({
+        message: 'Fleet vehicle not found'
+      });
+    }
+
+    const vehicle = vehicleSnapshot.docs[0].data();
+
+    const companyDoc = await db.collection('fleetCompanies')
+      .doc(vehicle.companyId)
+      .get();
+
+    if (!companyDoc.exists) {
+      return res.status(404).json({
+        message: 'Fleet company not found'
+      });
+    }
+
+    const company = companyDoc.data();
+
+    if (company.status !== 'active' || !company.alertsEnabled) {
+      return res.status(400).json({
+        message: 'Fleet alert service is not active for this company'
+      });
+    }
+
+    res.json({
+      companyName: company.companyName,
+      vehicleNumber: vehicle.vehicleNumber,
+      vehicleType: vehicle.vehicleType,
+      qr_id: vehicle.qr_id,
+      alertsEnabled: company.alertsEnabled
+    });
+
+  } catch (err) {
+    console.error('Fleet owner error:', err);
+    res.status(500).json({
+      message: 'Fleet owner data error'
+    });
+  }
+});
+
+app.post('/send-fleet-alert', async (req, res) => {
+  try {
+    const { qr_id, alert_type, location } = req.body;
+
+    if (!qr_id || !alert_type) {
+      return res.status(400).json({
+        message: 'QR ID and alert type are required'
+      });
+    }
+
+    const alertLabel = formatFleetAlert(alert_type);
+
+    if (!alertLabel) {
+      return res.status(400).json({
+        message: 'Invalid fleet alert type selected'
+      });
+    }
+
+    const vehicleSnapshot = await db.collection('fleetVehicles')
+      .where('qr_id', '==', qr_id)
+      .limit(1)
+      .get();
+
+    if (vehicleSnapshot.empty) {
+      return res.status(404).json({
+        message: 'No active fleet vehicle found for this QR'
+      });
+    }
+
+    const vehicleRef = vehicleSnapshot.docs[0].ref;
+    const vehicleDocId = vehicleSnapshot.docs[0].id;
+    const vehicle = vehicleSnapshot.docs[0].data();
+
+    const companyDoc = await db.collection('fleetCompanies')
+      .doc(vehicle.companyId)
+      .get();
+
+    if (!companyDoc.exists) {
+      return res.status(404).json({
+        message: 'Fleet company not found'
+      });
+    }
+
+    const company = companyDoc.data();
+
+    if (company.status !== 'active' || !company.alertsEnabled) {
+      return res.status(400).json({
+        message: 'Fleet alert service is not active for this company'
+      });
+    }
+
+    let assignedDriverMobile = '';
+    let assignedDriverName = vehicle.assignedDriverName || '';
+    let assignedDriverId = vehicle.assignedDriverId || '';
+
+    if (assignedDriverId) {
+      const driverDoc = await db.collection('fleetDrivers')
+        .doc(assignedDriverId)
+        .get();
+
+      if (driverDoc.exists) {
+        const driver = driverDoc.data();
+
+        if (driver.companyId === vehicle.companyId) {
+          assignedDriverName = driver.driverName || assignedDriverName;
+          assignedDriverMobile = cleanMobile(driver.mobile || '');
+        }
+      }
+    }
+
+    const now = new Date().toISOString();
+
+    const driverMessage = assignedDriverMobile
+      ? `Vehicall Fleet Alert
+
+Vehicle: ${vehicle.vehicleNumber}
+Alert: ${alertLabel}
+Action Required: Please attend to the vehicle immediately.
+
+- Vehicall Fleet`
+      : '';
+
+    const adminMessage = `Vehicall Fleet Alert
+
+Company: ${company.companyName}
+Vehicle: ${vehicle.vehicleNumber}
+Alert: ${alertLabel}
+Assigned Driver: ${assignedDriverName || 'Not Assigned'}
+Time: ${new Date().toLocaleString()}`;
+
+    const alertRef = await db.collection('fleetAlerts').add({
+      companyId: vehicle.companyId,
+
+      qr_id,
+      vehicleId: vehicleDocId,
+      vehicleNumber: vehicle.vehicleNumber,
+
+      alertType: alert_type,
+      alertLabel,
+
+      assignedDriverId,
+      assignedDriverName,
+      assignedDriverMobile,
+
+      driverMessage,
+      adminMessage,
+
+      driverNotified: false,
+      adminNotified: false,
+
+      location: location || '',
+      source: 'public_fleet_qr',
+      status: 'created',
+
+      createdAt: now,
+      updatedAt: now
+    });
+
+    await db.collection('fleetIncidents').add({
+      companyId: vehicle.companyId,
+
+      vehicleId: vehicleDocId,
+      vehicleNumber: vehicle.vehicleNumber,
+
+      driverId: assignedDriverId,
+      driverName: assignedDriverName,
+
+      incidentType: alertLabel,
+      priority: alert_type === 'EMERGENCY' ? 'high' : 'medium',
+
+      description: alertLabel,
+      location: location || '',
+      incidentDate: now,
+
+      status: 'open',
+      source: 'public_fleet_qr',
+      alertId: alertRef.id,
+
+      createdAt: now,
+      updatedAt: now
+    });
+
+    await vehicleRef.update({
+      lastFleetAlertAt: now
+    });
+
+    res.json({
+      success: true,
+      message: 'Fleet alert sent successfully',
+      vehicleNumber: vehicle.vehicleNumber,
+      issue: alertLabel,
+      assignedDriverName: assignedDriverName || '',
+      driverNotificationReady: !!assignedDriverMobile,
+      driverMobile: assignedDriverMobile || ''
+    });
+
+  } catch (err) {
+    console.error('Fleet alert error:', err);
+    res.status(500).json({
+      message: 'Fleet alert error'
+    });
+  }
+});
+
+/* =========================================================
+   ADMIN SYSTEM
+========================================================= */
+
 app.post('/admin/login', async (req, res) => {
   try {
     const { username, password } = req.body;
@@ -592,51 +3978,56 @@ app.post('/admin/login', async (req, res) => {
   }
 });
 
-/* ADMIN LOGOUT */
 app.get('/admin/logout', (req, res) => {
   req.session.destroy(() => {
     res.redirect('/admin-login.html');
   });
 });
 
-/* ADMIN DASHBOARD DATA */
 app.get('/admin/dashboard-data', requireAdmin, async (req, res) => {
   try {
     const usersSnapshot = await db.collection('users').get();
     const alertsSnapshot = await db.collection('alerts').get();
+    const fleetCompaniesSnapshot = await db.collection('fleetCompanies').get();
+    const fleetVehiclesSnapshot = await db.collection('fleetVehicles').get();
+    const fleetIncidentsSnapshot = await db.collection('fleetIncidents').get();
 
-    const users = usersSnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }));
-
-    const alerts = alertsSnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }));
-
-    const totalUsers = users.length;
-    const totalAlerts = alerts.length;
-    const qrGenerated = users.filter(u => u.qr_generated).length;
-    const expiredPlans = users.filter(u => u.planEnd && new Date() > new Date(u.planEnd)).length;
-
-    const planCounts = {
-      Welcome: users.filter(u => u.plan === 'Welcome').length,
-      Basic: users.filter(u => u.plan === 'Basic').length,
-      Plus: users.filter(u => u.plan === 'Plus').length,
-      Premium: users.filter(u => u.plan === 'Premium').length
-    };
+    const users = usersSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const alerts = alertsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const fleetCompanies = fleetCompaniesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const fleetVehicles = fleetVehiclesSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const fleetIncidents = fleetIncidentsSnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
     res.json({
-      totalUsers,
-      totalAlerts,
-      qrGenerated,
-      expiredPlans,
-      planCounts,
+      totalUsers: users.length,
+      totalAlerts: alerts.length,
+      qrGenerated: users.filter(u => u.qr_generated).length,
+      expiredPlans: users.filter(u => u.planEnd && new Date() > new Date(u.planEnd)).length,
+
+      planCounts: {
+        Welcome: users.filter(u => u.plan === 'Welcome').length,
+        Basic: users.filter(u => u.plan === 'Basic').length,
+        Plus: users.filter(u => u.plan === 'Plus').length,
+        Premium: users.filter(u => u.plan === 'Premium').length
+      },
+
+      fleetStats: {
+        totalFleetCompanies: fleetCompanies.length,
+        activeFleetCompanies: fleetCompanies.filter(c => c.status === 'active').length,
+        pendingFleetCompanies: fleetCompanies.filter(c => c.status === 'pending').length,
+        totalFleetVehicles: fleetVehicles.length,
+        openFleetIncidents: fleetIncidents.filter(i => i.status !== 'closed').length
+      },
+
       recentUsers: users
         .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))
         .slice(0, 10),
+
       recentAlerts: alerts
+        .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))
+        .slice(0, 10),
+
+      recentFleetCompanies: fleetCompanies
         .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))
         .slice(0, 10)
     });
@@ -647,45 +4038,29 @@ app.get('/admin/dashboard-data', requireAdmin, async (req, res) => {
   }
 });
 
-/* ADMIN USERS DATA */
 app.get('/admin/users-data', requireAdmin, async (req, res) => {
   try {
     const snapshot = await db.collection('users').get();
-
-    const users = snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }));
-
+    const users = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     res.json(users);
-
   } catch (err) {
     console.error('Admin users data error:', err);
     res.status(500).json({ message: 'Admin users data error' });
   }
 });
 
-/* ADMIN ALERT LOGS DATA */
 app.get('/admin/alerts-data', requireAdmin, async (req, res) => {
   try {
     const snapshot = await db.collection('alerts').get();
-
-    const alerts = snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }));
-
+    const alerts = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     alerts.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
-
     res.json(alerts);
-
   } catch (err) {
     console.error('Admin alerts data error:', err);
     res.status(500).json({ message: 'Admin alerts data error' });
   }
 });
 
-/* ADMIN QR MANAGEMENT DATA */
 app.get('/admin/qr-data', requireAdmin, async (req, res) => {
   try {
     const snapshot = await db.collection('users').get();
@@ -719,7 +4094,6 @@ app.get('/admin/qr-data', requireAdmin, async (req, res) => {
   }
 });
 
-/* ADMIN RESET USER ALERTS */
 app.post('/admin/reset-alerts', requireAdmin, async (req, res) => {
   try {
     let { vehicleNumber } = req.body;
@@ -728,7 +4102,7 @@ app.post('/admin/reset-alerts', requireAdmin, async (req, res) => {
       return res.status(400).json({ message: 'Vehicle number is required' });
     }
 
-    vehicleNumber = vehicleNumber.toUpperCase().trim();
+    vehicleNumber = normalizeVehicleNumber(vehicleNumber);
 
     const userRef = db.collection('users').doc(vehicleNumber);
     const userDoc = await userRef.get();
@@ -753,7 +4127,6 @@ app.post('/admin/reset-alerts', requireAdmin, async (req, res) => {
   }
 });
 
-/* ADMIN EXTEND USER PLAN */
 app.post('/admin/extend-plan', requireAdmin, async (req, res) => {
   try {
     let { vehicleNumber, months } = req.body;
@@ -762,7 +4135,7 @@ app.post('/admin/extend-plan', requireAdmin, async (req, res) => {
       return res.status(400).json({ message: 'Vehicle number and months are required' });
     }
 
-    vehicleNumber = vehicleNumber.toUpperCase().trim();
+    vehicleNumber = normalizeVehicleNumber(vehicleNumber);
     months = Number(months);
 
     if (months <= 0) {
@@ -802,7 +4175,6 @@ app.post('/admin/extend-plan', requireAdmin, async (req, res) => {
   }
 });
 
-/* ADMIN CHANGE USER PLAN */
 app.post('/admin/change-plan', requireAdmin, async (req, res) => {
   try {
     let { vehicleNumber, plan, billingCycle } = req.body;
@@ -811,7 +4183,7 @@ app.post('/admin/change-plan', requireAdmin, async (req, res) => {
       return res.status(400).json({ message: 'Vehicle number and plan are required' });
     }
 
-    vehicleNumber = vehicleNumber.toUpperCase().trim();
+    vehicleNumber = normalizeVehicleNumber(vehicleNumber);
 
     if (!plans[plan]) {
       return res.status(400).json({ message: 'Invalid plan selected' });
@@ -859,7 +4231,6 @@ app.post('/admin/change-plan', requireAdmin, async (req, res) => {
   }
 });
 
-/* ADMIN UPDATE USER STATUS */
 app.post('/admin/update-user-status', requireAdmin, async (req, res) => {
   try {
     let { vehicleNumber, status } = req.body;
@@ -868,7 +4239,7 @@ app.post('/admin/update-user-status', requireAdmin, async (req, res) => {
       return res.status(400).json({ message: 'Vehicle number and status are required' });
     }
 
-    vehicleNumber = vehicleNumber.toUpperCase().trim();
+    vehicleNumber = normalizeVehicleNumber(vehicleNumber);
 
     if (!['active', 'suspended'].includes(status)) {
       return res.status(400).json({ message: 'Invalid status' });
@@ -898,7 +4269,6 @@ app.post('/admin/update-user-status', requireAdmin, async (req, res) => {
   }
 });
 
-/* ADMIN UPDATE QR STATUS */
 app.post('/admin/update-qr-status', requireAdmin, async (req, res) => {
   try {
     let { vehicleNumber, qrStatus } = req.body;
@@ -907,7 +4277,7 @@ app.post('/admin/update-qr-status', requireAdmin, async (req, res) => {
       return res.status(400).json({ message: 'Vehicle number and QR status are required' });
     }
 
-    vehicleNumber = vehicleNumber.toUpperCase().trim();
+    vehicleNumber = normalizeVehicleNumber(vehicleNumber);
 
     const userRef = db.collection('users').doc(vehicleNumber);
     const userDoc = await userRef.get();
@@ -933,7 +4303,6 @@ app.post('/admin/update-qr-status', requireAdmin, async (req, res) => {
   }
 });
 
-/* ADMIN REGENERATE QR */
 app.post('/admin/regenerate-qr', requireAdmin, async (req, res) => {
   try {
     let { vehicleNumber } = req.body;
@@ -942,7 +4311,7 @@ app.post('/admin/regenerate-qr', requireAdmin, async (req, res) => {
       return res.status(400).json({ message: 'Vehicle number is required' });
     }
 
-    vehicleNumber = vehicleNumber.toUpperCase().trim();
+    vehicleNumber = normalizeVehicleNumber(vehicleNumber);
 
     const userRef = db.collection('users').doc(vehicleNumber);
     const userDoc = await userRef.get();
@@ -975,64 +4344,339 @@ app.post('/admin/regenerate-qr', requireAdmin, async (req, res) => {
   }
 });
 
-/* RESET PASSWORD */
-app.post('/reset-password', async (req, res) => {
+/* ADMIN FLEET MANAGEMENT */
+app.get('/admin/fleet-companies-data', requireAdmin, async (req, res) => {
   try {
-    let { vehicleNumber, mobile, newPassword } = req.body;
+    const snapshot = await db.collection('fleetCompanies').get();
 
-    if (!vehicleNumber || !mobile || !newPassword) {
+    const companies = snapshot.docs.map(doc => {
+      const data = doc.data();
+      delete data.password;
+
+      return {
+        id: doc.id,
+        ...data
+      };
+    });
+
+    companies.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+
+    res.json(companies);
+
+  } catch (err) {
+    console.error('Admin fleet companies error:', err);
+    res.status(500).json([]);
+  }
+});
+
+app.get('/admin/fleet-upgrade-requests', requireAdmin, async (req, res) => {
+  try {
+    const snapshot = await db.collection('fleetUpgradeRequests')
+      .where('status', '==', 'pending')
+      .get();
+
+    const requests = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
+    requests.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+
+    res.json(requests);
+
+  } catch (err) {
+    console.error('Admin fleet upgrade requests error:', err);
+    res.status(500).json([]);
+  }
+});
+
+app.post('/admin/fleet/approve-upgrade', requireAdmin, async (req, res) => {
+  try {
+    const { requestId } = req.body;
+
+    if (!requestId) {
       return res.status(400).json({
-        message: 'Vehicle number, mobile number and new password are required'
+        success: false,
+        message: 'Upgrade request ID is required'
       });
     }
 
-    vehicleNumber = vehicleNumber.toUpperCase().trim();
-    mobile = cleanMobile(mobile);
+    const requestRef = db.collection('fleetUpgradeRequests').doc(requestId);
+    const requestDoc = await requestRef.get();
 
-    const userRef = db.collection('users').doc(vehicleNumber);
-    const userDoc = await userRef.get();
-
-    if (!userDoc.exists) {
+    if (!requestDoc.exists) {
       return res.status(404).json({
-        message: 'Vehicle account not found'
+        success: false,
+        message: 'Upgrade request not found'
       });
     }
 
-    const user = userDoc.data();
-    const registeredMobile = cleanMobile(user.mobile);
+    const request = requestDoc.data();
 
-    if (registeredMobile !== mobile) {
-      return res.status(401).json({
-        message: 'Mobile number does not match registered vehicle account'
-      });
-    }
-
-    if (newPassword.length < 6) {
+    if (request.status !== 'pending') {
       return res.status(400).json({
-        message: 'Password must be at least 6 characters'
+        success: false,
+        message: 'This upgrade request is already processed'
       });
     }
 
-    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    const now = new Date().toISOString();
 
-    await userRef.update({
-      password: hashedPassword,
-      passwordResetAt: new Date().toISOString()
+    await db.collection('fleetCompanies').doc(request.companyId).update({
+      packageType: request.requestedPackageType,
+      packageLabel: request.requestedPackageLabel,
+      vehicleLimit: request.requestedVehicleLimit,
+      branchLimit: request.requestedBranchLimit,
+      managerLimit: request.requestedManagerLimit,
+
+      alertOption: request.requestedAlertOption,
+      alertsEnabled: !!request.requestedAlertsEnabled,
+
+      paymentStatus: 'confirmed',
+      upgradeRequestStatus: 'approved',
+      lastApprovedUpgradeRequestId: requestId,
+      packageUpgradedAt: now,
+      lastAdminAction: `Fleet package upgraded to ${request.requestedPackageLabel}`
+    });
+
+    await requestRef.update({
+      status: 'approved',
+      paymentStatus: 'confirmed',
+      approvedAt: now,
+      updatedAt: now
     });
 
     res.json({
       success: true,
-      message: 'Password reset successfully. Please login with your new password.'
+      message: 'Fleet upgrade approved and package updated successfully'
     });
 
   } catch (err) {
-    console.error('Password reset error:', err);
+    console.error('Approve fleet upgrade error:', err);
     res.status(500).json({
-      message: 'Password reset error'
+      success: false,
+      message: 'Approve fleet upgrade error'
     });
   }
 });
 
+app.post('/admin/fleet/reject-upgrade', requireAdmin, async (req, res) => {
+  try {
+    const { requestId } = req.body;
+
+    if (!requestId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Upgrade request ID is required'
+      });
+    }
+
+    const requestRef = db.collection('fleetUpgradeRequests').doc(requestId);
+    const requestDoc = await requestRef.get();
+
+    if (!requestDoc.exists) {
+      return res.status(404).json({
+        success: false,
+        message: 'Upgrade request not found'
+      });
+    }
+
+    const request = requestDoc.data();
+    const now = new Date().toISOString();
+
+    await requestRef.update({
+      status: 'rejected',
+      paymentStatus: 'rejected',
+      rejectedAt: now,
+      updatedAt: now
+    });
+
+    if (request.companyId) {
+      await db.collection('fleetCompanies').doc(request.companyId).update({
+        upgradeRequestStatus: 'rejected',
+        lastRejectedUpgradeRequestId: requestId,
+        lastAdminAction: 'Fleet upgrade request rejected',
+        lastUpdatedAt: now
+      });
+    }
+
+    res.json({
+      success: true,
+      message: 'Fleet upgrade request rejected'
+    });
+
+  } catch (err) {
+    console.error('Reject fleet upgrade error:', err);
+    res.status(500).json({
+      success: false,
+      message: 'Reject fleet upgrade error'
+    });
+  }
+});
+
+app.post('/admin/fleet/approve', requireAdmin, async (req, res) => {
+  try {
+    const { companyId } = req.body;
+
+    if (!companyId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Company ID is required'
+      });
+    }
+
+    await db.collection('fleetCompanies').doc(companyId).update({
+      status: 'active',
+      paymentStatus: 'confirmed',
+      approved: true,
+      activatedAt: new Date().toISOString(),
+      lastAdminAction: 'Fleet company approved and activated'
+    });
+
+    res.json({
+      success: true,
+      message: 'Fleet company approved and activated successfully'
+    });
+
+  } catch (err) {
+    console.error('Fleet approve error:', err);
+    res.status(500).json({
+      success: false,
+      message: 'Fleet approve error'
+    });
+  }
+});
+
+app.post('/admin/fleet/update-status', requireAdmin, async (req, res) => {
+  try {
+    const { companyId, status } = req.body;
+
+    if (!companyId || !status) {
+      return res.status(400).json({
+        success: false,
+        message: 'Company ID and status are required'
+      });
+    }
+
+    if (!['active', 'pending', 'suspended'].includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid fleet company status'
+      });
+    }
+
+    await db.collection('fleetCompanies').doc(companyId).update({
+      status,
+      statusUpdatedAt: new Date().toISOString(),
+      lastAdminAction: `Fleet company status changed to ${status}`
+    });
+
+    res.json({
+      success: true,
+      message: `Fleet company ${status} successfully`
+    });
+
+  } catch (err) {
+    console.error('Fleet status update error:', err);
+    res.status(500).json({
+      success: false,
+      message: 'Fleet status update error'
+    });
+  }
+});
+
+app.post('/admin/fleet/change-package', requireAdmin, async (req, res) => {
+  try {
+    const { companyId, packageType, alertOption } = req.body;
+
+    if (!companyId || !packageType) {
+      return res.status(400).json({
+        success: false,
+        message: 'Company ID and package type are required'
+      });
+    }
+
+    const cleanPackage = String(packageType).toLowerCase().trim();
+
+    if (!fleetPackages[cleanPackage]) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid fleet package selected'
+      });
+    }
+
+    const packageDetails = getFleetPackageDetails(cleanPackage);
+
+    const updateData = {
+      packageType: cleanPackage,
+      packageLabel: packageDetails.label,
+      vehicleLimit: packageDetails.vehicleLimit,
+      branchLimit: packageDetails.branchLimit,
+      managerLimit: packageDetails.managerLimit,
+      packageChangedAt: new Date().toISOString(),
+      lastAdminAction: `Fleet package changed to ${packageDetails.label}`
+    };
+
+    if (alertOption && ['with_alerts', 'without_alerts'].includes(alertOption)) {
+      updateData.alertOption = alertOption;
+      updateData.alertsEnabled = alertOption === 'with_alerts';
+    }
+
+    await db.collection('fleetCompanies').doc(companyId).update(updateData);
+
+    res.json({
+      success: true,
+      message: 'Fleet package updated successfully'
+    });
+
+  } catch (err) {
+    console.error('Fleet package change error:', err);
+    res.status(500).json({
+      success: false,
+      message: 'Fleet package change error'
+    });
+  }
+});
+
+app.get('/admin/fleet-vehicles-data', requireAdmin, async (req, res) => {
+  try {
+    const snapshot = await db.collection('fleetVehicles').get();
+
+    const vehicles = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
+    vehicles.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+
+    res.json(vehicles);
+
+  } catch (err) {
+    console.error('Admin fleet vehicles error:', err);
+    res.status(500).json([]);
+  }
+});
+
+app.get('/admin/fleet-incidents-data', requireAdmin, async (req, res) => {
+  try {
+    const snapshot = await db.collection('fleetIncidents').get();
+
+    const incidents = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
+    incidents.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+
+    res.json(incidents);
+
+  } catch (err) {
+    console.error('Admin fleet incidents error:', err);
+    res.status(500).json([]);
+  }
+});
+
+/* SERVER START */
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {

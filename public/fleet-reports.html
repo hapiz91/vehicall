@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Vehicall Fleet Reports</title>
+
+  <style>
+    body { margin:0; font-family:Arial,sans-serif; background:#07111f; color:#fff; }
+    .header { display:flex; justify-content:space-between; align-items:center; padding:18px 30px; background:#0b1b2d; border-bottom:1px solid #1d3553; }
+    .brand { display:flex; align-items:center; gap:14px; }
+    .brand img { height:46px; }
+    .brand h2 { margin:0; font-size:21px; }
+    .brand p { margin:2px 0 0; color:#9fb0c5; font-size:13px; }
+    .nav a { color:#6ecbff; margin-left:16px; text-decoration:none; font-size:14px; }
+    .container { max-width:1250px; margin:30px auto; padding:0 20px; }
+    .hero,.card { background:#0f1f33; border:1px solid #20344d; border-radius:20px; padding:24px; margin-bottom:24px; }
+    .hero h1 { margin:0 0 8px; }
+    .hero p { margin:0; color:#b7c4d4; line-height:1.5; }
+    .form-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; }
+    label { display:block; margin-bottom:8px; color:#9fb0c5; font-size:14px; }
+    select,input { width:100%; padding:13px; border-radius:10px; border:1px solid #29496d; background:#081827; color:#fff; box-sizing:border-box; }
+    button { padding:13px 18px; border:none; border-radius:12px; color:#fff; font-weight:bold; cursor:pointer; }
+    .primary { background:linear-gradient(135deg,#00c2ff,#0066ff); }
+    .excel { background:linear-gradient(135deg,#00c853,#009624); }
+    .pdf { background:linear-gradient(135deg,#ff7043,#d84315); }
+    #message { display:none; margin-bottom:18px; padding:13px; border-radius:12px; }
+    .success { display:block!important; background:rgba(0,180,120,.15); color:#70ffc8; border:1px solid rgba(0,180,120,.35); }
+    .error { display:block!important; background:rgba(255,70,70,.15); color:#ff9c9c; border:1px solid rgba(255,70,70,.35); }
+    .actions { display:flex; gap:12px; flex-wrap:wrap; margin-top:18px; }
+    .table-wrap { overflow-x:auto; }
+    table { width:100%; border-collapse:collapse; min-width:900px; }
+    th,td { padding:12px; border-bottom:1px solid #223854; text-align:left; font-size:14px; }
+    th { color:#6ecbff; background:#081827; position:sticky; top:0; }
+    td { color:#d6e2f0; }
+    .summary-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:20px; }
+    .summary-card { background:#081827; border:1px solid #223854; border-radius:16px; padding:16px; }
+    .summary-card span { color:#9fb0c5; font-size:13px; }
+    .summary-card h3 { margin:8px 0 0; color:#6ecbff; font-size:26px; }
+    @media(max-width:900px){ .form-grid,.summary-grid{grid-template-columns:1fr;} }
+    @media(max-width:600px){ .header{flex-direction:column; align-items:flex-start; gap:12px;} .brand img{height:40px;} .nav a{display:inline-block; margin:8px 12px 0 0;} }
+  </style>
+</head>
+
+<body>
+  <div class="header">
+    <div class="brand">
+      <img src="/logo.png" alt="Vehicall Logo">
+      <div>
+        <h2>Vehicall Fleet Reports</h2>
+        <p>Smart Alerts, Fleet Operations & Driver Accountability</p>
+      </div>
+    </div>
+
+    <div class="nav">
+      <a href="/fleet-dashboard">Dashboard</a>
+      <a href="/fleet-vehicles">Vehicles</a>
+      <a href="/fleet-drivers">Drivers</a>
+      <a href="/fleet-assignments">Assignments</a>
+      <a href="/fleet-incidents">Incidents</a>
+      <a href="/api/fleet/logout">Logout</a>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="hero">
+      <h1>Fleet Reports & Export Center</h1>
+      <p>
+        View fleet operational reports and download working data in Excel or management-ready PDF format.
+      </p>
+    </div>
+
+    <div id="message"></div>
+
+    <div class="card">
+      <h2>Report Filters</h2>
+
+      <div class="form-grid">
+        <div>
+          <label>Report Type</label>
+          <select id="reportType">
+            <option value="vehicles">Vehicle Report</option>
+            <option value="drivers">Driver Report</option>
+            <option value="assignments">Assignment Report</option>
+            <option value="checklists">Daily Checklist Report</option>
+            <option value="fuel">Fuel / Oil Report</option>
+            <option value="km">KM Usage Report</option>
+            <option value="incidents">Incident Report</option>
+            <option value="fines">Traffic Fine Attribution Report</option>
+          </select>
+        </div>
+
+        <div>
+          <label>From Date</label>
+          <input type="date" id="fromDate">
+        </div>
+
+        <div>
+          <label>To Date</label>
+          <input type="date" id="toDate">
+        </div>
+
+        <div style="display:flex; align-items:end;">
+          <button class="primary" onclick="loadReport()" style="width:100%;">
+            View Report
+          </button>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button class="excel" onclick="downloadExcel()">Download Excel</button>
+        <button class="pdf" onclick="downloadPDF()">Download PDF</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Report Summary</h2>
+
+      <div class="summary-grid">
+        <div class="summary-card">
+          <span>Total Records</span>
+          <h3 id="totalRecords">0</h3>
+        </div>
+        <div class="summary-card">
+          <span>Open / Active</span>
+          <h3 id="openRecords">0</h3>
+        </div>
+        <div class="summary-card">
+          <span>Closed / Inactive</span>
+          <h3 id="closedRecords">0</h3>
+        </div>
+        <div class="summary-card">
+          <span>Report Type</span>
+          <h3 id="selectedReportLabel">-</h3>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Report Data</h2>
+      <div class="table-wrap" id="reportTable">
+        Select a report and click View Report.
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentRows = [];
+    let currentReportType = "vehicles";
+
+    const reportLabels = {
+      vehicles: "Vehicles",
+      drivers: "Drivers",
+      assignments: "Assignments",
+      checklists: "Daily Checklists",
+      fuel: "Fuel / Oil",
+      km: "KM Logs",
+      incidents: "Incidents",
+      fines: "Fines"
+    };
+
+    const columns = {
+      vehicles: [
+        ["vehicleNumber", "Vehicle Number"],
+        ["vehicleType", "Vehicle Type"],
+        ["brand", "Brand"],
+        ["model", "Model"],
+        ["year", "Year"],
+        ["status", "Status"],
+        ["assignedDriverName", "Assigned Driver"],
+        ["mulkiyaExpiry", "Mulkiya Expiry"],
+        ["insuranceExpiry", "Insurance Expiry"],
+        ["qr_id", "Fleet QR ID"]
+      ],
+      drivers: [
+        ["driverName", "Driver Name"],
+        ["employeeId", "Employee ID"],
+        ["mobile", "Mobile"],
+        ["licenseNumber", "License Number"],
+        ["licenseExpiry", "License Expiry"],
+        ["status", "Status"],
+        ["assignedVehicleNumber", "Assigned Vehicle"]
+      ],
+      assignments: [
+        ["vehicleNumber", "Vehicle Number"],
+        ["driverName", "Driver Name"],
+        ["shiftName", "Shift"],
+        ["startTime", "Start Time"],
+        ["endTime", "Expected End"],
+        ["openingKm", "Opening KM"],
+        ["closingKm", "Closing KM"],
+        ["fuelLevel", "Opening Fuel"],
+        ["closingFuelLevel", "Closing Fuel"],
+        ["status", "Status"]
+      ],
+      checklists: [
+  ["checklistDate", "Checklist Date"],
+  ["vehicleNumber", "Vehicle Number"],
+  ["driverName", "Driver Name"],
+  ["checklistType", "Checklist Type"],
+  ["openingKm", "Opening KM"],
+  ["closingKm", "Closing KM"],
+  ["kmUsed", "KM Used"],
+  ["tireCheck", "Tire Check"],
+  ["brakeCheck", "Brake Check"],
+  ["lightsCheck", "Lights Check"],
+  ["fuelLevel", "Fuel Level"],
+  ["damageFound", "Damage Found"],
+  ["safetyConfirmed", "Safety Confirmed"],
+  ["damageNotes", "Damage Notes"],
+  ["remarks", "Remarks"],
+  ["createdAt", "Created At"]
+],
+
+fuel: [
+  ["vehicleNumber", "Vehicle Number"],
+  ["vehicleUseType", "Vehicle Use Type"],
+  ["originalVehicleNumber", "Original Vehicle"],
+  ["driverName", "Driver Name"],
+  ["entryType", "Entry Type"],
+  ["fuelType", "Fuel Type"],
+  ["liters", "Liters / Qty"],
+  ["amount", "Amount OMR"],
+  ["odometerReading", "Odometer"],
+  ["fuelStation", "Station / Supplier"],
+  ["paymentMethod", "Payment Method"],
+  ["receiptNo", "Receipt No"],
+  ["approvalStatus", "Approval Status"],
+  ["correctionReason", "Correction Reason"],
+  ["remarks", "Remarks"],
+  ["createdAt", "Created At"]
+],
+      km: [
+        ["vehicleNumber", "Vehicle Number"],
+        ["driverName", "Driver Name"],
+        ["openingKm", "Opening KM"],
+        ["closingKm", "Closing KM"],
+        ["totalKm", "Total KM"],
+        ["startTime", "Start Time"],
+        ["endTime", "End Time"]
+      ],
+      incidents: [
+        ["incidentType", "Incident Type"],
+        ["vehicleNumber", "Vehicle Number"],
+        ["driverName", "Driver Name"],
+        ["priority", "Priority"],
+        ["status", "Status"],
+        ["location", "Location"],
+        ["incidentDate", "Incident Date"],
+        ["description", "Description"]
+      ],
+      fines: [
+        ["vehicleNumber", "Vehicle Number"],
+        ["fineDateTime", "Fine Date/Time"],
+        ["fineAmount", "Fine Amount"],
+        ["fineNumber", "Fine Number"],
+        ["fineReason", "Fine Reason"],
+        ["responsibleDriverName", "Responsible Driver"],
+        ["attributionStatus", "Attribution Status"],
+        ["status", "Status"]
+      ]
+    };
+
+    function showMessage(text, type) {
+      const messageBox = document.getElementById("message");
+      messageBox.className = type;
+      messageBox.textContent = text;
+      setTimeout(() => {
+        messageBox.className = "";
+        messageBox.style.display = "none";
+      }, 4000);
+    }
+
+    function formatValue(value) {
+      if (value === true) return "Yes";
+      if (value === false) return "No";
+      if (value === null || value === undefined || value === "") return "-";
+      if (typeof value === "string" && value.includes("T") && value.length > 15) {
+        try { return new Date(value).toLocaleString(); } catch { return value; }
+      }
+      return value;
+    }
+
+    function filterByDate(rows) {
+      const from = document.getElementById("fromDate").value;
+      const to = document.getElementById("toDate").value;
+
+      if (!from && !to) return rows;
+
+      return rows.filter(row => {
+        const dateValue =
+          row.checklistDate ||
+          row.createdAt ||
+          row.incidentDate ||
+          row.startTime ||
+          row.fineDateTime ||
+          row.date;
+
+        if (!dateValue) return true;
+
+        const rowDate = new Date(dateValue);
+        if (from && rowDate < new Date(from + "T00:00:00")) return false;
+        if (to && rowDate > new Date(to + "T23:59:59")) return false;
+
+        return true;
+      });
+    }
+
+    function updateSummary(rows) {
+      document.getElementById("totalRecords").textContent = rows.length;
+
+      const openCount = rows.filter(r =>
+        r.status === "open" ||
+        r.status === "active" ||
+        r.status === "assigned" ||
+        r.attributionStatus === "matched"
+      ).length;
+
+      const closedCount = rows.filter(r =>
+        r.status === "closed" ||
+        r.status === "inactive" ||
+        r.status === "suspended"
+      ).length;
+
+      document.getElementById("openRecords").textContent = openCount;
+      document.getElementById("closedRecords").textContent = closedCount;
+      document.getElementById("selectedReportLabel").textContent =
+        reportLabels[currentReportType] || currentReportType;
+    }
+
+    function renderTable(rows) {
+      const tableBox = document.getElementById("reportTable");
+      const selectedColumns = columns[currentReportType] || [];
+
+      if (!rows.length) {
+        tableBox.innerHTML = "No records found for selected report.";
+        updateSummary(rows);
+        return;
+      }
+
+      let html = "<table><thead><tr>";
+
+      selectedColumns.forEach(col => {
+        html += `<th>${col[1]}</th>`;
+      });
+
+      html += "</tr></thead><tbody>";
+
+      rows.forEach(row => {
+        html += "<tr>";
+        selectedColumns.forEach(col => {
+          html += `<td>${formatValue(row[col[0]])}</td>`;
+        });
+        html += "</tr>";
+      });
+
+      html += "</tbody></table>";
+
+      tableBox.innerHTML = html;
+      updateSummary(rows);
+    }
+
+    async function loadReport() {
+      currentReportType = document.getElementById("reportType").value;
+
+      try {
+        const res = await fetch(`/api/fleet/reports/${currentReportType}`);
+        const data = await res.json();
+
+        if (!data.success) {
+          showMessage(data.message || "Unable to load report.", "error");
+          return;
+        }
+
+        currentRows = filterByDate(data.rows || []);
+        renderTable(currentRows);
+
+      } catch (error) {
+        console.error(error);
+        showMessage("Server error while loading report.", "error");
+      }
+    }
+
+    function downloadExcel() {
+      if (!currentRows.length) {
+        showMessage("Please load a report first.", "error");
+        return;
+      }
+
+      const selectedColumns = columns[currentReportType] || [];
+      let csv = selectedColumns.map(col => `"${col[1]}"`).join(",") + "\n";
+
+      currentRows.forEach(row => {
+        csv += selectedColumns.map(col => {
+          const value = String(formatValue(row[col[0]])).replace(/"/g, '""');
+          return `"${value}"`;
+        }).join(",") + "\n";
+      });
+
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const link = document.createElement("a");
+      const fileName = `Vehicall_${reportLabels[currentReportType]}_Report.csv`;
+
+      link.href = URL.createObjectURL(blob);
+      link.download = fileName;
+      link.click();
+    }
+
+    function downloadPDF() {
+      if (!currentRows.length) {
+        showMessage("Please load a report first.", "error");
+        return;
+      }
+
+      const selectedColumns = columns[currentReportType] || [];
+      const reportTitle = `Vehicall ${reportLabels[currentReportType]} Report`;
+
+      let html = `
+        <html>
+        <head>
+          <title>${reportTitle}</title>
+          <style>
+            body { font-family: Arial, sans-serif; padding: 25px; color: #111; }
+            .header { border-bottom: 2px solid #0B1F3A; padding-bottom: 12px; margin-bottom: 20px; }
+            h1 { color: #0B1F3A; margin: 0; }
+            p { margin: 5px 0; color: #555; }
+            table { width: 100%; border-collapse: collapse; font-size: 11px; }
+            th { background: #0B1F3A; color: white; padding: 8px; text-align: left; }
+            td { border: 1px solid #ccc; padding: 7px; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>${reportTitle}</h1>
+            <p>Smart Alerts, Fleet Operations & Driver Accountability</p>
+            <p>Generated: ${new Date().toLocaleString()}</p>
+            <p>Total Records: ${currentRows.length}</p>
+          </div>
+
+          <table>
+            <thead>
+              <tr>
+      `;
+
+      selectedColumns.forEach(col => {
+        html += `<th>${col[1]}</th>`;
+      });
+
+      html += `
+              </tr>
+            </thead>
+            <tbody>
+      `;
+
+      currentRows.forEach(row => {
+        html += "<tr>";
+        selectedColumns.forEach(col => {
+          html += `<td>${formatValue(row[col[0]])}</td>`;
+        });
+        html += "</tr>";
+      });
+
+      html += `
+            </tbody>
+          </table>
+        </body>
+        </html>
+      `;
+
+      const printWindow = window.open("", "_blank");
+      printWindow.document.write(html);
+      printWindow.document.close();
+      printWindow.focus();
+      printWindow.print();
+    }
+
+    loadReport();
+  </script>
+</body>
+</html>

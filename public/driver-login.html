@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vehicall Driver Login</title>
+
+<style>
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:#07111f;
+  color:#fff;
+  min-height:100vh;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.box{
+  width:100%;
+  max-width:420px;
+  background:#0f1f33;
+  border:1px solid #20344d;
+  border-radius:22px;
+  padding:30px;
+}
+
+.logo{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  margin-bottom:25px;
+}
+
+.logo img{
+  height:48px;
+}
+
+.logo h1{
+  margin:0;
+  font-size:24px;
+}
+
+.logo p{
+  margin:3px 0 0;
+  color:#9fb0c5;
+  font-size:13px;
+}
+
+label{
+  display:block;
+  margin-top:15px;
+  margin-bottom:8px;
+  color:#9fb0c5;
+}
+
+input{
+  width:100%;
+  padding:14px;
+  border-radius:12px;
+  border:1px solid #29496d;
+  background:#081827;
+  color:#fff;
+  box-sizing:border-box;
+}
+
+button{
+  width:100%;
+  margin-top:22px;
+  padding:15px;
+  border:none;
+  border-radius:14px;
+  background:linear-gradient(135deg,#00c2ff,#0066ff);
+  color:#fff;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+#message{
+  display:none;
+  padding:12px;
+  border-radius:12px;
+  margin-bottom:15px;
+}
+
+.success{
+  display:block!important;
+  background:rgba(0,180,120,.15);
+  color:#70ffc8;
+}
+
+.error{
+  display:block!important;
+  background:rgba(255,70,70,.15);
+  color:#ff9c9c;
+}
+
+.footer{
+  text-align:center;
+  margin-top:18px;
+  color:#8fa5bb;
+  font-size:13px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="box">
+
+  <div class="logo">
+    <img src="/logo.png" alt="Vehicall Logo">
+    <div>
+      <h1>Driver Login</h1>
+      <p>Vehicall Fleet Driver Portal</p>
+    </div>
+  </div>
+
+  <div id="message"></div>
+
+  <label>Email</label>
+  <input type="email" id="email" placeholder="driver@company.com">
+
+  <label>Password</label>
+  <input type="password" id="password" placeholder="Enter password">
+
+  <button onclick="loginDriver()">Login</button>
+
+  <div class="footer">
+    Access is limited to assigned fleet drivers only.
+  </div>
+
+</div>
+
+<script>
+function showMessage(text,type){
+  const box=document.getElementById("message");
+  box.className=type;
+  box.textContent=text;
+  box.style.display="block";
+}
+
+async function loginDriver(){
+  const email=document.getElementById("email").value.trim();
+  const password=document.getElementById("password").value.trim();
+
+  if(!email || !password){
+    showMessage("Email and password are required","error");
+    return;
+  }
+
+  try{
+    const res=await fetch("/api/driver/login",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({email,password})
+    });
+
+    const data=await res.json();
+
+    if(data.success){
+      showMessage(data.message,"success");
+      setTimeout(()=>{
+        window.location.href="/driver-dashboard";
+      },800);
+    }else{
+      showMessage(data.message || "Driver login failed","error");
+    }
+
+  }catch(err){
+    console.error(err);
+    showMessage("Server error. Please check backend.","error");
+  }
+}
+</script>
+
+</body>
+</html>

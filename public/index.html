@@ -7,6 +7,20 @@
   <link rel="stylesheet" href="style.css" />
 
   <style>
+
+.btn-fleet-nav {
+  background: linear-gradient(135deg, #00c2ff, #0066ff) !important;
+  color: #ffffff !important;
+  border-radius: 14px;
+  padding: 12px 18px !important;
+  font-weight: bold;
+  text-decoration: none;
+  box-shadow: 0 8px 22px rgba(0, 102, 255, 0.25);
+}
+
+.btn-fleet-nav:hover {
+  opacity: 0.92;
+}
     .lang-switch {
       display: flex;
       gap: 8px;
@@ -26,6 +40,89 @@
     .lang-switch button.active {
       background: #0b1f3a;
       color: #ffffff;
+    }
+
+    .fleet-section {
+      padding: 70px 20px;
+      background: #07111f;
+    }
+
+    .fleet-box {
+      max-width: 1150px;
+      margin: auto;
+      padding: 40px;
+      border-radius: 26px;
+      background: linear-gradient(135deg, #0f1f33, #081827);
+      border: 1px solid #20344d;
+      text-align: center;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.25);
+    }
+
+    .fleet-kicker {
+      display: inline-block;
+      margin-bottom: 12px;
+      color: #6ecbff;
+      font-weight: bold;
+      font-size: 14px;
+    }
+
+    .fleet-box h2 {
+      color: #ffffff;
+      font-size: 34px;
+      margin: 0 0 12px;
+    }
+
+    .fleet-box p {
+      color: #b7c4d4;
+      max-width: 820px;
+      margin: 0 auto 26px;
+      line-height: 1.7;
+      font-size: 16px;
+    }
+
+    .fleet-features {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin: 28px 0;
+      text-align: left;
+    }
+
+    .fleet-feature {
+      background: #07111f;
+      border: 1px solid #263b55;
+      border-radius: 16px;
+      padding: 18px;
+      color: #d6e2f0;
+    }
+
+    .fleet-feature strong {
+      display: block;
+      color: #ffffff;
+      margin-bottom: 6px;
+    }
+
+    .fleet-actions {
+      display: flex;
+      justify-content: center;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-top: 25px;
+    }
+
+    .fleet-btn {
+      display: inline-block;
+      padding: 14px 22px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #00c2ff, #0066ff);
+      color: #ffffff;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    .fleet-btn.secondary {
+      background: #10243a;
+      border: 1px solid #29496d;
     }
 
     body.rtl {
@@ -50,9 +147,25 @@
       padding-left: 0;
     }
 
+    body.rtl .fleet-features {
+      text-align: right;
+    }
+
     @media (max-width: 900px) {
       .lang-switch {
         margin-top: 12px;
+      }
+
+      .fleet-features {
+        grid-template-columns: 1fr;
+      }
+
+      .fleet-box {
+        padding: 28px;
+      }
+
+      .fleet-box h2 {
+        font-size: 28px;
       }
     }
   </style>
@@ -72,6 +185,7 @@
     <nav class="nav-links">
       <a href="#how" data-key="navHow">How it works</a>
       <a href="#register-flow" data-key="navRegister">How to register</a>
+      <a href="#fleet-management" class="btn btn-fleet-nav" data-key="navFleet">Fleet Management</a>
       <a href="#plans" data-key="navPlans">Plans</a>
       <a href="#privacy" data-key="navPrivacy">Privacy</a>
       <a href="/login.html" class="btn btn-outline" data-key="navLogin">Login</a>
@@ -102,7 +216,7 @@
 
         <div class="hero-actions">
           <a href="/login.html" class="btn btn-primary large" data-key="registerVehicle">Register Vehicle</a>
-          <a href="#how" class="btn btn-light large" data-key="seeHow">See How It Works</a>
+          <a href="#fleet-management" class="btn btn-light large" data-key="fleetHeroButton">Fleet Management</a>
         </div>
 
         <div class="trust-row">
@@ -298,6 +412,42 @@
     </div>
   </section>
 
+  <section id="fleet-management" class="fleet-section">
+    <div class="fleet-box">
+      <span class="fleet-kicker" data-key="fleetKicker">For commercial customers</span>
+
+      <h2 data-key="fleetTitle">Vehicall Fleet Management</h2>
+
+      <p data-key="fleetText">
+        A B2B fleet operations platform for companies to manage vehicles, drivers,
+        daily checklists, opening and closing kilometres, incidents, compliance,
+        traffic fine accountability and optional Vehicall fleet alerts.
+      </p>
+
+      <div class="fleet-features">
+        <div class="fleet-feature">
+          <strong data-key="fleetFeature1Title">Vehicle & Driver Management</strong>
+          <span data-key="fleetFeature1Text">Manage fleet vehicles, drivers, assignments and daily handovers.</span>
+        </div>
+
+        <div class="fleet-feature">
+          <strong data-key="fleetFeature2Title">Checklist & KM Tracking</strong>
+          <span data-key="fleetFeature2Text">Record opening/closing kilometres, fuel level, safety checks and damage notes.</span>
+        </div>
+
+        <div class="fleet-feature">
+          <strong data-key="fleetFeature3Title">Incidents & Reports</strong>
+          <span data-key="fleetFeature3Text">Track incidents, complaints, compliance and download PDF/Excel reports.</span>
+        </div>
+      </div>
+
+      <div class="fleet-actions">
+        <a href="/fleet-register" class="fleet-btn" data-key="fleetRegisterBtn">Register Fleet Company</a>
+        <a href="/fleet-login.html" class="fleet-btn secondary" data-key="fleetLoginBtn">Fleet Login</a>
+      </div>
+    </div>
+  </section>
+
   <section id="privacy" class="section privacy-section">
     <div class="container privacy-grid">
       <div>
@@ -401,6 +551,7 @@ const translations = {
     brandSubtitle: "Smart Vehicle Alerts",
     navHow: "How it works",
     navRegister: "How to register",
+    navFleet: "Fleet Management",
     navPlans: "Plans",
     navPrivacy: "Privacy",
     navLogin: "Login",
@@ -410,6 +561,7 @@ const translations = {
     heroTitle: "Let people alert you about your vehicle without exposing your phone number.",
     heroText: "Vehicall is a smart QR sticker system that helps vehicle owners receive quick alerts for blocked parking, lights left on, unlocked vehicles, emergencies and more.",
     registerVehicle: "Register Vehicle",
+    fleetHeroButton: "Fleet Management",
     seeHow: "See How It Works",
     trust1: "Privacy-first",
     trust2: "QR based",
@@ -467,6 +619,18 @@ const translations = {
     scanOwner: "SCAN TO ALERT OWNER",
     poweredOman: "Powered by Vehicall Oman",
 
+    fleetKicker: "For commercial customers",
+    fleetTitle: "Vehicall Fleet Management",
+    fleetText: "A B2B fleet operations platform for companies to manage vehicles, drivers, daily checklists, opening and closing kilometres, incidents, compliance, traffic fine accountability and optional Vehicall fleet alerts.",
+    fleetFeature1Title: "Vehicle & Driver Management",
+    fleetFeature1Text: "Manage fleet vehicles, drivers, assignments and daily handovers.",
+    fleetFeature2Title: "Checklist & KM Tracking",
+    fleetFeature2Text: "Record opening/closing kilometres, fuel level, safety checks and damage notes.",
+    fleetFeature3Title: "Incidents & Reports",
+    fleetFeature3Text: "Track incidents, complaints, compliance and download PDF/Excel reports.",
+    fleetRegisterBtn: "Register Fleet Company",
+    fleetLoginBtn: "Fleet Login",
+
     privacyKicker: "Privacy-first system",
     privacyTitle: "Your mobile number should not be public on your vehicle.",
     privacyText: "Traditional stickers expose phone numbers. Vehicall keeps communication structured, controlled, and safer for both vehicle owners and people reporting an issue.",
@@ -512,6 +676,7 @@ const translations = {
     brandSubtitle: "تنبيهات ذكية للمركبات",
     navHow: "كيف يعمل",
     navRegister: "طريقة التسجيل",
+    navFleet: "إدارة الأسطول",
     navPlans: "الباقات",
     navPrivacy: "الخصوصية",
     navLogin: "تسجيل الدخول",
@@ -521,6 +686,7 @@ const translations = {
     heroTitle: "اسمح للآخرين بتنبيهك عن مركبتك دون إظهار رقم هاتفك.",
     heroText: "Vehicall هو نظام ملصق ذكي برمز QR يساعد مالكي المركبات على استلام تنبيهات سريعة عند إغلاق الطريق، ترك الأنوار، عدم إغلاق المركبة، الحالات الطارئة وغيرها.",
     registerVehicle: "تسجيل المركبة",
+    fleetHeroButton: "إدارة الأسطول",
     seeHow: "شاهد كيف يعمل",
     trust1: "خصوصية أولاً",
     trust2: "يعتمد على QR",
@@ -577,6 +743,18 @@ const translations = {
     activateWelcome: "تفعيل باقة الترحيب",
     scanOwner: "امسح لتنبيه المالك",
     poweredOman: "مدعوم من Vehicall عُمان",
+
+    fleetKicker: "للعملاء التجاريين",
+    fleetTitle: "إدارة أسطول Vehicall",
+    fleetText: "منصة B2B لإدارة عمليات الأسطول للشركات، تشمل إدارة المركبات والسائقين، الفحص اليومي، كيلومترات البداية والنهاية، الحوادث، الامتثال، مسؤولية المخالفات المرورية وتنبيهات Vehicall الاختيارية.",
+    fleetFeature1Title: "إدارة المركبات والسائقين",
+    fleetFeature1Text: "إدارة مركبات الأسطول والسائقين والتعيينات والتسليم اليومي.",
+    fleetFeature2Title: "الفحص والكيلومترات",
+    fleetFeature2Text: "تسجيل كيلومترات البداية والنهاية، مستوى الوقود، فحص السلامة وملاحظات الأضرار.",
+    fleetFeature3Title: "الحوادث والتقارير",
+    fleetFeature3Text: "متابعة الحوادث والشكاوى والامتثال وتحميل التقارير PDF وExcel.",
+    fleetRegisterBtn: "تسجيل شركة أسطول",
+    fleetLoginBtn: "دخول الأسطول",
 
     privacyKicker: "نظام يحافظ على الخصوصية",
     privacyTitle: "رقم هاتفك لا يجب أن يكون ظاهراً على مركبتك.",

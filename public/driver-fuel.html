@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vehicall Driver Fuel</title>
+
+<style>
+body{margin:0;font-family:Arial,sans-serif;background:#07111f;color:#fff}
+.header{padding:18px;background:#0b1b2d;border-bottom:1px solid #1d3553}
+.brand{display:flex;align-items:center;gap:12px}
+.brand img{height:42px}
+.brand h2{margin:0}
+.brand p{margin:2px 0 0;color:#9fb0c5;font-size:13px}
+.container{max-width:760px;margin:24px auto;padding:0 16px}
+.card{background:#0f1f33;border:1px solid #20344d;border-radius:20px;padding:22px;margin-bottom:18px}
+.card h2{margin-top:0;color:#6ecbff}
+label{display:block;margin-top:14px;margin-bottom:8px;color:#9fb0c5}
+input,select,textarea{width:100%;padding:14px;border-radius:12px;border:1px solid #29496d;background:#081827;color:#fff;box-sizing:border-box}
+textarea{min-height:90px}
+button{width:100%;padding:15px;margin-top:18px;border:none;border-radius:14px;background:linear-gradient(135deg,#00c2ff,#0066ff);color:#fff;font-weight:bold;cursor:pointer}
+#message{display:none;padding:12px;border-radius:12px;margin-bottom:15px}
+.success{display:block!important;background:rgba(0,180,120,.15);color:#70ffc8}
+.error{display:block!important;background:rgba(255,70,70,.15);color:#ff9c9c}
+.info-box{background:#081827;border:1px solid #223854;border-radius:14px;padding:16px;margin-top:12px}
+.info-box p{margin:8px 0;color:#d6e2f0}
+.info-box strong{color:#8fb3d9}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+  <div class="brand">
+    <img src="/logo.png">
+    <div>
+      <h2>Driver Fuel Entry</h2>
+      <p>Fuel entry only for your assigned vehicle</p>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+
+  <div id="message"></div>
+
+  <div class="card">
+    <h2>My Assigned Vehicle</h2>
+    <div class="info-box">
+      <p><strong>Vehicle:</strong> <span id="vehicleNumber">Loading...</span></p>
+      <p><strong>Company:</strong> <span id="companyName">Loading...</span></p>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Add Fuel / Oil Entry</h2>
+
+    <label>Entry Type</label>
+    <select id="entryType">
+      <option value="Fuel">Fuel</option>
+      <option value="Engine Oil">Engine Oil</option>
+      <option value="AdBlue">AdBlue</option>
+      <option value="Other">Other</option>
+    </select>
+
+    <label>Fuel Type</label>
+    <select id="fuelType">
+      <option value="">Select</option>
+      <option value="Petrol">Petrol</option>
+      <option value="Diesel">Diesel</option>
+      <option value="Super">Super</option>
+      <option value="Regular">Regular</option>
+    </select>
+
+    <label>Liters / Quantity</label>
+    <input type="number" step="0.001" id="liters" placeholder="0.000">
+
+    <label>Amount OMR</label>
+    <input type="number" step="0.001" id="amount" placeholder="0.000">
+
+    <label>Odometer Reading</label>
+    <input type="number" id="odometerReading" placeholder="KM reading">
+
+    <label>Fuel Station / Supplier</label>
+    <input id="fuelStation" placeholder="OQ, Shell, Oman Oil, Workshop">
+
+    <label>Payment Method</label>
+    <select id="paymentMethod">
+      <option value="Company Card">Company Card</option>
+      <option value="Cash">Cash</option>
+      <option value="Driver Paid">Driver Paid</option>
+      <option value="Credit Account">Credit Account</option>
+    </select>
+
+    <label>Receipt / Invoice No.</label>
+    <input id="receiptNo" placeholder="Optional">
+
+    <label>Remarks</label>
+    <textarea id="remarks" placeholder="Fuel or payment remarks"></textarea>
+
+    <div style="display:flex;gap:12px;margin-top:18px;">
+
+  <button 
+    type="button"
+    onclick="goBackToDriverDashboard()"
+    style="
+      background:#334155;
+      width:40%;
+    ">
+    Back to Dashboard
+  </button>
+
+  <button 
+    type="button"
+    onclick="submitFuel()"
+    style="
+      width:60%;
+    ">
+    Save Fuel Entry
+  </button>
+
+</div>
+  </div>
+
+</div>
+
+<script>
+function showMessage(text,type){
+  const box=document.getElementById("message");
+  box.className=type;
+  box.textContent=text;
+  box.style.display="block";
+}
+
+async function loadDriverInfo(){
+  try{
+    const res = await fetch("/api/driver/dashboard");
+    const data = await res.json();
+
+    console.log("Driver dashboard data:", data);
+
+    if(!data.success){
+      showMessage(data.message || "Driver login required. Please login again.","error");
+
+      setTimeout(()=>{
+        window.location.href="/driver-login";
+      },1500);
+
+      return;
+    }
+
+    document.getElementById("vehicleNumber").textContent =
+      data.assignedVehicle && data.assignedVehicle.vehicleNumber
+        ? data.assignedVehicle.vehicleNumber
+        : "Not assigned";
+
+    document.getElementById("companyName").textContent =
+      data.company && data.company.companyName
+        ? data.company.companyName
+        : "-";
+
+  }catch(err){
+    console.error("Driver info load error:", err);
+    showMessage("Unable to load driver vehicle details. Please login again.","error");
+
+    setTimeout(()=>{
+      window.location.href="/driver-login";
+    },1500);
+  }
+}
+
+async function submitFuel(){
+  const payload={
+    entryType:document.getElementById("entryType").value,
+    fuelType:document.getElementById("fuelType").value,
+    liters:document.getElementById("liters").value,
+    amount:document.getElementById("amount").value,
+    odometerReading:document.getElementById("odometerReading").value,
+    fuelStation:document.getElementById("fuelStation").value,
+    paymentMethod:document.getElementById("paymentMethod").value,
+    receiptNo:document.getElementById("receiptNo").value,
+    remarks:document.getElementById("remarks").value
+  };
+
+  if(!payload.amount){
+    showMessage("Amount is required","error");
+    return;
+  }
+
+  const res=await fetch("/api/driver/fuel",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify(payload)
+  });
+
+  const data=await res.json();
+
+  if(data.success){
+    showMessage(
+      "Fuel entry submitted successfully. Waiting for approval.",
+      "success"
+    );
+
+    setTimeout(()=>{
+      window.location.href="/driver-dashboard";
+    },1500);
+
+  }else{
+    showMessage(data.message || "Unable to save fuel entry","error");
+  }
+}
+
+function goBackToDriverDashboard(){
+  window.location.href="/driver-dashboard";
+}
+
+loadDriverInfo();
+</script>
+
+</body>
+</html>

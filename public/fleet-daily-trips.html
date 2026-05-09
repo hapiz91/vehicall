@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vehicall Daily Trips</title>
+<style>
+body{margin:0;font-family:Arial,sans-serif;background:#07111f;color:#fff}
+.header{display:flex;justify-content:space-between;align-items:center;padding:18px 30px;background:#0b1b2d;border-bottom:1px solid #1d3553}
+.brand{display:flex;align-items:center;gap:14px}.brand img{height:46px}.brand h2{margin:0}.brand p{margin:2px 0 0;color:#9fb0c5;font-size:13px}
+.nav a{color:#6ecbff;margin-left:16px;text-decoration:none;font-size:14px}
+.container{max-width:1250px;margin:30px auto;padding:0 20px}
+.card{background:#0f1f33;border:1px solid #20344d;border-radius:20px;padding:24px;margin-bottom:24px}
+.form-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+label{display:block;margin-bottom:8px;color:#9fb0c5}
+input,select,textarea{width:100%;padding:13px;border-radius:10px;border:1px solid #29496d;background:#081827;color:#fff;box-sizing:border-box}
+textarea{min-height:80px}
+button{padding:13px 18px;border:none;border-radius:12px;background:linear-gradient(135deg,#00c2ff,#0066ff);color:#fff;font-weight:bold;cursor:pointer}
+.trip-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+.trip-card{background:#081827;border:1px solid #223854;border-radius:16px;padding:18px}
+.trip-card h3{margin:0 0 10px;color:#6ecbff}.trip-card p{margin:7px 0;color:#d6e2f0;font-size:14px}.trip-card strong{color:#8fb3d9}
+.badge{display:inline-block;padding:6px 12px;border-radius:999px;font-size:12px;font-weight:bold;text-transform:uppercase}
+.active{background:rgba(0,180,120,.15);color:#70ffc8}.closed{background:rgba(255,70,70,.15);color:#ff9c9c}
+#message{display:none;margin-bottom:18px;padding:13px;border-radius:12px}.success{display:block!important;background:rgba(0,180,120,.15);color:#70ffc8}.error{display:block!important;background:rgba(255,70,70,.15);color:#ff9c9c}
+@media(max-width:900px){.form-grid,.trip-grid{grid-template-columns:1fr}.header{flex-direction:column;align-items:flex-start;gap:12px}}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="brand">
+    <img src="/logo.png">
+    <div>
+      <h2>Daily Vehicle Trips</h2>
+      <p>Daily assignment, opening inspection and closing checklist</p>
+    </div>
+  </div>
+  <div class="nav">
+    <a href="/fleet-dashboard">Dashboard</a>
+    <a href="/fleet-vehicles">Vehicles</a>
+    <a href="/fleet-drivers">Drivers</a>
+    <a href="/api/fleet/logout">Logout</a>
+  </div>
+</div>
+
+<div class="container">
+  <div id="message"></div>
+
+  <div class="card">
+    <h2>Start Daily Trip / Assignment</h2>
+
+    <form id="tripForm">
+      <div class="form-grid">
+        <div>
+          <label>Select Vehicle</label>
+          <select name="vehicleId" id="vehicleSelect" required>
+            <option value="">Loading...</option>
+          </select>
+        </div>
+
+        <div>
+          <label>Select Driver</label>
+          <select name="driverId" id="driverSelect" required>
+            <option value="">Loading...</option>
+          </select>
+        </div>
+
+        <div>
+          <label>Shift</label>
+          <select name="shift">
+            <option value="Morning">Morning</option>
+            <option value="Evening">Evening</option>
+            <option value="Night">Night</option>
+            <option value="Custom">Custom</option>
+          </select>
+        </div>
+
+        <div>
+          <label>Trip Date</label>
+          <input type="date" name="tripDate">
+        </div>
+
+        <div>
+          <label>Opening KM</label>
+          <input type="number" name="openingKm" required>
+        </div>
+
+        <div>
+          <label>Opening Fuel Level</label>
+          <select name="openingFuel">
+            <option value="Full">Full</option>
+            <option value="3/4">3/4</option>
+            <option value="1/2">1/2</option>
+            <option value="1/4">1/4</option>
+            <option value="Low">Low</option>
+          </select>
+        </div>
+
+        <div>
+          <label>Opening Tyre Check</label>
+          <select name="openingTyre">
+            <option value="OK">OK</option>
+            <option value="Issue Found">Issue Found</option>
+          </select>
+        </div>
+
+        <div>
+          <label>Opening Lights Check</label>
+          <select name="openingLights">
+            <option value="OK">OK</option>
+            <option value="Issue Found">Issue Found</option>
+          </select>
+        </div>
+
+        <div>
+          <label>Opening Damage Status</label>
+          <select name="openingDamage">
+            <option value="No Damage">No Damage</option>
+            <option value="Existing Damage">Existing Damage</option>
+            <option value="New Damage Found">New Damage Found</option>
+          </select>
+        </div>
+
+        <div style="grid-column:span 3;">
+          <label>Opening Notes</label>
+          <textarea name="openingNotes" placeholder="Opening inspection notes"></textarea>
+        </div>
+
+        <div>
+          <button type="submit">Start Trip</button>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <div class="card">
+    <h2>Daily Trip Records</h2>
+    <div id="tripsList" class="trip-grid">Loading...</div>
+  </div>
+</div>
+
+<script>
+const form=document.getElementById("tripForm");
+const messageBox=document.getElementById("message");
+const tripsList=document.getElementById("tripsList");
+const vehicleSelect=document.getElementById("vehicleSelect");
+const driverSelect=document.getElementById("driverSelect");
+
+function showMessage(text,type){
+  messageBox.className=type;
+  messageBox.textContent=text;
+  messageBox.style.display="block";
+  setTimeout(()=>{messageBox.className="";messageBox.style.display="none"},4000);
+}
+
+async function loadVehicles(){
+  const res=await fetch("/api/fleet/vehicles");
+  const data=await res.json();
+  vehicleSelect.innerHTML='<option value="">Select Vehicle</option>';
+  if(data.success){
+    data.vehicles.forEach(v=>{
+      vehicleSelect.innerHTML+=`<option value="${v.id}">${v.vehicleNumber}</option>`;
+    });
+  }
+}
+
+async function loadDrivers(){
+  const res=await fetch("/api/fleet/drivers");
+  const data=await res.json();
+  driverSelect.innerHTML='<option value="">Select Driver</option>';
+  if(data.success){
+    data.drivers.forEach(d=>{
+      driverSelect.innerHTML+=`<option value="${d.id}">${d.driverName}</option>`;
+    });
+  }
+}
+
+async function loadTrips(){
+  const res=await fetch("/api/fleet/daily-trips");
+  const data=await res.json();
+
+  tripsList.innerHTML="";
+
+  if(!data.success){
+    tripsList.innerHTML="Unable to load trips.";
+    return;
+  }
+
+  if(!data.trips.length){
+    tripsList.innerHTML=`<div class="trip-card">No daily trips started yet.</div>`;
+    return;
+  }
+
+  data.trips.forEach(t=>{
+    tripsList.innerHTML+=`
+      <div class="trip-card">
+        <h3>${t.vehicleNumber || "-"}</h3>
+        <p><strong>Driver:</strong> ${t.driverName || "-"}</p>
+        <p><strong>Shift:</strong> ${t.shift || "-"}</p>
+        <p><strong>Trip Date:</strong> ${t.tripDate || "-"}</p>
+        <p><strong>Opening KM:</strong> ${t.openingKm || "-"}</p>
+        <p><strong>Opening Fuel:</strong> ${t.openingFuel || "-"}</p>
+        <p><strong>Opening Tyre:</strong> ${t.openingTyre || "-"}</p>
+        <p><strong>Opening Lights:</strong> ${t.openingLights || "-"}</p>
+        <p><strong>Opening Damage:</strong> ${t.openingDamage || "-"}</p>
+        <p><strong>Opening Notes:</strong> ${t.openingNotes || "-"}</p>
+        <span class="badge ${t.status === "closed" ? "closed" : "active"}">${t.status || "active"}</span>
+        ${
+          t.status !== "closed"
+          ? `<br><br><button onclick="closeTrip('${t.id}')">Close Trip</button>`
+          : `<p><strong>Closing KM:</strong> ${t.closingKm || "-"}</p>
+             <p><strong>Closing Fuel:</strong> ${t.closingFuel || "-"}</p>
+             <p><strong>Closing Notes:</strong> ${t.closingNotes || "-"}</p>`
+        }
+      </div>
+    `;
+  });
+}
+
+async function closeTrip(tripId){
+  const closingKm=prompt("Enter closing KM:");
+  if(!closingKm) return;
+
+  const closingFuel=prompt("Enter closing fuel level: Full / 3/4 / 1/2 / 1/4 / Low") || "";
+  const closingNotes=prompt("Closing notes / inspection remarks:") || "";
+
+  const res=await fetch(`/api/fleet/daily-trips/${tripId}/close`,{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({closingKm,closingFuel,closingNotes})
+  });
+
+  const data=await res.json();
+  showMessage(data.message,data.success?"success":"error");
+  loadTrips();
+}
+
+form.addEventListener("submit",async e=>{
+  e.preventDefault();
+  const data=Object.fromEntries(new FormData(form).entries());
+
+  const res=await fetch("/api/fleet/daily-trips",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify(data)
+  });
+
+  const result=await res.json();
+
+  if(result.success){
+    showMessage(result.message,"success");
+    form.reset();
+    loadTrips();
+  }else{
+    showMessage(result.message || "Unable to start trip","error");
+  }
+});
+
+loadVehicles();
+loadDrivers();
+loadTrips();
+</script>
+
+</body>
+</html>

@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Fleet Replacement Vehicles</title>
+
+<style>
+body{margin:0;font-family:Arial,sans-serif;background:#07111f;color:#fff}
+.header{display:flex;justify-content:space-between;align-items:center;padding:18px 30px;background:#0b1b2d;border-bottom:1px solid #1d3553}
+.brand{display:flex;align-items:center;gap:14px}
+.brand img{height:46px}
+.brand h2{margin:0}
+.brand p{margin:2px 0 0;color:#9fb0c5;font-size:13px}
+.nav a{color:#6ecbff;margin-left:16px;text-decoration:none;font-size:14px}
+.container{max-width:1300px;margin:30px auto;padding:0 20px}
+.card{background:#0f1f33;border:1px solid #20344d;border-radius:20px;padding:24px;margin-bottom:24px}
+.form-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+label{display:block;margin-bottom:8px;color:#9fb0c5}
+input,select,textarea{width:100%;padding:13px;border-radius:10px;border:1px solid #29496d;background:#081827;color:#fff;box-sizing:border-box}
+textarea{min-height:80px}
+button{padding:12px 16px;border:none;border-radius:12px;background:linear-gradient(135deg,#00c2ff,#0066ff);color:#fff;font-weight:bold;cursor:pointer}
+#message{display:none;margin-bottom:18px;padding:13px;border-radius:12px}
+.success{display:block!important;background:rgba(0,180,120,.15);color:#70ffc8}
+.error{display:block!important;background:rgba(255,70,70,.15);color:#ff9c9c}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:1450px}
+th,td{padding:12px;border-bottom:1px solid #20344d;text-align:left;font-size:13px;vertical-align:top}
+th{background:#081827;color:#6ecbff}
+tr:hover{background:#10243b}
+.badge{display:inline-block;padding:6px 10px;border-radius:999px;font-size:12px;font-weight:bold}
+.available{background:rgba(255,193,7,.15);color:#ffd666}
+.active{background:rgba(0,200,120,.15);color:#70ffc8}
+.returned{background:rgba(148,163,184,.15);color:#cbd5e1}
+.btn-secondary{background:#475569;margin:2px}
+.btn-return{background:#dc2626;margin:2px}
+.btn-assign{background:#16a34a;margin:2px}
+.btn-receive{background:#2563eb;margin:2px}
+@media(max-width:900px){.form-grid{grid-template-columns:1fr}.header{flex-direction:column;align-items:flex-start;gap:12px}}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+  <div class="brand">
+    <img src="/logo.png">
+    <div>
+      <h2>Replacement Vehicle Management</h2>
+      <p>Track original vehicle service KM, replacement vehicle KM, assignment and return</p>
+    </div>
+  </div>
+  <div class="nav">
+    <a href="/fleet-dashboard">Dashboard</a>
+    <a href="/fleet-vehicles">Vehicles</a>
+    <a href="/fleet-fuel">Fuel</a>
+    <a href="/api/fleet/logout">Logout</a>
+  </div>
+</div>
+
+<div class="container">
+
+  <div id="message"></div>
+
+  <div class="card">
+    <h2>Receive Replacement Vehicle / Send Original Vehicle for Service</h2>
+
+    <form id="replacementForm">
+      <div class="form-grid">
+
+        <div>
+          <label>Original Vehicle</label>
+          <select id="originalVehicleId" name="originalVehicleId" required>
+            <option value="">Loading...</option>
+          </select>
+        </div>
+
+        <div>
+          <label>Original Vehicle End KM</label>
+          <input type="number" name="originalVehicleEndKm" placeholder="KM before service" required>
+        </div>
+
+        <div>
+          <label>Original Vehicle Sent Date</label>
+          <input type="date" name="originalVehicleSentDate">
+        </div>
+
+        <div>
+          <label>Replacement Vehicle Number</label>
+          <input name="replacementVehicleNumber" placeholder="Example: BB-98765" required>
+        </div>
+
+        <div>
+          <label>Replacement Vehicle Start KM</label>
+          <input type="number" name="replacementStartKm" placeholder="Replacement start odometer" required>
+        </div>
+
+        <div>
+          <label>Rental Company Name</label>
+          <input name="rentalCompanyName" placeholder="Rental company" required>
+        </div>
+
+        <div>
+          <label>Expected Replacement Return Date</label>
+          <input type="date" name="expectedReturnDate">
+        </div>
+
+        <div>
+          <label>Reason</label>
+          <select name="reason">
+            <option value="Original vehicle under service">Original vehicle under service</option>
+            <option value="Accident repair">Accident repair</option>
+            <option value="Breakdown">Breakdown</option>
+            <option value="Long-term replacement">Long-term replacement</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+
+        <div>
+          <label>Assign Driver Now?</label>
+          <select name="assignNow" id="assignNow" onchange="toggleDriverAssign()">
+            <option value="no">No - Receive only</option>
+            <option value="yes">Yes - Assign now</option>
+          </select>
+        </div>
+
+        <div id="driverAssignBox" style="display:none;">
+          <label>Select Driver</label>
+          <select name="assignedDriverId" id="assignedDriverId">
+            <option value="">Loading...</option>
+          </select>
+        </div>
+
+        <div style="grid-column:span 3;">
+          <label>Notes</label>
+          <textarea name="notes" placeholder="Any remarks"></textarea>
+        </div>
+
+        <div>
+          <button type="submit">Save Replacement Vehicle</button>
+        </div>
+
+      </div>
+    </form>
+  </div>
+
+  <div class="card">
+    <h2>Replacement Vehicle Records</h2>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Status</th>
+            <th>Original Vehicle</th>
+            <th>Original End KM</th>
+            <th>Original Sent Date</th>
+            <th>Original Return KM</th>
+            <th>Original Return Date</th>
+            <th>Replacement Vehicle</th>
+            <th>Rental Company</th>
+            <th>Driver</th>
+            <th>Replacement Start KM</th>
+            <th>Replacement End KM</th>
+            <th>Replacement Total KM</th>
+            <th>Expected Return</th>
+            <th>Replacement Returned Date</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="replacementList">
+          <tr><td colspan="15">Loading...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const messageBox = document.getElementById("message");
+const replacementForm = document.getElementById("replacementForm");
+const replacementList = document.getElementById("replacementList");
+const originalVehicleSelect = document.getElementById("originalVehicleId");
+const assignedDriverSelect = document.getElementById("assignedDriverId");
+
+let drivers = [];
+
+function showMessage(text,type){
+  messageBox.className=type;
+  messageBox.textContent=text;
+  messageBox.style.display="block";
+  setTimeout(()=>{messageBox.className="";messageBox.style.display="none"},4000);
+}
+
+function toggleDriverAssign(){
+  const assignNow = document.getElementById("assignNow").value;
+  document.getElementById("driverAssignBox").style.display = assignNow === "yes" ? "block" : "none";
+}
+
+async function loadVehicles(){
+  const res = await fetch("/api/fleet/vehicles");
+  const data = await res.json();
+
+  originalVehicleSelect.innerHTML = '<option value="">Select Original Vehicle</option>';
+
+  if(data.success){
+    data.vehicles.forEach(v=>{
+      originalVehicleSelect.innerHTML += `<option value="${v.id}">${v.vehicleNumber}</option>`;
+    });
+  }
+}
+
+async function loadDrivers(){
+  const res = await fetch("/api/fleet/drivers");
+  const data = await res.json();
+
+  assignedDriverSelect.innerHTML = '<option value="">Select Driver</option>';
+
+  if(data.success){
+    drivers = data.drivers || [];
+    drivers.forEach(d=>{
+      assignedDriverSelect.innerHTML += `<option value="${d.id}">${d.driverName}</option>`;
+    });
+  }
+}
+
+function buildDriverOptions(){
+  let options = '<option value="">Select Driver</option>';
+  drivers.forEach(d=>{
+    options += `<option value="${d.id}">${d.driverName}</option>`;
+  });
+  return options;
+}
+
+async function loadReplacements(){
+  const res = await fetch("/api/fleet/replacements");
+  const data = await res.json();
+
+  replacementList.innerHTML = "";
+
+  if(!data.success){
+    replacementList.innerHTML = `<tr><td colspan="15">Unable to load replacement records.</td></tr>`;
+    return;
+  }
+
+  if(!data.records.length){
+    replacementList.innerHTML = `<tr><td colspan="15">No replacement vehicle records yet.</td></tr>`;
+    return;
+  }
+
+  data.records.forEach(r=>{
+    const badgeClass = r.status === "active" ? "active" : r.status === "returned" ? "returned" : "available";
+
+    let actions = "-";
+
+    if(r.status === "available"){
+      actions = `
+        <select id="assignDriver_${r.id}">
+          ${buildDriverOptions()}
+        </select>
+        <button class="btn-assign" onclick="assignReplacement('${r.id}')">Assign Driver</button>
+      `;
+    }
+
+    if(r.status === "active"){
+      actions = `
+        <button class="btn-receive" onclick="receiveOriginalVehicle('${r.id}')">Receive Original Back</button>
+        <button class="btn-return" onclick="returnReplacement('${r.id}', '${r.replacementStartKm || 0}')">Return Replacement</button>
+      `;
+    }
+
+    if(r.status === "returned" && !r.originalVehicleReceivedBack){
+      actions = `
+        <button class="btn-receive" onclick="receiveOriginalVehicle('${r.id}')">Receive Original Back</button>
+      `;
+    }
+
+    replacementList.innerHTML += `
+      <tr>
+        <td><span class="badge ${badgeClass}">${r.status || "-"}</span></td>
+        <td>${r.originalVehicleNumber || "-"}</td>
+        <td>${r.originalVehicleEndKm || "-"}</td>
+        <td>${r.originalVehicleSentDate || "-"}</td>
+        <td>${r.originalVehicleReturnKm || "-"}</td>
+        <td>${r.originalVehicleReturnDate || "-"}</td>
+        <td>${r.replacementVehicleNumber || "-"}</td>
+        <td>${r.rentalCompanyName || "-"}</td>
+        <td>${r.assignedDriverName || "-"}</td>
+        <td>${r.replacementStartKm || "-"}</td>
+        <td>${r.replacementEndKm || "-"}</td>
+        <td>${r.replacementTotalKmUsed || "-"}</td>
+        <td>${r.expectedReturnDate || "-"}</td>
+        <td>${r.replacementReturnedDate || "-"}</td>
+        <td>${actions}</td>
+      </tr>
+    `;
+  });
+}
+
+async function assignReplacement(replacementId){
+  const select = document.getElementById(`assignDriver_${replacementId}`);
+  const assignedDriverId = select ? select.value : "";
+
+  if(!assignedDriverId){
+    showMessage("Please select driver first","error");
+    return;
+  }
+
+  const res = await fetch(`/api/fleet/replacements/${replacementId}/assign`, {
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({ assignedDriverId })
+  });
+
+  const result = await res.json();
+
+  if(result.success){
+    showMessage(result.message,"success");
+    loadReplacements();
+  }else{
+    showMessage(result.message || "Unable to assign replacement vehicle","error");
+  }
+}
+
+async function receiveOriginalVehicle(replacementId){
+  const originalVehicleReturnKm = prompt("Enter original vehicle return KM after service:");
+
+  if(!originalVehicleReturnKm){
+    showMessage("Original vehicle return KM is required","error");
+    return;
+  }
+
+  const originalVehicleReturnDate = prompt("Enter original vehicle return date YYYY-MM-DD, or leave blank for today:");
+  const originalVehicleReturnNotes = prompt("Original vehicle return notes, optional:");
+
+  const res = await fetch(`/api/fleet/replacements/${replacementId}/receive-original`, {
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({
+      originalVehicleReturnKm,
+      originalVehicleReturnDate,
+      originalVehicleReturnNotes
+    })
+  });
+
+  const result = await res.json();
+
+  if(result.success){
+    showMessage(result.message,"success");
+    loadReplacements();
+  }else{
+    showMessage(result.message || "Unable to receive original vehicle","error");
+  }
+}
+
+async function returnReplacement(replacementId, replacementStartKm){
+  const replacementEndKm = prompt(`Enter replacement return KM. Replacement start KM was ${replacementStartKm}:`);
+
+  if(!replacementEndKm){
+    showMessage("Replacement return KM is required","error");
+    return;
+  }
+
+  const replacementReturnedDate = prompt("Enter replacement returned date YYYY-MM-DD, or leave blank for today:");
+  const replacementReturnNotes = prompt("Replacement return notes, optional:");
+
+  const res = await fetch(`/api/fleet/replacements/${replacementId}/return`, {
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({
+      replacementEndKm,
+      replacementReturnedDate,
+      replacementReturnNotes,
+      replacementReturnType: "permanent_return"
+    })
+  });
+
+  const result = await res.json();
+
+  if(result.success){
+    showMessage(result.message,"success");
+    loadReplacements();
+  }else{
+    showMessage(result.message || "Unable to return replacement vehicle","error");
+  }
+}
+
+replacementForm.addEventListener("submit", async e=>{
+  e.preventDefault();
+
+  const data = Object.fromEntries(new FormData(replacementForm).entries());
+
+  const res = await fetch("/api/fleet/replacements", {
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify(data)
+  });
+
+  const result = await res.json();
+
+  if(result.success){
+    showMessage(result.message,"success");
+    replacementForm.reset();
+    toggleDriverAssign();
+    loadReplacements();
+  }else{
+    showMessage(result.message || "Unable to save replacement vehicle","error");
+  }
+});
+
+loadVehicles();
+loadDrivers().then(loadReplacements);
+</script>
+
+</body>
+</html>

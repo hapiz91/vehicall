@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vehicall Driver Trip</title>
+
+<style>
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:#07111f;
+  color:#fff;
+}
+
+.header{
+  padding:18px;
+  background:#0b1b2d;
+  border-bottom:1px solid #1d3553;
+}
+
+.brand{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+
+.brand img{
+  height:42px;
+}
+
+.brand h2{
+  margin:0;
+}
+
+.brand p{
+  margin:2px 0 0;
+  color:#9fb0c5;
+  font-size:13px;
+}
+
+.container{
+  max-width:760px;
+  margin:24px auto;
+  padding:0 16px;
+}
+
+.card{
+  background:#0f1f33;
+  border:1px solid #20344d;
+  border-radius:20px;
+  padding:22px;
+  margin-bottom:18px;
+}
+
+.card h2{
+  margin-top:0;
+  color:#6ecbff;
+}
+
+label{
+  display:block;
+  margin-top:14px;
+  margin-bottom:8px;
+  color:#9fb0c5;
+}
+
+input,select,textarea{
+  width:100%;
+  padding:14px;
+  border-radius:12px;
+  border:1px solid #29496d;
+  background:#081827;
+  color:#fff;
+  box-sizing:border-box;
+}
+
+textarea{
+  min-height:90px;
+}
+
+button{
+  width:100%;
+  padding:15px;
+  margin-top:18px;
+  border:none;
+  border-radius:14px;
+  background:linear-gradient(135deg,#00c2ff,#0066ff);
+  color:#fff;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+.close-btn{
+  background:linear-gradient(135deg,#ff7b00,#ff3d00);
+}
+
+#message{
+  display:none;
+  padding:12px;
+  border-radius:12px;
+  margin-bottom:15px;
+}
+
+.success{
+  display:block!important;
+  background:rgba(0,180,120,.15);
+  color:#70ffc8;
+}
+
+.error{
+  display:block!important;
+  background:rgba(255,70,70,.15);
+  color:#ff9c9c;
+}
+
+.trip-box{
+  background:#081827;
+  border:1px solid #223854;
+  border-radius:14px;
+  padding:16px;
+  margin-top:14px;
+}
+
+.trip-box p{
+  margin:8px 0;
+  color:#d6e2f0;
+}
+
+.trip-box strong{
+  color:#8fb3d9;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+  <div class="brand">
+    <img src="/logo.png">
+    <div>
+      <h2>Driver Trip Management</h2>
+      <p>Manage your assigned vehicle trip</p>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+
+  <div id="message"></div>
+
+  <div class="card">
+    <h2>My Assigned Vehicle</h2>
+
+    <div class="trip-box">
+      <p><strong>Vehicle:</strong> <span id="vehicleNumber">Loading...</span></p>
+      <p><strong>Current Trip Status:</strong> <span id="tripStatus">Checking...</span></p>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Start Trip</h2>
+
+    <label>Opening KM</label>
+    <input type="number" id="openingKm">
+
+    <label>Fuel Level</label>
+    <select id="openingFuel">
+      <option value="Full">Full</option>
+      <option value="3/4">3/4</option>
+      <option value="1/2">1/2</option>
+      <option value="1/4">1/4</option>
+      <option value="Low">Low</option>
+    </select>
+
+    <label>Opening Notes</label>
+    <textarea id="openingNotes"></textarea>
+
+    <button onclick="startTrip()">Start My Trip</button>
+  </div>
+
+  <div class="card">
+    <h2>Close Trip</h2>
+
+    <label>Closing KM</label>
+    <input type="number" id="closingKm">
+
+    <label>Closing Fuel Level</label>
+    <select id="closingFuel">
+      <option value="Full">Full</option>
+      <option value="3/4">3/4</option>
+      <option value="1/2">1/2</option>
+      <option value="1/4">1/4</option>
+      <option value="Low">Low</option>
+    </select>
+
+    <label>Closing Notes</label>
+    <textarea id="closingNotes"></textarea>
+
+    <button class="close-btn" onclick="closeTrip()">Close My Trip</button>
+  </div>
+
+</div>
+
+<script>
+let activeTripId = null;
+
+function showMessage(text,type){
+  const box=document.getElementById("message");
+  box.className=type;
+  box.textContent=text;
+  box.style.display="block";
+}
+
+async function loadDriverTrip(){
+  try{
+    const res=await fetch("/api/driver/dashboard");
+    const data=await res.json();
+
+    if(!data.success){
+      window.location.href="/driver-login";
+      return;
+    }
+
+    document.getElementById("vehicleNumber").textContent =
+      data.assignedVehicle.vehicleNumber || "Not assigned";
+
+    const tripRes = await fetch("/api/driver/my-active-trip");
+    const tripData = await tripRes.json();
+
+    if(tripData.success && tripData.trip){
+      activeTripId = tripData.trip.id;
+
+      document.getElementById("tripStatus").textContent =
+        "ACTIVE";
+
+    }else{
+      document.getElementById("tripStatus").textContent =
+        "NO ACTIVE TRIP";
+    }
+
+  }catch(err){
+    console.error(err);
+    showMessage("Unable to load driver trip page","error");
+  }
+}
+
+async function startTrip(){
+
+  const openingKm=document.getElementById("openingKm").value;
+  const openingFuel=document.getElementById("openingFuel").value;
+  const openingNotes=document.getElementById("openingNotes").value;
+
+  const res=await fetch("/api/driver/start-trip",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({
+      openingKm,
+      openingFuel,
+      openingNotes
+    })
+  });
+
+  const data=await res.json();
+
+  showMessage(data.message,data.success?"success":"error");
+
+  if(data.success){
+    loadDriverTrip();
+  }
+}
+
+async function closeTrip(){
+
+  if(!activeTripId){
+    showMessage("No active trip found","error");
+    return;
+  }
+
+  const closingKm=document.getElementById("closingKm").value;
+  const closingFuel=document.getElementById("closingFuel").value;
+  const closingNotes=document.getElementById("closingNotes").value;
+
+  const res=await fetch("/api/driver/close-trip",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({
+      closingKm,
+      closingFuel,
+      closingNotes
+    })
+  });
+
+  const data=await res.json();
+
+  showMessage(data.message,data.success?"success":"error");
+
+  if(data.success){
+    loadDriverTrip();
+  }
+}
+
+loadDriverTrip();
+</script>
+
+</body>
+</html>

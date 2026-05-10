@@ -67,6 +67,14 @@ app.get('/fleet-drivers', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'fleet-drivers.html'));
 });
 
+app.get('/fleet-fuel-cards', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'fleet-fuel-cards.html'));
+});
+
+app.get('/fleet-fuel-statements', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'fleet-fuel-statements.html'));
+});
+
 app.get('/driver-trip', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'driver-trip.html'));
 });
@@ -2079,16 +2087,18 @@ app.post('/api/driver/fuel', requireDriver, async (req, res) => {
     const driverUserId = req.session.driverUserId;
 
     const {
-      entryType,
-      fuelType,
-      liters,
-      amount,
-      odometerReading,
-      fuelStation,
-      paymentMethod,
-      receiptNo,
-      remarks
-    } = req.body;
+  entryType,
+  fuelType,
+  liters,
+  amount,
+  odometerReading,
+  fuelStation,
+  paymentMethod,
+  fuelCardId,
+  openCardReason,
+  receiptNo,
+  remarks
+} = req.body;
 
     if (!amount) {
       return res.status(400).json({
@@ -2180,6 +2190,40 @@ if (driver.activeReplacementId) {
   }
 }
 
+const cardVehicleId = originalVehicleId || fuelVehicleId;
+
+let fuelCardData = {
+  fuelCardId: "",
+  fuelCardNumber: "",
+  fuelCardType: "",
+  usedOpenCard: false
+};
+
+if (paymentMethod === "Company Card") {
+  try {
+    fuelCardData = await getFuelCardForEntry(companyId, cardVehicleId, fuelCardId);
+  } catch (cardErr) {
+    return res.status(400).json({
+      success: false,
+      message: cardErr.message
+    });
+  }
+
+  if (!fuelCardData.fuelCardId) {
+    return res.status(400).json({
+      success: false,
+      message: "Fuel card is required when payment method is Company Card"
+    });
+  }
+
+  if (fuelCardData.usedOpenCard && !openCardReason) {
+    return res.status(400).json({
+      success: false,
+      message: "Open card reason is required"
+    });
+  }
+}
+
 const now = new Date().toISOString();
 
 await db.collection('fleetFuelLogs').add({
@@ -2204,7 +2248,14 @@ await db.collection('fleetFuelLogs').add({
       odometerReading: odometerReading || '',
       fuelStation: fuelStation || '',
       paymentMethod: paymentMethod || '',
-      receiptNo: receiptNo || '',
+
+fuelCardId: fuelCardData.fuelCardId,
+fuelCardNumber: fuelCardData.fuelCardNumber,
+fuelCardType: fuelCardData.fuelCardType,
+usedOpenCard: fuelCardData.usedOpenCard,
+openCardReason: fuelCardData.usedOpenCard ? openCardReason : '',
+
+receiptNo: receiptNo || '',
       remarks: remarks || '',
 
       source: 'driver_portal',
@@ -3528,6 +3579,758 @@ app.post('/api/fleet/fines', requireFleet, async (req, res) => {
   }
 });
 
+/* FLEET FUEL CARD MASTER */
+
+app.post('/api/fleet/fuel-cards', requireFleet, async (req, res) => {
+  try {
+    const companyId = req.session.fleetCompanyId;
+
+    const {
+      fuelCompany,
+      cardNumber,
+      cardType,
+      assignedVehicleId,
+      monthlyLimit,
+      status,
+      remarks
+    } = req.body;
+
+    if (!fuelCompany || !cardNumber || !cardType) {
+      return res.status(400).json({
+        success: false,
+        message: 'Fuel company, card number and card type are required'
+      });
+    }
+
+    if (cardType === 'dedicated' && !assignedVehicleId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Dedicated card must be assigned to a vehicle'
+      });
+    }
+
+    let assignedVehicleNumber = '';
+
+    if (assignedVehicleId) {
+      const vehicleDoc = await db.collection('fleetVehicles').doc(assignedVehicleId).get();
+
+      if (!vehicleDoc.exists || vehicleDoc.data().companyId !== companyId) {
+        return res.status(404).json({
+          success: false,
+          message: 'Assigned vehicle not found'
+        });
+      }
+
+      assignedVehicleNumber = vehicleDoc.data().vehicleNumber || '';
+    }
+
+    const existingSnap = await db.collection('fleetFuelCards')
+      .where('companyId', '==', companyId)
+      .where('cardNumber', '==', String(cardNumber).trim())
+      .get();
+
+    if (!existingSnap.empty) {
+      return res.status(400).json({
+        success: false,
+        message: 'This fuel card number already exists'
+      });
+    }
+
+    const now = new Date().toISOString();
+
+    await db.collection('fleetFuelCards').add({
+      companyId,
+
+      fuelCompany,
+      cardNumber: String(cardNumber).trim(),
+      cardType, // dedicated / open
+
+      assignedVehicleId: cardType === 'dedicated' ? assignedVehicleId : '',
+      assignedVehicleNumber: cardType === 'dedicated' ? assignedVehicleNumber : '',
+
+      monthlyLimit: Number(monthlyLimit || 0),
+      status: status || 'active',
+      remarks: remarks || '',
+
+      createdBy: req.session.fleetUserId || companyId,
+      createdByRole: 'fleet_admin',
+      createdAt: now,
+      updatedAt: now
+    });
+
+    res.json({
+      success: true,
+      message: 'Fuel card created successfully'
+    });
+
+  } catch (err) {
+    console.error('Fuel card create error:', err);
+    res.status(500).json({
+      success: false,
+      message: 'Fuel card create error'
+    });
+  }
+});
+
+
+app.get('/api/fleet/fuel-cards', requireFleet, async (req, res) => {
+  try {
+    const companyId = req.session.fleetCompanyId;
+
+    const snapshot = await db.collection('fleetFuelCards')
+      .where('companyId', '==', companyId)
+      .get();
+
+    const cards = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
+    cards.sort((a, b) => {
+      if (a.cardType === b.cardType) {
+        return String(a.cardNumber).localeCompare(String(b.cardNumber));
+      }
+      return a.cardType === 'dedicated' ? -1 : 1;
+    });
+
+    res.json({
+      success: true,
+      cards
+    });
+
+  } catch (err) {
+    console.error('Fuel card fetch error:', err);
+    res.status(500).json({
+      success: false,
+      message: 'Fuel card fetch error'
+    });
+  }
+});
+
+
+app.post('/api/fleet/fuel-cards/:cardId/status', requireFleet, async (req, res) => {
+  try {
+    const companyId = req.session.fleetCompanyId;
+    const { cardId } = req.params;
+    const { status } = req.body;
+
+    if (!['active', 'inactive', 'lost', 'blocked'].includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid card status'
+      });
+    }
+
+    const cardRef = db.collection('fleetFuelCards').doc(cardId);
+    const cardDoc = await cardRef.get();
+
+    if (!cardDoc.exists || cardDoc.data().companyId !== companyId) {
+      return res.status(404).json({
+        success: false,
+        message: 'Fuel card not found'
+      });
+    }
+
+    await cardRef.update({
+      status,
+      updatedAt: new Date().toISOString()
+    });
+
+    res.json({
+      success: true,
+      message: 'Fuel card status updated'
+    });
+
+  } catch (err) {
+    console.error('Fuel card status error:', err);
+    res.status(500).json({
+      success: false,
+      message: 'Fuel card status error'
+    });
+  }
+});
+
+
+app.get('/api/fleet/fuel-cards/options/:vehicleId', requireFleet, async (req, res) => {
+  try {
+    const companyId = req.session.fleetCompanyId;
+    const { vehicleId } = req.params;
+
+    const snapshot = await db.collection('fleetFuelCards')
+      .where('companyId', '==', companyId)
+      .where('status', '==', 'active')
+      .get();
+
+    const cards = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
+    const assignedCards = cards.filter(c =>
+      c.cardType === "dedicated" && c.assignedVehicleId === vehicleId
+    );
+
+    const openCards = cards.filter(c => c.cardType === "open");
+
+    res.json({
+      success: true,
+      assignedCards,
+      openCards
+    });
+
+  } catch (err) {
+    console.error("Fuel card options error:", err);
+    res.status(500).json({
+      success: false,
+      message: "Fuel card options error"
+    });
+  }
+});
+
+
+app.get('/api/driver/fuel-card-options', requireDriver, async (req, res) => {
+  try {
+    const companyId = req.session.driverCompanyId;
+    const driverUserId = req.session.driverUserId;
+
+    const driverUserDoc = await db.collection('fleetUsers').doc(driverUserId).get();
+
+    if (!driverUserDoc.exists) {
+      return res.status(404).json({
+        success: false,
+        message: 'Driver user not found'
+      });
+    }
+
+    const driverUser = driverUserDoc.data();
+    const linkedDriverId = driverUser.linkedDriverId || '';
+
+    if (!linkedDriverId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Driver account is not linked'
+      });
+    }
+
+    const driverDoc = await db.collection('fleetDrivers').doc(linkedDriverId).get();
+
+    if (!driverDoc.exists || driverDoc.data().companyId !== companyId) {
+      return res.status(404).json({
+        success: false,
+        message: 'Driver profile not found'
+      });
+    }
+
+    const driver = driverDoc.data();
+
+    if (!driver.assignedVehicleId) {
+      return res.status(400).json({
+        success: false,
+        message: 'No vehicle assigned'
+      });
+    }
+
+    const vehicleId = driver.assignedVehicleId;
+
+    const snapshot = await db.collection('fleetFuelCards')
+      .where('companyId', '==', companyId)
+      .where('status', '==', 'active')
+      .get();
+
+    const cards = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
+    const assignedCards = cards.filter(c =>
+      c.cardType === "dedicated" && c.assignedVehicleId === vehicleId
+    );
+
+    const openCards = cards.filter(c => c.cardType === "open");
+
+    res.json({
+      success: true,
+      assignedCards,
+      openCards
+    });
+
+  } catch (err) {
+    console.error("Driver fuel card options error:", err);
+    res.status(500).json({
+      success: false,
+      message: "Driver fuel card options error"
+    });
+  }
+});
+
+async function getFuelCardForEntry(companyId, vehicleId, selectedFuelCardId) {
+  if (!selectedFuelCardId) {
+    return {
+      fuelCardId: "",
+      fuelCardNumber: "",
+      fuelCardType: "",
+      usedOpenCard: false
+    };
+  }
+
+  const cardDoc = await db.collection("fleetFuelCards").doc(selectedFuelCardId).get();
+
+  if (!cardDoc.exists || cardDoc.data().companyId !== companyId) {
+    throw new Error("Selected fuel card not found");
+  }
+
+  const card = cardDoc.data();
+
+  if (card.status !== "active") {
+    throw new Error("Selected fuel card is not active");
+  }
+
+  if (card.cardType === "dedicated" && card.assignedVehicleId !== vehicleId) {
+    throw new Error("This dedicated card is not assigned to this vehicle");
+  }
+
+  return {
+    fuelCardId: selectedFuelCardId,
+    fuelCardNumber: card.cardNumber || "",
+    fuelCardType: card.cardType || "",
+    usedOpenCard: card.cardType === "open"
+  };
+}
+
+/* FUEL SUPPLIER STATEMENT RECONCILIATION */
+
+app.post('/api/fleet/fuel-statements', requireFleet, async (req, res) => {
+  try {
+    const companyId = req.session.fleetCompanyId;
+
+    const {
+      fuelCompany,
+      invoiceNo,
+      statementMonth,
+      invoiceDate,
+      dueDate,
+      totalAmount,
+      vatAmount,
+      remarks
+    } = req.body;
+
+    if (!fuelCompany || !invoiceNo || !statementMonth) {
+      return res.status(400).json({
+        success: false,
+        message: 'Fuel company, invoice number and statement month are required'
+      });
+    }
+
+    const now = new Date().toISOString();
+
+    const statementRef = await db.collection('fleetFuelStatements').add({
+      companyId,
+      fuelCompany,
+      invoiceNo,
+      statementMonth,
+      invoiceDate: invoiceDate || '',
+      dueDate: dueDate || '',
+      totalAmount: Number(totalAmount || 0),
+      vatAmount: Number(vatAmount || 0),
+      remarks: remarks || '',
+      status: 'open',
+      createdBy: req.session.fleetUserId || companyId,
+      createdAt: now,
+      updatedAt: now
+    });
+
+    res.json({
+      success: true,
+      message: 'Fuel statement created successfully',
+      statementId: statementRef.id
+    });
+
+  } catch (err) {
+    console.error('Fuel statement create error:', err);
+    res.status(500).json({
+      success: false,
+      message: 'Fuel statement create error'
+    });
+  }
+});
+
+
+app.get('/api/fleet/fuel-statements', requireFleet, async (req, res) => {
+  try {
+    const companyId = req.session.fleetCompanyId;
+
+    const snapshot = await db.collection('fleetFuelStatements')
+      .where('companyId', '==', companyId)
+      .get();
+
+    const statements = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
+    statements.sort((a,b)=>new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+
+    res.json({
+      success: true,
+      statements
+    });
+
+  } catch (err) {
+    console.error('Fuel statements fetch error:', err);
+    res.status(500).json({
+      success: false,
+      message: 'Fuel statements fetch error'
+    });
+  }
+});
+
+
+app.post('/api/fleet/fuel-statement-lines', requireFleet, async (req, res) => {
+  try {
+    const companyId = req.session.fleetCompanyId;
+
+    const {
+      statementId,
+      cardNumber,
+      vehicleNumber,
+      transactionDateTime,
+      station,
+      product,
+      liters,
+      amount,
+      vatAmount,
+      odometer
+    } = req.body;
+
+    if (!statementId || !cardNumber || !transactionDateTime || !amount) {
+      return res.status(400).json({
+        success: false,
+        message: 'Statement, card number, transaction date/time and amount are required'
+      });
+    }
+
+    const statementDoc = await db.collection('fleetFuelStatements').doc(statementId).get();
+
+    if (!statementDoc.exists || statementDoc.data().companyId !== companyId) {
+      return res.status(404).json({
+        success: false,
+        message: 'Fuel statement not found'
+      });
+    }
+
+    const now = new Date().toISOString();
+
+    const lineRef = await db.collection('fleetFuelStatementLines').add({
+      companyId,
+      statementId,
+
+      fuelCompany: statementDoc.data().fuelCompany || '',
+      invoiceNo: statementDoc.data().invoiceNo || '',
+      statementMonth: statementDoc.data().statementMonth || '',
+
+      cardNumber: String(cardNumber || '').trim(),
+      vehicleNumber: String(vehicleNumber || '').toUpperCase().trim(),
+      transactionDateTime,
+      station: station || '',
+      product: product || '',
+      liters: Number(liters || 0),
+      amount: Number(amount || 0),
+      vatAmount: Number(vatAmount || 0),
+      odometer: odometer || '',
+
+      reconciliationStatus: 'pending',
+      matchedFuelLogId: '',
+      mismatchReason: '',
+      manualNotes: '',
+
+      createdAt: now,
+      updatedAt: now
+    });
+
+    res.json({
+      success: true,
+      message: 'Statement line added successfully',
+      lineId: lineRef.id
+    });
+
+  } catch (err) {
+    console.error('Statement line create error:', err);
+    res.status(500).json({
+      success: false,
+      message: 'Statement line create error'
+    });
+  }
+});
+
+
+app.get('/api/fleet/fuel-statement-lines/:statementId', requireFleet, async (req, res) => {
+  try {
+    const companyId = req.session.fleetCompanyId;
+    const { statementId } = req.params;
+
+    const snapshot = await db.collection('fleetFuelStatementLines')
+      .where('companyId', '==', companyId)
+      .where('statementId', '==', statementId)
+      .get();
+
+    const lines = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
+    lines.sort((a,b)=>new Date(b.transactionDateTime || 0) - new Date(a.transactionDateTime || 0));
+
+    res.json({
+      success: true,
+      lines
+    });
+
+  } catch (err) {
+    console.error('Statement lines fetch error:', err);
+    res.status(500).json({
+      success: false,
+      message: 'Statement lines fetch error'
+    });
+  }
+});
+
+
+app.post('/api/fleet/fuel-statement-lines/:lineId/reconcile', requireFleet, async (req, res) => {
+  try {
+    const companyId = req.session.fleetCompanyId;
+    const { lineId } = req.params;
+
+    const lineRef = db.collection('fleetFuelStatementLines').doc(lineId);
+    const lineDoc = await lineRef.get();
+
+    if (!lineDoc.exists || lineDoc.data().companyId !== companyId) {
+      return res.status(404).json({
+        success: false,
+        message: 'Statement line not found'
+      });
+    }
+
+    const line = lineDoc.data();
+
+    const fuelSnap = await db.collection('fleetFuelLogs')
+      .where('companyId', '==', companyId)
+      .get();
+
+    const fuelLogs = fuelSnap.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
+    const lineAmount = Number(line.amount || 0);
+    const lineLiters = Number(line.liters || 0);
+    const lineCard = String(line.cardNumber || '').trim();
+    const lineVehicle = String(line.vehicleNumber || '').replace(/\s+/g,'').toUpperCase();
+
+    let bestMatch = null;
+
+    for (const log of fuelLogs) {
+      const logCard = String(log.fuelCardNumber || '').trim();
+      const logVehicle = String(log.vehicleNumber || '').replace(/\s+/g,'').toUpperCase();
+      const logAmount = Number(log.amount || 0);
+      const logLiters = Number(log.liters || 0);
+
+      const cardMatch = logCard && logCard === lineCard;
+      const vehicleMatch = lineVehicle && logVehicle && logVehicle === lineVehicle;
+      const amountMatch = Math.abs(logAmount - lineAmount) <= 0.050;
+      const litersMatch = !lineLiters || Math.abs(logLiters - lineLiters) <= 0.100;
+
+      if (cardMatch && amountMatch && litersMatch) {
+        bestMatch = {
+          id: log.id,
+          status: vehicleMatch ? 'matched' : 'matched_card_amount_vehicle_mismatch',
+          mismatchReason: vehicleMatch ? '' : 'Card and amount matched, but vehicle number is different'
+        };
+        break;
+      }
+    }
+
+    if (bestMatch) {
+      await lineRef.update({
+        reconciliationStatus: bestMatch.status,
+        matchedFuelLogId: bestMatch.id,
+        mismatchReason: bestMatch.mismatchReason,
+        reconciledAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      });
+
+      return res.json({
+        success: true,
+        message: bestMatch.status === 'matched'
+          ? 'Statement line matched successfully'
+          : 'Statement line matched with warning',
+        status: bestMatch.status
+      });
+    }
+
+    await lineRef.update({
+      reconciliationStatus: 'unmatched',
+      matchedFuelLogId: '',
+      mismatchReason: 'No matching fuel entry found by card, amount and liters',
+      reconciledAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    });
+
+    res.json({
+      success: true,
+      message: 'No matching fuel entry found',
+      status: 'unmatched'
+    });
+
+  } catch (err) {
+    console.error('Fuel reconciliation error:', err);
+    res.status(500).json({
+      success: false,
+      message: 'Fuel reconciliation error'
+    });
+  }
+});
+
+app.post('/api/fleet/fuel-statements/:statementId/auto-reconcile', requireFleet, async (req, res) => {
+  try {
+    const companyId = req.session.fleetCompanyId;
+    const { statementId } = req.params;
+
+    const linesSnap = await db.collection('fleetFuelStatementLines')
+      .where('companyId', '==', companyId)
+      .where('statementId', '==', statementId)
+      .get();
+
+    const fuelSnap = await db.collection('fleetFuelLogs')
+      .where('companyId', '==', companyId)
+      .get();
+
+    const fuelLogs = fuelSnap.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
+    let matched = 0;
+    let unmatched = 0;
+    let warnings = 0;
+    let openCardUsage = 0;
+    let duplicates = 0;
+
+    const seenKeys = {};
+
+    for (const lineDoc of linesSnap.docs) {
+      const line = lineDoc.data();
+
+      const lineAmount = Number(line.amount || 0);
+      const lineLiters = Number(line.liters || 0);
+      const lineCard = String(line.cardNumber || '').trim();
+      const lineVehicle = String(line.vehicleNumber || '').replace(/\s+/g, '').toUpperCase();
+      const lineKey = `${lineCard}_${line.transactionDateTime}_${lineAmount}`;
+
+      if (seenKeys[lineKey]) {
+        duplicates++;
+
+        await lineDoc.ref.update({
+          reconciliationStatus: 'duplicate',
+          mismatchReason: 'Duplicate transaction found in supplier statement',
+          updatedAt: new Date().toISOString()
+        });
+
+        continue;
+      }
+
+      seenKeys[lineKey] = true;
+
+      let bestMatch = null;
+
+      for (const log of fuelLogs) {
+        const logCard = String(log.fuelCardNumber || '').trim();
+        const logVehicle = String(log.vehicleNumber || '').replace(/\s+/g, '').toUpperCase();
+        const logAmount = Number(log.amount || 0);
+        const logLiters = Number(log.liters || 0);
+
+        const cardMatch = logCard && logCard === lineCard;
+        const vehicleMatch = lineVehicle && logVehicle && logVehicle === lineVehicle;
+        const amountMatch = Math.abs(logAmount - lineAmount) <= 0.050;
+        const litersMatch = !lineLiters || Math.abs(logLiters - lineLiters) <= 0.100;
+
+        if (cardMatch && amountMatch && litersMatch) {
+          bestMatch = {
+            id: log.id,
+            usedOpenCard: !!log.usedOpenCard,
+            status: vehicleMatch ? 'matched' : 'matched_card_amount_vehicle_mismatch',
+            mismatchReason: vehicleMatch ? '' : 'Card and amount matched, but vehicle number is different'
+          };
+          break;
+        }
+      }
+
+      if (bestMatch) {
+        if (bestMatch.usedOpenCard) openCardUsage++;
+
+        if (bestMatch.status === 'matched') {
+          matched++;
+        } else {
+          warnings++;
+        }
+
+        await lineDoc.ref.update({
+          reconciliationStatus: bestMatch.status,
+          matchedFuelLogId: bestMatch.id,
+          mismatchReason: bestMatch.mismatchReason,
+          usedOpenCard: bestMatch.usedOpenCard,
+          reconciledAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        });
+
+      } else {
+        unmatched++;
+
+        await lineDoc.ref.update({
+          reconciliationStatus: 'unmatched',
+          matchedFuelLogId: '',
+          mismatchReason: 'No matching fuel entry found by card, amount and liters',
+          reconciledAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        });
+      }
+    }
+
+    await db.collection('fleetFuelStatements').doc(statementId).update({
+      lastAutoReconciledAt: new Date().toISOString(),
+      reconciliationSummary: {
+        matched,
+        unmatched,
+        warnings,
+        duplicates,
+        openCardUsage
+      },
+      status: unmatched === 0 && warnings === 0 && duplicates === 0
+        ? 'fully_reconciled'
+        : 'under_review',
+      updatedAt: new Date().toISOString()
+    });
+
+    res.json({
+      success: true,
+      message: 'Auto reconciliation completed',
+      summary: {
+        matched,
+        unmatched,
+        warnings,
+        duplicates,
+        openCardUsage
+      }
+    });
+
+  } catch (err) {
+    console.error('Auto reconciliation error:', err);
+    res.status(500).json({
+      success: false,
+      message: 'Auto reconciliation error'
+    });
+  }
+});
+
 /* FLEET REPORTS */
 app.get('/api/fleet/reports/:reportType', requireFleet, async (req, res) => {
   try {
@@ -3540,6 +4343,8 @@ app.get('/api/fleet/reports/:reportType', requireFleet, async (req, res) => {
   assignments: 'fleetAssignments',
   checklists: 'fleetChecklists',
   maintenance: 'fleetMaintenance',
+  fuelStatements: 'fleetFuelStatements',
+  fuelStatementLines: 'fleetFuelStatementLines',
   fuel: 'fleetFuelLogs',
   fines: 'fleetTrafficFines'
 };
@@ -3586,19 +4391,21 @@ app.post('/api/fleet/fuel', requireFleet, async (req, res) => {
     const companyId = req.session.fleetCompanyId;
 
     const {
-      vehicleId,
-      driverId,
-      entryType,
-      fuelType,
-      liters,
-      amount,
-      odometerReading,
-      fuelStation,
-      paymentMethod,
-      receiptNo,
-      entryDate,
-      remarks
-    } = req.body;
+  vehicleId,
+  driverId,
+  entryType,
+  fuelType,
+  liters,
+  amount,
+  odometerReading,
+  fuelStation,
+  paymentMethod,
+  fuelCardId,
+  openCardReason,
+  receiptNo,
+  entryDate,
+  remarks
+} = req.body;
 
     if (!vehicleId || !entryType || !amount) {
       return res.status(400).json({
@@ -3628,6 +4435,38 @@ app.post('/api/fleet/fuel', requireFleet, async (req, res) => {
     const vehicle = vehicleDoc.data();
     const now = new Date().toISOString();
 
+let fuelCardData = {
+  fuelCardId: "",
+  fuelCardNumber: "",
+  fuelCardType: "",
+  usedOpenCard: false
+};
+
+if (paymentMethod === "Company Card") {
+  try {
+    fuelCardData = await getFuelCardForEntry(companyId, vehicleId, fuelCardId);
+  } catch (cardErr) {
+    return res.status(400).json({
+      success: false,
+      message: cardErr.message
+    });
+  }
+
+  if (!fuelCardData.fuelCardId) {
+    return res.status(400).json({
+      success: false,
+      message: "Fuel card is required when payment method is Company Card"
+    });
+  }
+
+  if (fuelCardData.usedOpenCard && !openCardReason) {
+    return res.status(400).json({
+      success: false,
+      message: "Open card reason is required"
+    });
+  }
+}
+
     await db.collection('fleetFuelLogs').add({
       companyId,
 
@@ -3644,7 +4483,14 @@ app.post('/api/fleet/fuel', requireFleet, async (req, res) => {
       odometerReading: odometerReading || '',
       fuelStation: fuelStation || '',
       paymentMethod: paymentMethod || '',
-      receiptNo: receiptNo || '',
+
+fuelCardId: fuelCardData.fuelCardId,
+fuelCardNumber: fuelCardData.fuelCardNumber,
+fuelCardType: fuelCardData.fuelCardType,
+usedOpenCard: fuelCardData.usedOpenCard,
+openCardReason: fuelCardData.usedOpenCard ? openCardReason : '',
+
+receiptNo: receiptNo || '',
       entryDate: entryDate || '',
 
       remarks: remarks || '',

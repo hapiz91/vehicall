@@ -85,12 +85,24 @@ button{width:100%;padding:15px;margin-top:18px;border:none;border-radius:14px;ba
     <input id="fuelStation" placeholder="OQ, Shell, Oman Oil, Workshop">
 
     <label>Payment Method</label>
-    <select id="paymentMethod">
+    <select id="paymentMethod" onchange="toggleFuelCardBox()">
       <option value="Company Card">Company Card</option>
       <option value="Cash">Cash</option>
       <option value="Driver Paid">Driver Paid</option>
       <option value="Credit Account">Credit Account</option>
     </select>
+
+<div id="fuelCardBox" style="display:none;">
+  <label>Fuel Card</label>
+  <select id="fuelCardId" onchange="toggleOpenCardReason()">
+    <option value="">Select Fuel Card</option>
+  </select>
+</div>
+
+<div id="openCardReasonBox" style="display:none;">
+  <label>Open Card Reason</label>
+  <input type="text" id="openCardReason" placeholder="Reason for using open card">
+</div>
 
     <label>Receipt / Invoice No.</label>
     <input id="receiptNo" placeholder="Optional">
@@ -178,6 +190,8 @@ async function submitFuel(){
     odometerReading:document.getElementById("odometerReading").value,
     fuelStation:document.getElementById("fuelStation").value,
     paymentMethod:document.getElementById("paymentMethod").value,
+    fuelCardId:document.getElementById("fuelCardId").value,
+    openCardReason:document.getElementById("openCardReason").value,
     receiptNo:document.getElementById("receiptNo").value,
     remarks:document.getElementById("remarks").value
   };
@@ -186,6 +200,20 @@ async function submitFuel(){
     showMessage("Amount is required","error");
     return;
   }
+
+if(payload.paymentMethod === "Company Card" && !payload.fuelCardId){
+  showMessage("Fuel card is required for Company Card payment","error");
+  return;
+}
+
+const fuelCardSelect = document.getElementById("fuelCardId");
+const selectedCard = fuelCardSelect.options[fuelCardSelect.selectedIndex];
+const selectedCardType = selectedCard ? selectedCard.dataset.type : "";
+
+if(selectedCardType === "open" && !payload.openCardReason){
+  showMessage("Open card reason is required","error");
+  return;
+}
 
   const res=await fetch("/api/driver/fuel",{
     method:"POST",
@@ -210,11 +238,71 @@ async function submitFuel(){
   }
 }
 
+async function loadDriverFuelCards(){
+  const fuelCardSelect = document.getElementById("fuelCardId");
+
+  fuelCardSelect.innerHTML = `<option value="">Select Fuel Card</option>`;
+
+  const res = await fetch("/api/driver/fuel-card-options");
+  const data = await res.json();
+
+  if(!data.success) return;
+
+  if(data.assignedCards && data.assignedCards.length){
+    data.assignedCards.forEach(card=>{
+      fuelCardSelect.innerHTML += `
+        <option value="${card.id}" data-type="${card.cardType}" selected>
+          ${card.cardNumber} - Assigned Card - ${card.assignedVehicleNumber}
+        </option>
+      `;
+    });
+  }
+
+  if(data.openCards && data.openCards.length){
+    data.openCards.forEach(card=>{
+      fuelCardSelect.innerHTML += `
+        <option value="${card.id}" data-type="${card.cardType}">
+          ${card.cardNumber} - OPEN CARD
+        </option>
+      `;
+    });
+  }
+
+  toggleOpenCardReason();
+}
+
+function toggleFuelCardBox(){
+  const paymentMethod = document.getElementById("paymentMethod").value;
+
+  if(paymentMethod === "Company Card"){
+    document.getElementById("fuelCardBox").style.display = "block";
+    loadDriverFuelCards();
+  }else{
+    document.getElementById("fuelCardBox").style.display = "none";
+    document.getElementById("fuelCardId").value = "";
+    document.getElementById("openCardReasonBox").style.display = "none";
+    document.getElementById("openCardReason").value = "";
+  }
+}
+
+function toggleOpenCardReason(){
+  const select = document.getElementById("fuelCardId");
+  const selected = select.options[select.selectedIndex];
+  const type = selected ? selected.dataset.type : "";
+
+  document.getElementById("openCardReasonBox").style.display =
+    type === "open" ? "block" : "none";
+
+  document.getElementById("openCardReason").required = type === "open";
+}
+
 function goBackToDriverDashboard(){
   window.location.href="/driver-dashboard";
 }
 
 loadDriverInfo();
+toggleFuelCardBox();
+
 </script>
 
 </body>

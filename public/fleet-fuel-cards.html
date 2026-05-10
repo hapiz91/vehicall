@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vehicall Fuel Card Master</title>
+
+<style>
+body{margin:0;font-family:Arial,sans-serif;background:#07111f;color:#fff}
+.header{display:flex;justify-content:space-between;align-items:center;padding:18px 30px;background:#0b1b2d;border-bottom:1px solid #1d3553}
+.brand{display:flex;align-items:center;gap:14px}
+.brand img{height:46px}
+.brand h2{margin:0}
+.brand p{margin:2px 0 0;color:#9fb0c5;font-size:13px}
+.nav a{color:#6ecbff;margin-left:16px;text-decoration:none;font-size:14px}
+.container{max-width:1250px;margin:30px auto;padding:0 20px}
+.card{background:#0f1f33;border:1px solid #20344d;border-radius:20px;padding:24px;margin-bottom:24px}
+.form-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+label{display:block;margin-bottom:8px;color:#9fb0c5}
+input,select,textarea{width:100%;padding:13px;border-radius:10px;border:1px solid #29496d;background:#081827;color:#fff;box-sizing:border-box}
+textarea{min-height:80px}
+button{padding:13px 18px;border:none;border-radius:12px;background:linear-gradient(135deg,#00c2ff,#0066ff);color:#fff;font-weight:bold;cursor:pointer}
+#message{display:none;margin-bottom:18px;padding:13px;border-radius:12px}
+.success{display:block!important;background:rgba(0,180,120,.15);color:#70ffc8}
+.error{display:block!important;background:rgba(255,70,70,.15);color:#ff9c9c}
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:1100px}
+th,td{padding:12px;border-bottom:1px solid #20344d;text-align:left;font-size:13px}
+th{background:#081827;color:#6ecbff}
+tr:hover{background:#10243b}
+.badge{display:inline-block;padding:6px 10px;border-radius:999px;font-size:12px;font-weight:bold}
+.badge-dedicated{background:rgba(0,194,255,.15);color:#6ecbff}
+.badge-open{background:rgba(255,193,7,.15);color:#ffd666}
+.badge-active{background:rgba(0,180,120,.15);color:#70ffc8}
+.badge-inactive,.badge-lost,.badge-blocked{background:rgba(255,70,70,.15);color:#ff9c9c}
+.vehicle-box{display:none}
+@media(max-width:900px){.form-grid{grid-template-columns:1fr}.header{flex-direction:column;align-items:flex-start;gap:12px}}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+  <div class="brand">
+    <img src="/logo.png">
+    <div>
+      <h2>Fuel Card Master</h2>
+      <p>Manage dedicated and open fuel cards for reconciliation reports</p>
+    </div>
+  </div>
+  <div class="nav">
+    <a href="/fleet-dashboard">Dashboard</a>
+    <a href="/fleet-fuel">Fuel & Oil</a>
+    <a href="/fleet-reports">Reports</a>
+    <a href="/api/fleet/logout">Logout</a>
+  </div>
+</div>
+
+<div class="container">
+
+  <div id="message"></div>
+
+  <div class="card">
+    <h2>Create Fuel Card</h2>
+
+    <form id="fuelCardForm">
+      <div class="form-grid">
+
+        <div>
+          <label>Fuel Company</label>
+          <select name="fuelCompany" required>
+            <option value="">Select Company</option>
+            <option value="Oman Oil">Oman Oil</option>
+            <option value="Shell">Shell</option>
+            <option value="OQ">OQ</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+
+        <div>
+          <label>Card Number</label>
+          <input name="cardNumber" placeholder="8000004559000103" required>
+        </div>
+
+        <div>
+          <label>Card Type</label>
+          <select name="cardType" id="cardType" onchange="toggleVehicleBox()" required>
+            <option value="">Select Type</option>
+            <option value="dedicated">Dedicated Vehicle Card</option>
+            <option value="open">Open Card</option>
+          </select>
+        </div>
+
+        <div id="vehicleBox" class="vehicle-box">
+          <label>Assigned Vehicle</label>
+          <select name="assignedVehicleId" id="assignedVehicleId">
+            <option value="">Loading vehicles...</option>
+          </select>
+        </div>
+
+        <div>
+          <label>Monthly Limit OMR</label>
+          <input type="number" step="0.001" name="monthlyLimit" placeholder="Optional">
+        </div>
+
+        <div>
+          <label>Status</label>
+          <select name="status">
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+            <option value="lost">Lost</option>
+            <option value="blocked">Blocked</option>
+          </select>
+        </div>
+
+        <div style="grid-column:span 3;">
+          <label>Remarks</label>
+          <textarea name="remarks" placeholder="Card holder, supervisor note, emergency card note, etc."></textarea>
+        </div>
+
+        <div>
+          <button type="submit">Save Fuel Card</button>
+        </div>
+
+      </div>
+    </form>
+  </div>
+
+  <div class="card">
+    <h2>Fuel Cards</h2>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Fuel Company</th>
+            <th>Card Number</th>
+            <th>Card Type</th>
+            <th>Assigned Vehicle</th>
+            <th>Monthly Limit</th>
+            <th>Status</th>
+            <th>Remarks</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="cardList">
+          <tr><td colspan="8">Loading...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const form = document.getElementById("fuelCardForm");
+const messageBox = document.getElementById("message");
+const cardList = document.getElementById("cardList");
+const vehicleSelect = document.getElementById("assignedVehicleId");
+
+function showMessage(text,type){
+  messageBox.className=type;
+  messageBox.textContent=text;
+  messageBox.style.display="block";
+  setTimeout(()=>{messageBox.className="";messageBox.style.display="none"},4000);
+}
+
+function toggleVehicleBox(){
+  const cardType = document.getElementById("cardType").value;
+  document.getElementById("vehicleBox").style.display = cardType === "dedicated" ? "block" : "none";
+}
+
+async function loadVehicles(){
+  const res = await fetch("/api/fleet/vehicles");
+  const data = await res.json();
+
+  vehicleSelect.innerHTML = '<option value="">Select Vehicle</option>';
+
+  if(data.success){
+    data.vehicles.forEach(v=>{
+      vehicleSelect.innerHTML += `<option value="${v.id}">${v.vehicleNumber}</option>`;
+    });
+  }
+}
+
+async function loadCards(){
+  const res = await fetch("/api/fleet/fuel-cards");
+  const data = await res.json();
+
+  cardList.innerHTML = "";
+
+  if(!data.success){
+    cardList.innerHTML = `<tr><td colspan="8">Unable to load fuel cards.</td></tr>`;
+    return;
+  }
+
+  if(!data.cards.length){
+    cardList.innerHTML = `<tr><td colspan="8">No fuel cards created yet.</td></tr>`;
+    return;
+  }
+
+  data.cards.forEach(card=>{
+    const typeClass = card.cardType === "open" ? "badge-open" : "badge-dedicated";
+    const statusClass = `badge-${card.status || "active"}`;
+
+    cardList.innerHTML += `
+      <tr>
+        <td>${card.fuelCompany || "-"}</td>
+        <td>${card.cardNumber || "-"}</td>
+        <td><span class="badge ${typeClass}">${card.cardType || "-"}</span></td>
+        <td>${card.assignedVehicleNumber || "-"}</td>
+        <td>${card.monthlyLimit || "0"} OMR</td>
+        <td><span class="badge ${statusClass}">${card.status || "active"}</span></td>
+        <td>${card.remarks || "-"}</td>
+        <td>
+          <select onchange="updateCardStatus('${card.id}', this.value)">
+            <option value="">Change Status</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+            <option value="lost">Lost</option>
+            <option value="blocked">Blocked</option>
+          </select>
+        </td>
+      </tr>
+    `;
+  });
+}
+
+async function updateCardStatus(cardId,status){
+  if(!status) return;
+
+  const res = await fetch(`/api/fleet/fuel-cards/${cardId}/status`,{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({status})
+  });
+
+  const result = await res.json();
+
+  if(result.success){
+    showMessage(result.message,"success");
+    loadCards();
+  }else{
+    showMessage(result.message || "Unable to update status","error");
+  }
+}
+
+form.addEventListener("submit", async e=>{
+  e.preventDefault();
+
+  const data = Object.fromEntries(new FormData(form).entries());
+
+  const res = await fetch("/api/fleet/fuel-cards",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify(data)
+  });
+
+  const result = await res.json();
+
+  if(result.success){
+    showMessage(result.message,"success");
+    form.reset();
+    toggleVehicleBox();
+    loadCards();
+  }else{
+    showMessage(result.message || "Unable to save fuel card","error");
+  }
+});
+
+loadVehicles();
+loadCards();
+toggleVehicleBox();
+</script>
+
+</body>
+</html>

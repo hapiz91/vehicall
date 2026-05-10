@@ -105,7 +105,7 @@ button{padding:13px 18px;border:none;border-radius:12px;background:linear-gradie
 
         <div>
           <label>Select Vehicle</label>
-          <select name="vehicleId" id="vehicleSelect" required>
+          <select name="vehicleId" id="vehicleId" onchange="loadFuelCardsForVehicle()" required>
             <option value="">Loading...</option>
           </select>
         </div>
@@ -160,13 +160,24 @@ button{padding:13px 18px;border:none;border-radius:12px;background:linear-gradie
 
         <div>
           <label>Payment Method</label>
-          <select name="paymentMethod">
+          <select name="paymentMethod" id="paymentMethod" onchange="toggleFuelCardBox()">
             <option value="Company Card">Company Card</option>
             <option value="Cash">Cash</option>
             <option value="Driver Paid">Driver Paid</option>
             <option value="Credit Account">Credit Account</option>
           </select>
         </div>
+<div id="fuelCardBox" style="display:none;">
+  <label>Fuel Card</label>
+  <select name="fuelCardId" id="fuelCardId" onchange="toggleOpenCardReason()">
+    <option value="">Select Fuel Card</option>
+  </select>
+</div>
+
+<div id="openCardReasonBox" style="display:none;">
+  <label>Open Card Reason</label>
+  <input type="text" name="openCardReason" id="openCardReason" placeholder="Reason for using open card">
+</div>
 
         <div>
           <label>Receipt / Invoice No.</label>
@@ -201,7 +212,7 @@ button{padding:13px 18px;border:none;border-radius:12px;background:linear-gradie
 const form=document.getElementById("fuelForm");
 const messageBox=document.getElementById("message");
 const fuelList=document.getElementById("fuelList");
-const vehicleSelect=document.getElementById("vehicleSelect");
+const vehicleSelect=document.getElementById("vehicleId");
 const driverSelect=document.getElementById("driverSelect");
 
 let fuelRecords = [];
@@ -375,7 +386,8 @@ form.addEventListener("submit",async e=>{
   if(result.success){
     showMessage(result.message,"success");
     form.reset();
-    loadFuel();
+toggleFuelCardBox();
+loadFuel();
   }else{
     showMessage(result.message || "Unable to save fuel entry","error");
   }
@@ -473,6 +485,67 @@ async function saveFuelChanges(approveAfterSave){
   loadFuel();
 }
 
+async function loadFuelCardsForVehicle(){
+  const vehicleId = document.querySelector("[name='vehicleId']").value;
+  const fuelCardSelect = document.getElementById("fuelCardId");
+
+  fuelCardSelect.innerHTML = `<option value="">Select Fuel Card</option>`;
+
+  if(!vehicleId) return;
+
+  const res = await fetch(`/api/fleet/fuel-cards/options/${vehicleId}`);
+  const data = await res.json();
+
+  if(!data.success) return;
+
+  if(data.assignedCards && data.assignedCards.length){
+    data.assignedCards.forEach(card=>{
+      fuelCardSelect.innerHTML += `
+        <option value="${card.id}" data-type="${card.cardType}" selected>
+          ${card.cardNumber} - Assigned Card - ${card.assignedVehicleNumber}
+        </option>
+      `;
+    });
+  }
+
+  if(data.openCards && data.openCards.length){
+    data.openCards.forEach(card=>{
+      fuelCardSelect.innerHTML += `
+        <option value="${card.id}" data-type="${card.cardType}">
+          ${card.cardNumber} - OPEN CARD
+        </option>
+      `;
+    });
+  }
+
+  toggleOpenCardReason();
+}
+
+function toggleFuelCardBox(){
+  const paymentMethod = document.getElementById("paymentMethod").value;
+  const fuelCardBox = document.getElementById("fuelCardBox");
+
+  if(paymentMethod === "Company Card"){
+    fuelCardBox.style.display = "block";
+    loadFuelCardsForVehicle();
+  }else{
+    fuelCardBox.style.display = "none";
+    document.getElementById("fuelCardId").value = "";
+    document.getElementById("openCardReasonBox").style.display = "none";
+    document.getElementById("openCardReason").value = "";
+  }
+}
+
+function toggleOpenCardReason(){
+  const select = document.getElementById("fuelCardId");
+  const selected = select.options[select.selectedIndex];
+  const type = selected ? selected.dataset.type : "";
+
+  document.getElementById("openCardReasonBox").style.display =
+    type === "open" ? "block" : "none";
+
+  document.getElementById("openCardReason").required = type === "open";
+}
 
 </script>
 

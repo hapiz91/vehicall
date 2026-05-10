@@ -327,6 +327,7 @@ body{
   <a data-permission="assignments" href="/fleet-assignments">Assignments</a>
   <a data-permission="checklist" href="/fleet-checklist">Checklist</a>
   <a data-permission="fuel" href="/fleet-fuel">Fuel & Oil</a>
+  <a data-permission="fines" href="/fleet-fines">Traffic Fines</a>
   <a data-permission="maintenance" href="/fleet-maintenance">Maintenance</a>
   <a data-permission="incidents" href="/fleet-incidents">Incidents</a>
   <a data-permission="reports" href="/fleet-reports">Reports</a>
@@ -413,6 +414,12 @@ body{
             <h3>Fuel & Oil</h3>
             <p>Track fuel, engine oil, AdBlue, cost, KM and driver usage.</p>
             <button>Open</button>
+          </div>
+
+          <div class="module-card" onclick="goTo('/fleet-fines')">
+          <h3>Traffic Fines</h3>
+          <p>Enter ROP fines, match driver by vehicle/date/time and save attribution.</p>
+          <button>Open</button>
           </div>
 
           <div class="module-card" onclick="goTo('/fleet-maintenance')">

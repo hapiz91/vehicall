@@ -95,6 +95,10 @@ app.get('/fleet-incidents', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'fleet-incidents.html'));
 });
 
+app.get('/fleet-fines', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'fleet-fines.html'));
+});
+
 app.get('/fleet-maintenance', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'fleet-maintenance.html'));
 });
@@ -3370,6 +3374,160 @@ const finalEndKm = Number(replacementEndKm || 0);
   }
 });
 
+/* FLEET TRAFFIC FINE ATTRIBUTION */
+
+app.post('/api/fleet/fines/match', requireFleet, async (req, res) => {
+  try {
+    const companyId = req.session.fleetCompanyId;
+    const { vehicleId, fineDateTime } = req.body;
+
+    if (!vehicleId || !fineDateTime) {
+      return res.status(400).json({
+        success: false,
+        message: 'Vehicle and fine date/time are required'
+      });
+    }
+
+    const fineTime = new Date(fineDateTime);
+
+    const assignmentsSnap = await db.collection('fleetAssignments')
+      .where('companyId', '==', companyId)
+      .where('vehicleId', '==', vehicleId)
+      .get();
+
+    let matched = null;
+
+    assignmentsSnap.docs.forEach(doc => {
+      const a = doc.data();
+
+      const start = a.startTime ? new Date(a.startTime) : null;
+      const end = a.endTime ? new Date(a.endTime) : null;
+
+      if (start && end && fineTime >= start && fineTime <= end) {
+        matched = {
+          assignmentId: doc.id,
+          driverId: a.driverId || '',
+          driverName: a.driverName || '',
+          vehicleNumber: a.vehicleNumber || '',
+          matchSource: 'assignment_time'
+        };
+      }
+
+      if (!matched && a.status === 'active') {
+        matched = {
+          assignmentId: doc.id,
+          driverId: a.driverId || '',
+          driverName: a.driverName || '',
+          vehicleNumber: a.vehicleNumber || '',
+          matchSource: 'active_assignment'
+        };
+      }
+    });
+
+    if (matched) {
+      return res.json({
+        success: true,
+        matched: true,
+        match: matched
+      });
+    }
+
+    res.json({
+      success: true,
+      matched: false,
+      message: 'No matching driver found. Please select driver manually.'
+    });
+
+  } catch (err) {
+    console.error('Fine match error:', err);
+    res.status(500).json({
+      success: false,
+      message: 'Fine match error'
+    });
+  }
+});
+
+
+app.post('/api/fleet/fines', requireFleet, async (req, res) => {
+  try {
+    const companyId = req.session.fleetCompanyId;
+
+    const {
+      vehicleId,
+      fineDateTime,
+      fineType,
+      fineAmount,
+      fineNumber,
+      location,
+      description,
+      responsibleDriverId,
+      responsibleDriverName,
+      matchedAssignmentId,
+      attributionStatus,
+      supervisorRemarks
+    } = req.body;
+
+    if (!vehicleId || !fineDateTime || !fineType) {
+      return res.status(400).json({
+        success: false,
+        message: 'Vehicle, fine date/time and fine type are required'
+      });
+    }
+
+    const vehicleDoc = await db.collection('fleetVehicles').doc(vehicleId).get();
+
+    if (!vehicleDoc.exists || vehicleDoc.data().companyId !== companyId) {
+      return res.status(404).json({
+        success: false,
+        message: 'Vehicle not found'
+      });
+    }
+
+    const vehicle = vehicleDoc.data();
+    const now = new Date().toISOString();
+
+    await db.collection('fleetTrafficFines').add({
+      companyId,
+
+      vehicleId,
+      vehicleNumber: vehicle.vehicleNumber || '',
+
+      fineDateTime,
+      fineType,
+      fineAmount: Number(fineAmount || 0),
+      fineNumber: fineNumber || '',
+      location: location || '',
+      description: description || '',
+
+      responsibleDriverId: responsibleDriverId || '',
+      responsibleDriverName: responsibleDriverName || '',
+      matchedAssignmentId: matchedAssignmentId || '',
+
+      attributionStatus: attributionStatus || 'unmatched',
+      status: 'pending',
+
+      supervisorRemarks: supervisorRemarks || '',
+
+      createdBy: req.session.fleetUserId || companyId,
+      createdByRole: 'fleet_admin',
+      createdAt: now,
+      updatedAt: now
+    });
+
+    res.json({
+      success: true,
+      message: 'Traffic fine saved successfully'
+    });
+
+  } catch (err) {
+    console.error('Fine save error:', err);
+    res.status(500).json({
+      success: false,
+      message: 'Fine save error'
+    });
+  }
+});
+
 /* FLEET REPORTS */
 app.get('/api/fleet/reports/:reportType', requireFleet, async (req, res) => {
   try {
@@ -3377,13 +3535,14 @@ app.get('/api/fleet/reports/:reportType', requireFleet, async (req, res) => {
     const { reportType } = req.params;
 
     const allowedReports = {
-      vehicles: 'fleetVehicles',
-      drivers: 'fleetDrivers',
-      assignments: 'fleetAssignments',
-      checklists: 'fleetChecklists',
-      incidents: 'fleetIncidents',
-      maintenance: 'fleetMaintenance'
-    };
+  vehicles: 'fleetVehicles',
+  drivers: 'fleetDrivers',
+  assignments: 'fleetAssignments',
+  checklists: 'fleetChecklists',
+  maintenance: 'fleetMaintenance',
+  fuel: 'fleetFuelLogs',
+  fines: 'fleetTrafficFines'
+};
 
     const collectionName = allowedReports[reportType];
 

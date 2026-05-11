@@ -3,480 +3,163 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Vehicall Enterprise Fleet Dashboard</title>
+<title>Vehicall Fleet Dashboard</title>
+<link rel="stylesheet" href="/fleet-ui.css">
 
 <style>
-*{box-sizing:border-box}
-
-body{
-  margin:0;
-  font-family:Arial,sans-serif;
-  background:#06101f;
-  color:#fff;
-}
-
-.layout{
-  display:flex;
-  min-height:100vh;
-}
-
-.sidebar{
-  width:270px;
-  background:#081827;
-  border-right:1px solid #1d3553;
-  padding:22px;
-  position:fixed;
-  top:0;
-  left:0;
-  bottom:0;
-  overflow:auto;
-}
-
-.brand{
-  display:flex;
-  align-items:center;
-  gap:12px;
-  margin-bottom:30px;
-}
-
-.brand img{
-  height:48px;
-}
-
-.brand h2{
-  margin:0;
-  font-size:21px;
-}
-
-.brand p{
-  margin:3px 0 0;
-  color:#9fb0c5;
-  font-size:12px;
-}
-
-.menu a{
-  display:block;
-  color:#c9d8ea;
-  text-decoration:none;
-  padding:13px 14px;
-  border-radius:12px;
-  margin-bottom:8px;
-  transition:.2s;
-  font-size:14px;
-}
-
-.menu a:hover,
-.menu a.active{
-  background:linear-gradient(135deg,#00c2ff,#0066ff);
-  color:#fff;
-}
-
-.main{
-  margin-left:270px;
-  width:calc(100% - 270px);
-  padding:24px;
-}
-
-.topbar{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  background:#0f1f33;
-  border:1px solid #20344d;
-  border-radius:22px;
-  padding:22px;
-  margin-bottom:22px;
-  gap:14px;
-}
-
-.topbar h1{
-  margin:0;
-  font-size:30px;
-}
-
-.topbar p{
-  margin:6px 0 0;
-  color:#b7c4d4;
-}
-
-.package-pill{
-  padding:10px 14px;
-  border-radius:999px;
-  background:rgba(0,194,255,.12);
-  border:1px solid rgba(0,194,255,.35);
-  color:#6ecbff;
-  font-weight:bold;
-  white-space:nowrap;
-}
-
-.kpi-grid{
-  display:grid;
-  grid-template-columns:repeat(5,1fr);
-  gap:16px;
-  margin-bottom:22px;
-}
-
-.kpi-card{
-  background:#0f1f33;
-  border:1px solid #20344d;
-  border-radius:20px;
-  padding:20px;
-}
-
-.kpi-card span{
-  color:#8fa8c2;
-  font-size:13px;
-}
-
-.kpi-card h3{
-  margin:10px 0 0;
-  font-size:30px;
-  color:#6ecbff;
-}
-
-.content-grid{
-  display:grid;
-  grid-template-columns:2fr 1fr;
-  gap:18px;
-  margin-bottom:22px;
-}
-
-.panel{
-  background:#0f1f33;
-  border:1px solid #20344d;
-  border-radius:22px;
-  padding:22px;
-}
-
-.panel h2{
-  margin:0 0 16px;
-}
-
-.module-grid{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:16px;
-}
-
-.module-card{
-  background:#081827;
-  border:1px solid #223854;
-  border-radius:18px;
-  padding:18px;
-  cursor:pointer;
-  transition:.2s;
-}
-
-.module-card:hover{
-  transform:translateY(-4px);
-  border-color:#00c2ff;
-}
-
-.module-card h3{
-  margin:0 0 8px;
-  color:#6ecbff;
-}
-
-.module-card p{
-  margin:0;
-  color:#b7c4d4;
-  font-size:14px;
-  line-height:1.5;
-}
-
-.module-card button{
-  margin-top:14px;
-  padding:11px 14px;
-  border:none;
-  border-radius:12px;
-  background:linear-gradient(135deg,#00c2ff,#0066ff);
-  color:#fff;
-  font-weight:bold;
-  cursor:pointer;
-}
-
-.activity-item{
-  background:#081827;
-  border:1px solid #223854;
-  border-radius:14px;
-  padding:14px;
-  margin-bottom:12px;
-}
-
-.activity-item strong{
-  display:block;
-  margin-bottom:5px;
-}
-
-.activity-item small{
-  color:#8fa8c2;
-}
-
-.progress-box{
-  margin-top:14px;
-}
-
-.progress-label{
-  display:flex;
-  justify-content:space-between;
-  color:#b7c4d4;
-  font-size:13px;
-  margin-bottom:8px;
-}
-
-.progress-bar{
-  height:10px;
-  background:#081827;
-  border-radius:999px;
-  overflow:hidden;
-  border:1px solid #223854;
-}
-
-.progress-fill{
-  height:100%;
-  width:0%;
-  background:linear-gradient(135deg,#00c2ff,#0066ff);
-}
-
-.alert-active{
-  color:#70ffc8;
-}
-
-.alert-off{
-  color:#ff9c9c;
-}
-
-.mobile-toggle{
-  display:none;
-  background:#0f1f33;
-  border:1px solid #20344d;
-  color:#fff;
-  padding:12px 14px;
-  border-radius:12px;
-  margin-bottom:15px;
-}
-
-@media(max-width:1100px){
-  .kpi-grid{
-    grid-template-columns:repeat(2,1fr);
-  }
-
-  .content-grid{
-    grid-template-columns:1fr;
-  }
-
-  .module-grid{
-    grid-template-columns:repeat(2,1fr);
-  }
-}
-
-@media(max-width:760px){
-  .sidebar{
-    display:none;
-    width:100%;
-    z-index:10;
-  }
-
-  .sidebar.show{
-    display:block;
-  }
-
-  .main{
-    margin-left:0;
-    width:100%;
-    padding:16px;
-  }
-
-  .mobile-toggle{
-    display:block;
-  }
-
-  .topbar{
-    flex-direction:column;
-    align-items:flex-start;
-  }
-
-  .kpi-grid,
-  .module-grid{
-    grid-template-columns:1fr;
-  }
-}
+body{margin:0;font-family:Arial,sans-serif;background:#07111f;color:#fff}
+.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}
+.header h1{margin:0;color:#6ecbff}
+.header p{margin:4px 0 0;color:#9fb0c5}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+.card{background:#0f1f33;border:1px solid #20344d;border-radius:18px;padding:20px}
+.card h3{margin:0 0 8px;color:#9fb0c5;font-size:14px}
+.card p{margin:0;font-size:28px;font-weight:bold}
+.quick-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px}
+.quick-btn{background:#0f1f33;border:1px solid #20344d;border-radius:16px;padding:18px;color:#fff;cursor:pointer;text-align:left}
+.quick-btn:hover{background:#10243b}
+.quick-btn strong{color:#6ecbff}
+.section-title{margin:28px 0 14px;color:#fff}
+.activity-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+.activity-box{background:#0f1f33;border:1px solid #20344d;border-radius:18px;padding:18px;min-height:120px}
+.activity-box h3{margin-top:0;color:#6ecbff}
+.small{color:#9fb0c5;font-size:13px}
+@media(max-width:900px){.grid,.quick-grid,.activity-grid{grid-template-columns:1fr}.main-content{padding:16px}}
 </style>
 </head>
 
 <body>
 
-<div class="layout">
+<div class="app-layout">
 
-  <aside class="sidebar" id="sidebar">
-    <div class="brand">
-      <img src="/logo.png" alt="Vehicall Logo">
+  <div class="sidebar">
+    <h2>Vehicall Fleet</h2>
+
+    <a href="/fleet-dashboard">Dashboard</a>
+
+    <div class="menu-group">
+      <h3>Operations</h3>
+      <a href="/fleet-checklist">Daily Checklist</a>
+      <a href="/fleet-daily-trips">Trips</a>
+      <a href="/fleet-replacements">Temporary Replacement</a>
+      <a href="/fleet-fines">Traffic Fines</a>
+    </div>
+
+    <div class="menu-group">
+      <h3>Fleet Assets</h3>
+      <a href="/fleet-vehicles">Vehicles</a>
+      <a href="/fleet-fuel-cards">Fuel Cards</a>
+    </div>
+
+    <div class="menu-group">
+      <h3>Fuel Management</h3>
+      <a href="/fleet-fuel">Fuel Entries</a>
+      <a href="/fleet-fuel-statements">Supplier Statements</a>
+    </div>
+
+    <div class="menu-group">
+      <h3>People</h3>
+      <a href="/fleet-drivers">Drivers</a>
+      <a href="/fleet-users">Users</a>
+      <a href="/fleet-assignments">Assignments</a>
+    </div>
+
+    <div class="menu-group">
+      <h3>Reports</h3>
+      <a href="/fleet-reports">Reports</a>
+    </div>
+
+    <div class="menu-group">
+      <h3>QR Fleet Alerts</h3>
+      <a href="/fleet-vehicles">Fleet QR</a>
+    </div>
+
+    <a href="/api/fleet/logout">Logout</a>
+  </div>
+
+  <main class="main-content">
+
+    <div class="header">
       <div>
-        <h2>Vehicall</h2>
-        <p>Enterprise Fleet OS</p>
+        <h1>Fleet Dashboard</h1>
+        <p id="companyName">Loading company...</p>
       </div>
     </div>
 
-    <nav class="menu">
-  <a class="active" href="/fleet-dashboard">Dashboard</a>
-
-  <a data-permission="vehicles" href="/fleet-vehicles">Vehicles</a>
-  <a data-permission="drivers" href="/fleet-drivers">Drivers</a>
-  <a data-permission="users" href="/fleet-users">Users & Roles</a>
-  <a data-permission="assignments" href="/fleet-daily-trips">Daily Trips</a>
-  <a data-permission="assignments" href="/fleet-assignments">Assignments</a>
-  <a data-permission="checklist" href="/fleet-checklist">Checklist</a>
-  <a data-permission="fuel" href="/fleet-fuel">Fuel & Oil</a>
-  <a data-permission="fuel" href="/fleet-fuel-cards">Fuel Cards</a>
-  <a data-permission="fuel" href="/fleet-fuel-statements">Fuel Statements</a>
-  <a data-permission="fines" href="/fleet-fines">Traffic Fines</a>
-  <a data-permission="maintenance" href="/fleet-maintenance">Maintenance</a>
-  <a data-permission="incidents" href="/fleet-incidents">Incidents</a>
-  <a data-permission="reports" href="/fleet-reports">Reports</a>
-
-  <a href="/fleet-upgrade">Upgrade Package</a>
-  <a href="/api/fleet/logout">Logout</a>
-</nav>
-  </aside>
-
-  <main class="main">
-
-    <button class="mobile-toggle" onclick="toggleMenu()">☰ Menu</button>
-
-    <div class="topbar">
-      <div>
-        <h1 id="companyName">Fleet Dashboard</h1>
-        <p id="packageInfo">Loading company package information...</p>
+    <div class="grid">
+      <div class="card">
+        <h3>Vehicles Active</h3>
+        <p id="totalVehicles">0</p>
       </div>
 
-      <div class="package-pill" id="packagePill">
-        Loading...
-      </div>
-    </div>
-
-    <div class="kpi-grid">
-      <div class="kpi-card">
-        <span>Total Vehicles</span>
-        <h3 id="totalVehicles">0</h3>
+      <div class="card">
+        <h3>Drivers Active</h3>
+        <p id="activeDrivers">0</p>
       </div>
 
-      <div class="kpi-card">
-        <span>Active Drivers</span>
-        <h3 id="activeDrivers">0</h3>
+      <div class="card">
+        <h3>Open Exceptions</h3>
+        <p id="openExceptions">0</p>
       </div>
 
-      <div class="kpi-card">
-        <span>Daily Trips</span>
-        <h3 id="dailyTrips">0</h3>
+      <div class="card">
+        <h3>Replacement Active</h3>
+        <p id="replacementActive">0</p>
       </div>
 
-      <div class="kpi-card">
-        <span>Open Incidents</span>
-        <h3 id="openIncidents">0</h3>
+      <div class="card">
+        <h3>Pending Checklist</h3>
+        <p id="pendingChecklist">0</p>
       </div>
 
-      <div class="kpi-card">
-        <span>Maintenance Due</span>
-        <h3 id="maintenanceDue">0</h3>
+      <div class="card">
+        <h3>Pending Fuel Review</h3>
+        <p id="pendingFuel">0</p>
+      </div>
+
+      <div class="card">
+        <h3>Traffic Fines Pending</h3>
+        <p id="pendingFines">0</p>
+      </div>
+
+      <div class="card">
+        <h3>Fleet Alerts</h3>
+        <p id="fleetAlerts">0</p>
       </div>
     </div>
 
-    <div class="content-grid">
+    <h2 class="section-title">Quick Actions</h2>
 
-      <div class="panel">
-        <h2>Fleet Operations Modules</h2>
+    <div class="quick-grid">
+      <button class="quick-btn" onclick="goTo('/fleet-vehicles')"><strong>+ Add Vehicle</strong><br><span class="small">Manage fleet assets</span></button>
+      <button class="quick-btn" onclick="goTo('/fleet-drivers')"><strong>+ Add Driver</strong><br><span class="small">Create driver profile</span></button>
+      <button class="quick-btn" onclick="goTo('/fleet-fuel')"><strong>+ Fuel Entry</strong><br><span class="small">Fuel and oil records</span></button>
+      <button class="quick-btn" onclick="goTo('/fleet-checklist')"><strong>+ Daily Checklist</strong><br><span class="small">Vehicle inspection</span></button>
+      <button class="quick-btn" onclick="goTo('/fleet-fines')"><strong>+ Traffic Fine</strong><br><span class="small">Fine attribution</span></button>
+    </div>
 
-        <div class="module-grid">
+    <h2 class="section-title">Recent Activity</h2>
 
-          <div class="module-card" data-permission="vehicles" onclick="goTo('/fleet-vehicles')">
-            <h3>Vehicle Management</h3>
-            <p>Add vehicles, manage Oman plates, QR generation, Mulkiya and insurance.</p>
-            <button>Open</button>
-          </div>
-
-          <div class="module-card" onclick="goTo('/fleet-drivers')">
-            <h3>Driver Management</h3>
-            <p>Manage drivers, license expiry, mobile contacts and active status.</p>
-            <button>Open</button>
-          </div>
-
-          <div class="module-card" onclick="goTo('/fleet-users')">
-            <h3>Users & Roles</h3>
-            <p>Create users with role-based permissions and limitations.</p>
-            <button>Manage</button>
-          </div>
-
-          <div class="module-card" onclick="goTo('/fleet-daily-trips')">
-            <h3>Daily Trips</h3>
-            <p>Daily vehicle assignment, opening KM, closing KM and shift tracking.</p>
-            <button>Open</button>
-          </div>
-
-          <div class="module-card" onclick="goTo('/fleet-fuel')">
-            <h3>Fuel & Oil</h3>
-            <p>Track fuel, engine oil, AdBlue, cost, KM and driver usage.</p>
-            <button>Open</button>
-          </div>
-
-          <div class="module-card" onclick="goTo('/fleet-fines')">
-          <h3>Traffic Fines</h3>
-          <p>Enter ROP fines, match driver by vehicle/date/time and save attribution.</p>
-          <button>Open</button>
-          </div>
-
-          <div class="module-card" onclick="goTo('/fleet-maintenance')">
-            <h3>Maintenance</h3>
-            <p>Service history, workshop cost, rented vehicle responsibility and downtime.</p>
-            <button>Open</button>
-          </div>
-
-          <div class="module-card" onclick="goTo('/fleet-incidents')">
-            <h3>Incidents</h3>
-            <p>Track accidents, public QR alerts, driver issues and emergency cases.</p>
-            <button>Open</button>
-          </div>
-
-          <div class="module-card" onclick="goTo('/fleet-reports')">
-            <h3>Reports</h3>
-            <p>Export fleet data, vehicle reports, incidents, fuel and compliance.</p>
-            <button>Open</button>
-          </div>
-
-          <div class="module-card" onclick="goTo('/fleet-upgrade')">
-            <h3>Upgrade Package</h3>
-            <p>Increase vehicle limit, activate public alerts and enterprise modules.</p>
-            <button>Upgrade</button>
-          </div>
-
-        </div>
+    <div class="activity-grid">
+      <div class="activity-box">
+        <h3>Recent Fuel Entries</h3>
+        <div id="recentFuel">Loading...</div>
       </div>
 
-      <div class="panel">
-        <h2>Package Usage</h2>
-
-        <div class="activity-item">
-          <strong id="currentPackage">Current Package: -</strong>
-          <small id="alertStatus">Vehicall Alerts: -</small>
-
-          <div class="progress-box">
-            <div class="progress-label">
-              <span>Vehicle Usage</span>
-              <span id="vehicleUsageText">0/0</span>
-            </div>
-            <div class="progress-bar">
-              <div class="progress-fill" id="vehicleUsageBar"></div>
-            </div>
-          </div>
-        </div>
-
-        <h2 style="margin-top:22px;">Recent Activity</h2>
-        <div id="recentActivity">
-          <div class="activity-item">
-            Loading latest fleet activity...
-          </div>
-        </div>
+      <div class="activity-box">
+        <h3>Recent Checklist</h3>
+        <div id="recentChecklist">Loading...</div>
       </div>
 
+      <div class="activity-box">
+        <h3>Recent Fines</h3>
+        <div id="recentFines">Loading...</div>
+      </div>
+
+      <div class="activity-box">
+        <h3>Recent Temporary Replacement</h3>
+        <div id="recentReplacement">Loading...</div>
+      </div>
     </div>
 
   </main>
@@ -487,138 +170,98 @@ function goTo(url){
   window.location.href=url;
 }
 
-function toggleMenu(){
-  document.getElementById("sidebar").classList.toggle("show");
+async function fetchJson(url){
+  try{
+    const res = await fetch(url);
+    return await res.json();
+  }catch(e){
+    return {success:false};
+  }
+}
+
+function row(text){
+  return `<p class="small">${text}</p>`;
 }
 
 async function loadDashboard(){
-  try{
-    const response = await fetch("/api/fleet/dashboard-data");
-    const data = await response.json();
+  const data = await fetchJson("/api/fleet/dashboard-data");
 
-    if(!data.success){
-      alert(data.message || "Fleet login required.");
-      window.location.href="/fleet-login";
-      return;
-    }
-
-    const company = data.company || {};
-    const stats = data.stats || {};
-
-const user = data.user || {};
-const permissions = user.permissions || {};
-
-applyPermissions(permissions);
-
-    document.getElementById("companyName").textContent =
-      company.companyName || "Fleet Dashboard";
-
-    document.getElementById("packageInfo").textContent =
-      `${company.packageLabel || "-"} | Vehicles ${company.usedVehicles || 0}/${company.vehicleLimit || 0}`;
-
-    document.getElementById("packagePill").textContent =
-      company.alertOption === "with_alerts"
-        ? "Fleet + Public Alerts"
-        : "Fleet Management Only";
-
-    document.getElementById("totalVehicles").textContent =
-      stats.totalVehicles || 0;
-
-    document.getElementById("activeDrivers").textContent =
-      stats.activeDrivers || stats.totalDrivers || 0;
-
-    document.getElementById("dailyTrips").textContent =
-      stats.dailyTrips || stats.activeAssignments || 0;
-
-    document.getElementById("openIncidents").textContent =
-      stats.openIncidents || stats.incidents || 0;
-
-    document.getElementById("maintenanceDue").textContent =
-      stats.maintenanceDue || stats.complianceAlerts || 0;
-
-    document.getElementById("currentPackage").textContent =
-      `Current Package: ${company.packageLabel || "-"}`;
-
-    const alertStatus = document.getElementById("alertStatus");
-
-    if(company.alertOption === "with_alerts" || company.alertsEnabled){
-      alertStatus.innerHTML = `<span class="alert-active">Vehicall Alerts: ACTIVE</span>`;
-    }else{
-      alertStatus.innerHTML = `<span class="alert-off">Vehicall Alerts: OFF</span>`;
-    }
-
-    const used = Number(company.usedVehicles || 0);
-    const limit = Number(company.vehicleLimit || 0);
-    const percent = limit > 0 ? Math.min((used / limit) * 100, 100) : 0;
-
-    document.getElementById("vehicleUsageText").textContent =
-      `${used}/${limit}`;
-
-    document.getElementById("vehicleUsageBar").style.width =
-      `${percent}%`;
-
-    const activityBox = document.getElementById("recentActivity");
-
-    activityBox.innerHTML = `
-      <div class="activity-item">
-        <strong>Fleet dashboard loaded</strong>
-        <small>System ready for daily operations.</small>
-      </div>
-
-      <div class="activity-item">
-        <strong>Package Status</strong>
-        <small>${company.status ? company.status.toUpperCase() : "ACTIVE"}</small>
-      </div>
-
-      <div class="activity-item">
-        <strong>Vehicle Capacity</strong>
-        <small>${used} vehicles used out of ${limit} allowed.</small>
-      </div>
-    `;
-
-  }catch(error){
-    console.error(error);
-    alert("Unable to load Fleet Dashboard.");
-  }
-}
-
-function applyPermissions(permissions) {
-
-  // If no permissions object,
-  // show everything (admin/default safety)
-  if (
-    !permissions ||
-    Object.keys(permissions).length === 0
-  ) {
-    document.querySelectorAll("[data-permission]").forEach(el => {
-      el.style.display = "";
-    });
-
+  if(!data.success){
+    window.location.href="/fleet-login";
     return;
   }
 
-  document.querySelectorAll("[data-permission]").forEach(el => {
+  document.getElementById("companyName").textContent =
+    data.company?.companyName || "Fleet Company";
 
-    const permission = el.getAttribute("data-permission");
-
-    // Show if explicitly allowed
-    if (permissions[permission] === true) {
-      el.style.display = "";
-    }
-
-    // Hide only if explicitly false
-    else if (permissions[permission] === false) {
-      el.style.display = "none";
-    }
-
-    // Default = visible
-    else {
-      el.style.display = "";
-    }
-
-  });
+  document.getElementById("totalVehicles").textContent = data.stats?.totalVehicles || 0;
+  document.getElementById("activeDrivers").textContent = data.stats?.activeDrivers || 0;
 }
+
+async function loadExtraStats(){
+  const fuel = await fetchJson("/api/fleet/fuel");
+  const checklists = await fetchJson("/api/fleet/checklists");
+  const fines = await fetchJson("/api/fleet/reports/fines");
+  const replacements = await fetchJson("/api/fleet/replacements");
+
+  let pendingFuel = 0;
+  let recentFuel = "";
+
+  if(fuel.success){
+    pendingFuel = fuel.records.filter(x => 
+      x.approvalStatus === "pending" || x.status === "pending_approval"
+    ).length;
+
+    recentFuel = fuel.records.slice(0,4).map(x =>
+      row(`${x.vehicleNumber || "-"} | ${x.amount || 0} OMR | ${x.paymentMethod || "-"}`)
+    ).join("");
+  }
+
+  let pendingFines = 0;
+  let recentFines = "";
+
+  if(fines.success){
+    pendingFines = fines.rows.filter(x => x.status === "pending").length;
+    recentFines = fines.rows.slice(0,4).map(x =>
+      row(`${x.vehicleNumber || "-"} | ${x.fineType || "-"} | ${x.fineAmount || 0} OMR`)
+    ).join("");
+  }
+
+  let activeReplacement = 0;
+  let recentReplacement = "";
+
+  if(replacements.success){
+    activeReplacement = replacements.records.filter(x => x.status === "active").length;
+    recentReplacement = replacements.records.slice(0,4).map(x =>
+      row(`${x.originalVehicleNumber || "-"} → ${x.replacementVehicleNumber || "-"} | ${x.status || "-"}`)
+    ).join("");
+  }
+
+  let recentChecklist = "";
+
+  if(checklists.success){
+    recentChecklist = checklists.checklists.slice(0,4).map(x =>
+      row(`${x.vehicleNumber || "-"} | ${x.checklistDate || "-"} | Closing KM: ${x.closingKm || "-"}`)
+    ).join("");
+  }
+
+  const exceptions = pendingFuel + pendingFines + activeReplacement;
+
+  document.getElementById("pendingFuel").textContent = pendingFuel;
+  document.getElementById("pendingFines").textContent = pendingFines;
+  document.getElementById("replacementActive").textContent = activeReplacement;
+  document.getElementById("openExceptions").textContent = exceptions;
+  document.getElementById("pendingChecklist").textContent = 0;
+  document.getElementById("fleetAlerts").textContent = 0;
+
+  document.getElementById("recentFuel").innerHTML = recentFuel || row("No recent fuel entries");
+  document.getElementById("recentFines").innerHTML = recentFines || row("No recent fines");
+  document.getElementById("recentReplacement").innerHTML = recentReplacement || row("No recent replacement activity");
+  document.getElementById("recentChecklist").innerHTML = recentChecklist || row("No recent checklist");
+}
+
 loadDashboard();
+loadExtraStats();
 </script>
 
 </body>

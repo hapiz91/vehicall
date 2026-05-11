@@ -4,16 +4,11 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Vehicall Fleet Vehicles</title>
+<link rel="stylesheet" href="/fleet-ui.css">
 
 <style>
 body{margin:0;font-family:Arial,sans-serif;background:#07111f;color:#fff}
-.header{display:flex;justify-content:space-between;align-items:center;padding:18px 30px;background:#0b1b2d;border-bottom:1px solid #1d3553}
-.brand{display:flex;align-items:center;gap:14px}
-.brand img{height:46px}
-.brand h2{margin:0;font-size:21px}
-.brand p{margin:2px 0 0;color:#9fb0c5;font-size:13px}
-.nav a{color:#6ecbff;margin-left:16px;text-decoration:none;font-size:14px}
-.container{max-width:1250px;margin:30px auto;padding:0 20px}
+.container{max-width:1250px;margin:0 auto;padding:0 20px}
 .hero,.card{background:#0f1f33;border:1px solid #20344d;border-radius:20px;padding:24px;margin-bottom:24px}
 .hero h1{margin:0 0 8px}
 .hero p{margin:0;color:#b7c4d4;line-height:1.5}
@@ -34,30 +29,84 @@ button{padding:13px 18px;border:none;border-radius:12px;background:linear-gradie
 .qr-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
 .qr-actions button{font-size:13px;padding:10px 12px}
 .rental-fields{display:none}
-@media(max-width:900px){.form-grid,.vehicle-grid{grid-template-columns:1fr}}
-@media(max-width:600px){.header{flex-direction:column;align-items:flex-start;gap:12px}.brand img{height:40px}.nav a{display:inline-block;margin:8px 12px 0 0}}
+
+input[type="date"],
+input[type="datetime-local"],
+input[type="month"]{
+  color-scheme: dark;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+input[type="month"]::-webkit-calendar-picker-indicator{
+  filter: invert(1);
+  cursor: pointer;
+}
+
+@media(max-width:900px){
+.form-grid,.vehicle-grid{grid-template-columns:1fr}
+}
 </style>
 </head>
 
 <body>
 
-<div class="header">
-  <div class="brand">
-    <img src="/logo.png" alt="Vehicall Logo">
-    <div>
-      <h2>Vehicall Fleet Vehicles</h2>
-      <p>Smart Alerts, Fleet Operations & Driver Accountability</p>
-    </div>
+<div class="app-layout">
+
+<div class="sidebar">
+
+  <h2>Vehicall Fleet</h2>
+
+  <a href="/fleet-dashboard">Dashboard</a>
+
+  <div class="menu-group">
+    <h3>Operations</h3>
+
+    <a href="/fleet-checklist">Daily Checklist</a>
+    <a href="/fleet-daily-trips">Trips</a>
+    <a href="/fleet-replacements">Temporary Replacement</a>
+    <a href="/fleet-fines">Traffic Fines</a>
   </div>
 
-  <div class="nav">
-    <a href="/fleet-dashboard">Dashboard</a>
-    <a href="/fleet-drivers">Drivers</a>
-    <a href="/fleet-assignments">Assignments</a>
-    <a href="/fleet-reports">Reports</a>
-    <a href="/api/fleet/logout">Logout</a>
+  <div class="menu-group">
+    <h3>Fleet Assets</h3>
+
+    <a href="/fleet-vehicles">Vehicles</a>
+    <a href="/fleet-fuel-cards">Fuel Cards</a>
   </div>
+
+  <div class="menu-group">
+    <h3>Fuel Management</h3>
+
+    <a href="/fleet-fuel">Fuel Entries</a>
+    <a href="/fleet-fuel-statements">Supplier Statements</a>
+  </div>
+
+  <div class="menu-group">
+    <h3>People</h3>
+
+    <a href="/fleet-drivers">Drivers</a>
+    <a href="/fleet-users">Users</a>
+    <a href="/fleet-assignments">Assignments</a>
+  </div>
+
+  <div class="menu-group">
+    <h3>Reports</h3>
+
+    <a href="/fleet-reports">Reports</a>
+  </div>
+
+  <div class="menu-group">
+    <h3>QR Fleet Alerts</h3>
+
+    <a href="/fleet-vehicles">Fleet QR</a>
+  </div>
+
+  <a href="/api/fleet/logout">Logout</a>
+
 </div>
+
+<main class="main-content">
 
 <div class="container">
 
@@ -115,26 +164,12 @@ button{padding:13px 18px;border:none;border-radius:12px;background:linear-gradie
 
         <div>
           <label>Plate Code</label>
-          <select name="plateCode" id="plateCode" required>
-            <option value="">Select Plate Code</option>
-            <option value="A">A</option><option value="AA">AA</option><option value="AB">AB</option><option value="AD">AD</option><option value="AK">AK</option><option value="AM">AM</option><option value="AR">AR</option><option value="AS">AS</option><option value="AW">AW</option><option value="AY">AY</option>
-            <option value="B">B</option><option value="BA">BA</option><option value="BB">BB</option><option value="BD">BD</option><option value="BH">BH</option><option value="BK">BK</option><option value="BM">BM</option><option value="BR">BR</option><option value="BS">BS</option><option value="BW">BW</option><option value="BY">BY</option>
-            <option value="D">D</option><option value="DA">DA</option><option value="DD">DD</option><option value="DK">DK</option><option value="DR">DR</option><option value="DS">DS</option><option value="DW">DW</option><option value="DY">DY</option>
-            <option value="H">H</option><option value="HA">HA</option><option value="HD">HD</option><option value="HH">HH</option><option value="HK">HK</option><option value="HM">HM</option><option value="HR">HR</option><option value="HS">HS</option><option value="HW">HW</option><option value="HY">HY</option>
-            <option value="K">K</option><option value="KA">KA</option><option value="KB">KB</option><option value="KH">KH</option><option value="KK">KK</option>
-            <option value="L">L</option><option value="LA">LA</option><option value="LB">LB</option><option value="LD">LD</option><option value="LH">LH</option><option value="LK">LK</option><option value="LM">LM</option><option value="LR">LR</option><option value="LS">LS</option><option value="LW">LW</option><option value="LY">LY</option>
-            <option value="M">M</option><option value="MA">MA</option><option value="MB">MB</option><option value="MD">MD</option><option value="MH">MH</option><option value="MK">MK</option><option value="ML">ML</option><option value="MM">MM</option><option value="MR">MR</option><option value="MS">MS</option><option value="MW">MW</option><option value="MY">MY</option>
-            <option value="R">R</option><option value="RA">RA</option><option value="RH">RH</option><option value="RK">RK</option><option value="RM">RM</option><option value="RR">RR</option><option value="RS">RS</option><option value="RW">RW</option><option value="RY">RY</option>
-            <option value="S">S</option><option value="SA">SA</option><option value="ST">ST</option>
-            <option value="T">T</option><option value="TA">TA</option><option value="TB">TB</option><option value="TD">TD</option><option value="TH">TH</option><option value="TT">TT</option>
-            <option value="W">W</option><option value="WA">WA</option><option value="WB">WB</option><option value="WK">WK</option><option value="WW">WW</option>
-            <option value="Y">Y</option><option value="YA">YA</option><option value="YB">YB</option><option value="YD">YD</option><option value="YM">YM</option><option value="YR">YR</option><option value="YS">YS</option><option value="YW">YW</option><option value="YY">YY</option>
-          </select>
+          <input type="text" name="plateCode" placeholder="Example: BB" required>
         </div>
 
         <div>
           <label>Plate Number</label>
-          <input type="number" name="plateNumber" placeholder="Enter numbers only e.g. 12345" required>
+          <input type="number" name="plateNumber" placeholder="12345" required>
         </div>
 
         <div>
@@ -189,6 +224,9 @@ button{padding:13px 18px;border:none;border-radius:12px;background:linear-gradie
     <div id="vehiclesList" class="vehicle-grid">Loading...</div>
   </div>
 
+</div>
+
+</main>
 </div>
 
 <script>
@@ -247,41 +285,12 @@ async function loadVehicles(){
 
           <p><strong>Category:</strong> ${vehicle.vehicleCategory || "normal"}</p>
           <p><strong>Ownership:</strong> ${vehicle.ownershipType || "Company Owned"}</p>
-
-          ${vehicle.ownershipType === "Rented" ? `
-            <p><strong>Rental Company:</strong> ${vehicle.rentalCompanyName || "-"}</p>
-            <p><strong>Rental Agreement:</strong> ${vehicle.rentalAgreementNo || "-"}</p>
-            <p><strong>Rental Start:</strong> ${vehicle.rentalStartDate || "-"}</p>
-            <p><strong>Rental Expiry:</strong> ${vehicle.rentalExpiryDate || "-"}</p>
-          ` : ""}
-
-          <p><strong>Plate Code:</strong> ${vehicle.plateCode || "-"}</p>
-          <p><strong>Plate Number:</strong> ${vehicle.plateNumber || "-"}</p>
           <p><strong>Type:</strong> ${vehicle.vehicleType || "-"}</p>
           <p><strong>Brand:</strong> ${vehicle.brand || "-"}</p>
           <p><strong>Model:</strong> ${vehicle.model || "-"}</p>
           <p><strong>Year:</strong> ${vehicle.year || "-"}</p>
           <p><strong>Status:</strong> ${vehicle.status || "-"}</p>
           <p><strong>Assigned Driver:</strong> ${vehicle.assignedDriverName || "Not Assigned"}</p>
-          <p><strong>Mulkiya Expiry:</strong> ${vehicle.mulkiyaExpiry || "-"}</p>
-          <p><strong>Insurance Expiry:</strong> ${vehicle.insuranceExpiry || "-"}</p>
-
-          <div class="qr-box">
-            <strong>Fleet QR ID:</strong><br>
-            ${vehicle.qr_id || "-"}
-
-            <br><br>
-
-            <strong>Alert URL:</strong><br>
-            ${vehicle.alertUrl || "-"}
-
-            <img id="qr-${vehicle.id}" class="qr-img">
-
-            <div class="qr-actions">
-              <button onclick="generateFleetQR('${vehicle.id}')">Generate QR</button>
-              <button onclick="downloadFleetSticker('${vehicle.id}', '${vehicle.vehicleNumber || "vehicle"}')">Download Sticker</button>
-            </div>
-          </div>
         </div>
       `;
     });
@@ -321,135 +330,6 @@ form.addEventListener("submit",async function(e){
     showMessage("Server error while adding vehicle.","error");
   }
 });
-
-async function generateFleetQR(vehicleId){
-  try{
-    const res = await fetch(`/api/fleet/vehicles/${vehicleId}/generate-qr`,{
-      method:"POST",
-      headers:{"Content-Type":"application/json"}
-    });
-
-    const data = await res.json();
-
-    if(data.success){
-      const img = document.getElementById(`qr-${vehicleId}`);
-      img.src = data.qrImage;
-      img.style.display = "block";
-
-      showMessage("Fleet QR generated successfully.","success");
-    }else{
-      showMessage(data.message || "Unable to generate QR.","error");
-    }
-
-  }catch(error){
-    console.error(error);
-    showMessage("Server error while generating QR.","error");
-  }
-}
-
-function downloadFleetSticker(vehicleId, vehicleNumber){
-  const qrImg = document.getElementById(`qr-${vehicleId}`);
-
-  if(!qrImg || !qrImg.src){
-    showMessage("Please generate QR first.", "error");
-    return;
-  }
-
-  const canvas = document.createElement("canvas");
-  const ctx = canvas.getContext("2d");
-
-  canvas.width = 900;
-  canvas.height = 1320;
-
-  const logo = new Image();
-  logo.src = "/logo.png";
-
-  const qr = new Image();
-  qr.src = qrImg.src;
-
-  logo.onload = () => {
-    qr.onload = () => {
-
-      // Background
-      ctx.fillStyle = "#061827";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-      // Border
-      ctx.strokeStyle = "#22c55e";
-      ctx.lineWidth = 12;
-      ctx.strokeRect(25, 25, canvas.width - 50, canvas.height - 50);
-
-      // Header band
-      ctx.fillStyle = "#0b2a3d";
-      ctx.fillRect(50, 50, canvas.width - 100, 190);
-
-      // Logo
-      ctx.drawImage(logo, 70, 75, 120, 120);
-
-      // Brand title
-      ctx.fillStyle = "#ffffff";
-      ctx.font = "bold 58px Arial";
-      ctx.fillText("Vehicall", 220, 125);
-
-      ctx.fillStyle = "#22c55e";
-      ctx.font = "bold 38px Arial";
-      ctx.fillText("Fleet Alert System", 220, 180);
-
-      // Vehicle Number
-      ctx.fillStyle = "#ffffff";
-      ctx.font = "bold 48px Arial";
-      ctx.textAlign = "center";
-      ctx.fillText(`Vehicle: ${vehicleNumber}`, canvas.width / 2, 310);
-
-      // QR white box
-      ctx.fillStyle = "#ffffff";
-      ctx.fillRect(210, 360, 480, 480);
-
-      ctx.drawImage(qr, 250, 400, 400, 400);
-
-      // Main scan text
-ctx.fillStyle = "#6ee7ff";
-ctx.font = "bold 40px Arial";
-ctx.fillText("SCAN TO REPORT", canvas.width / 2, 900);
-
-ctx.fillStyle = "#ffffff";
-ctx.font = "24px Arial";
-ctx.fillText("Without Showing Your Number", canvas.width / 2, 940);
-
-ctx.fillStyle = "#ffffff";
-ctx.font = "28px Arial";
-ctx.fillText("Fleet Vehicle Issue", canvas.width / 2, 980);
-
-// Report options
-ctx.fillStyle = "#9fe8ff";
-ctx.font = "24px Arial";
-
-ctx.fillText("• Dangerous Driving", canvas.width / 2, 995);
-ctx.fillText("• Vehicle Breakdown", canvas.width / 2, 1030);
-ctx.fillText("• Lights Left ON", canvas.width / 2, 1065);
-ctx.fillText("• Parking Obstruction", canvas.width / 2, 1100);
-ctx.fillText("• Emergency / Accident", canvas.width / 2, 1135);
-
-      // Privacy note
-ctx.fillStyle = "#d6e2f0";
-ctx.font = "23px Arial";
-ctx.fillText("Privacy-first fleet communication platform", canvas.width / 2, 1185);
-
-// Footer
-ctx.fillStyle = "#22c55e";
-ctx.font = "bold 24px Arial";
-ctx.fillText("Powered by Vehicall", canvas.width / 2, 1245);
-
-      // Download
-      const link = document.createElement("a");
-      link.href = canvas.toDataURL("image/png");
-      link.download = `Vehicall-Fleet-Alert-Sticker-${vehicleNumber}.png`;
-      link.click();
-
-      ctx.textAlign = "left";
-    };
-  };
-}
 
 toggleRentalFields();
 loadVehicles();

@@ -1,0 +1,72 @@
+input[type="date"],
+input[type="datetime-local"],
+input[type="month"]{
+  color-scheme: dark;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+input[type="month"]::-webkit-calendar-picker-indicator{
+  filter: invert(1);
+  cursor: pointer;
+}
+
+.sidebar{
+  width:260px;
+  min-height:100vh;
+  background:#07111f;
+  border-right:1px solid #20344d;
+  padding:20px;
+  box-sizing:border-box;
+}
+
+.sidebar h2{
+  margin:0 0 20px;
+  color:#6ecbff;
+}
+
+.sidebar a{
+  display:block;
+  color:#d6e2f0;
+  text-decoration:none;
+  padding:10px 12px;
+  border-radius:10px;
+  margin-bottom:6px;
+}
+
+.sidebar a:hover{
+  background:#10243b;
+  color:#6ecbff;
+}
+
+.menu-group{
+  margin:18px 0;
+}
+
+.menu-group h3{
+  margin:0 0 8px;
+  color:#8fb3d9;
+  font-size:13px;
+  text-transform:uppercase;
+}
+
+.app-layout{
+  display:flex;
+  min-height:100vh;
+}
+
+.main-content{
+  flex:1;
+  padding:24px;
+}
+
+@media(max-width:900px){
+  .app-layout{
+    flex-direction:column;
+  }
+
+  .sidebar{
+    width:100%;
+    min-height:auto;
+  }
+}

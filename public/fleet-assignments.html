@@ -1,581 +1,836 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Vehicall Fleet Assignments</title>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Vehicall Fleet Assignments</title>
 
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #07111f;
-      color: #ffffff;
-    }
+<link rel="stylesheet" href="/fleet-ui.css">
 
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 18px 30px;
-      background: #0b1b2d;
-      border-bottom: 1px solid #1d3553;
-    }
+<style>
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:#07111f;
+  color:#ffffff;
+}
 
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-    }
+.container{
+  max-width:1250px;
+  margin:0 auto;
+  padding:0 20px;
+}
 
-    .brand img {
-      height: 46px;
-    }
+.hero,.card{
+  background:#0f1f33;
+  border:1px solid #20344d;
+  border-radius:20px;
+  padding:24px;
+  margin-bottom:24px;
+}
 
-    .brand h2 {
-      margin: 0;
-      font-size: 21px;
-    }
+.hero h1{
+  margin:0 0 8px;
+}
 
-    .brand p {
-      margin: 2px 0 0;
-      color: #9fb0c5;
-      font-size: 13px;
-    }
+.hero p{
+  margin:0;
+  color:#b7c4d4;
+  line-height:1.5;
+}
 
-    .nav a {
-      color: #6ecbff;
-      margin-left: 16px;
-      text-decoration: none;
-      font-size: 14px;
-    }
+.form-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:14px;
+}
 
-    .container {
-      max-width: 1250px;
-      margin: 30px auto;
-      padding: 0 20px;
-    }
+label{
+  display:block;
+  margin-bottom:8px;
+  color:#9fb0c5;
+  font-size:14px;
+}
 
-    .hero, .card {
-      background: #0f1f33;
-      border: 1px solid #20344d;
-      border-radius: 20px;
-      padding: 24px;
-      margin-bottom: 24px;
-    }
+input,select,textarea{
+  width:100%;
+  padding:13px;
+  border-radius:10px;
+  border:1px solid #29496d;
+  background:#081827;
+  color:#ffffff;
+  box-sizing:border-box;
+}
 
-    .hero h1 {
-      margin: 0 0 8px;
-    }
+textarea{
+  min-height:90px;
+  resize:vertical;
+}
 
-    .hero p {
-      margin: 0;
-      color: #b7c4d4;
-      line-height: 1.5;
-    }
+button{
+  padding:13px 18px;
+  border:none;
+  border-radius:12px;
+  background:linear-gradient(135deg,#00c2ff,#0066ff);
+  color:#ffffff;
+  font-weight:bold;
+  cursor:pointer;
+}
 
-    .form-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 14px;
-    }
+button.close-btn{
+  background:linear-gradient(135deg,#00c853,#009624);
+  margin-top:12px;
+}
 
-    label {
-      display: block;
-      margin-bottom: 8px;
-      color: #9fb0c5;
-      font-size: 14px;
-    }
+.full{
+  grid-column:span 3;
+}
 
-    input, select, textarea {
-      width: 100%;
-      padding: 13px;
-      border-radius: 10px;
-      border: 1px solid #29496d;
-      background: #081827;
-      color: #ffffff;
-      box-sizing: border-box;
-    }
+#message{
+  display:none;
+  margin-bottom:18px;
+  padding:13px;
+  border-radius:12px;
+}
 
-    textarea {
-      min-height: 90px;
-      resize: vertical;
-    }
+.success{
+  display:block!important;
+  background:rgba(0,180,120,0.15);
+  color:#70ffc8;
+}
 
-    button {
-      padding: 13px 18px;
-      border: none;
-      border-radius: 12px;
-      background: linear-gradient(135deg, #00c2ff, #0066ff);
-      color: #ffffff;
-      font-weight: bold;
-      cursor: pointer;
-    }
+.error{
+  display:block!important;
+  background:rgba(255,70,70,0.15);
+  color:#ff9c9c;
+}
 
-    button.close-btn {
-      background: linear-gradient(135deg, #00c853, #009624);
-      margin-top: 12px;
-    }
+.assignment-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:16px;
+}
 
-    .full {
-      grid-column: span 3;
-    }
+.assignment-card{
+  background:#081827;
+  border:1px solid #223854;
+  border-radius:16px;
+  padding:18px;
+}
 
-    #message {
-      display: none;
-      margin-bottom: 18px;
-      padding: 13px;
-      border-radius: 12px;
-    }
+.assignment-card h3{
+  margin:0 0 10px;
+  color:#6ecbff;
+}
 
-    .success {
-      display: block !important;
-      background: rgba(0,180,120,0.15);
-      color: #70ffc8;
-      border: 1px solid rgba(0,180,120,0.35);
-    }
+.assignment-card p{
+  margin:7px 0;
+  color:#d6e2f0;
+  font-size:14px;
+}
 
-    .error {
-      display: block !important;
-      background: rgba(255,70,70,0.15);
-      color: #ff9c9c;
-      border: 1px solid rgba(255,70,70,0.35);
-    }
+.assignment-card strong{
+  color:#8fb3d9;
+}
 
-    .assignment-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 16px;
-    }
+.status-badge{
+  display:inline-block;
+  margin-top:8px;
+  padding:6px 12px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:bold;
+  text-transform:uppercase;
+}
 
-    .assignment-card {
-      background: #081827;
-      border: 1px solid #223854;
-      border-radius: 16px;
-      padding: 18px;
-    }
+.active{
+  background:rgba(0,180,120,0.15);
+  color:#70ffc8;
+}
 
-    .assignment-card h3 {
-      margin: 0 0 10px;
-      color: #6ecbff;
-    }
+.closed{
+  background:rgba(150,150,150,0.15);
+  color:#d0d0d0;
+}
 
-    .assignment-card p {
-      margin: 7px 0;
-      color: #d6e2f0;
-      font-size: 14px;
-    }
+.close-box{
+  margin-top:15px;
+  padding-top:15px;
+  border-top:1px solid #223854;
+}
 
-    .assignment-card strong {
-      color: #8fb3d9;
-    }
+.summary-grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:14px;
+  margin-bottom:20px;
+}
 
-    .status-badge {
-      display: inline-block;
-      margin-top: 8px;
-      padding: 6px 12px;
-      border-radius: 999px;
-      font-size: 12px;
-      font-weight: bold;
-      text-transform: uppercase;
-    }
+.summary-card{
+  background:#081827;
+  border:1px solid #223854;
+  border-radius:16px;
+  padding:16px;
+}
 
-    .active {
-      background: rgba(0,180,120,0.15);
-      color: #70ffc8;
-      border: 1px solid rgba(0,180,120,0.35);
-    }
+.summary-card h3{
+  margin:0 0 8px;
+  color:#9fb0c5;
+  font-size:13px;
+}
 
-    .closed {
-      background: rgba(150,150,150,0.15);
-      color: #d0d0d0;
-      border: 1px solid rgba(150,150,150,0.35);
-    }
+.summary-card p{
+  margin:0;
+  color:#fff;
+  font-size:22px;
+  font-weight:bold;
+}
 
-    .close-box {
-      margin-top: 15px;
-      padding-top: 15px;
-      border-top: 1px solid #223854;
-    }
+input[type="datetime-local"]{
+  color-scheme:dark;
+}
 
-    @media (max-width: 900px) {
-      .form-grid,
-      .assignment-grid {
-        grid-template-columns: 1fr;
-      }
+input[type="datetime-local"]::-webkit-calendar-picker-indicator{
+  filter:invert(1);
+  cursor:pointer;
+}
 
-      .full {
-        grid-column: span 1;
-      }
-    }
+@media(max-width:900px){
 
-    @media (max-width: 600px) {
-      .header {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 12px;
-      }
+  .form-grid,
+  .assignment-grid,
+  .summary-grid{
+    grid-template-columns:1fr;
+  }
 
-      .brand img {
-        height: 40px;
-      }
-
-      .nav a {
-        display: inline-block;
-        margin: 8px 12px 0 0;
-      }
-    }
-  </style>
+  .full{
+    grid-column:span 1;
+  }
+}
+</style>
 </head>
 
 <body>
 
-  <div class="header">
-    <div class="brand">
-      <img src="/logo.png" alt="Vehicall Logo">
-      <div>
-        <h2>Vehicall Vehicle Assignment</h2>
-        <p>Smart Alerts, Fleet Operations & Driver Accountability</p>
-      </div>
-    </div>
+<div class="app-layout">
 
-    <div class="nav">
-      <a href="/fleet-dashboard">Dashboard</a>
-      <a href="/fleet-vehicles">Vehicles</a>
-      <a href="/fleet-drivers">Drivers</a>
-      <a href="/fleet-reports">Reports</a>
-      <a href="/api/fleet/logout">Logout</a>
-    </div>
+<div class="sidebar">
+
+  <h2>Vehicall Fleet</h2>
+
+  <a href="/fleet-dashboard">Dashboard</a>
+
+  <div class="menu-group">
+    <h3>Operations</h3>
+
+    <a href="/fleet-checklist">Daily Checklist</a>
+    <a href="/fleet-daily-trips">Trips</a>
+    <a href="/fleet-replacements">Temporary Replacement</a>
+    <a href="/fleet-fines">Traffic Fines</a>
   </div>
 
-  <div class="container">
+  <div class="menu-group">
+    <h3>Fleet Assets</h3>
 
-    <div class="hero">
-      <h1>Vehicle Assignment System</h1>
-      <p>
-        Assign vehicles to drivers with shift timing, opening KM, fuel level and operational notes.
-        This creates accountability for vehicle usage, incidents and traffic fine attribution.
-      </p>
+    <a href="/fleet-vehicles">Vehicles</a>
+    <a href="/fleet-fuel-cards">Fuel Cards</a>
+  </div>
+
+  <div class="menu-group">
+    <h3>Fuel Management</h3>
+
+    <a href="/fleet-fuel">Fuel Entries</a>
+    <a href="/fleet-fuel-statements">Supplier Statements</a>
+  </div>
+
+  <div class="menu-group">
+    <h3>People</h3>
+
+    <a href="/fleet-drivers">Drivers</a>
+    <a href="/fleet-users">Users</a>
+    <a href="/fleet-assignments">Assignments</a>
+  </div>
+
+  <div class="menu-group">
+    <h3>Reports</h3>
+
+    <a href="/fleet-reports">Reports</a>
+  </div>
+
+  <div class="menu-group">
+    <h3>QR Fleet Alerts</h3>
+
+    <a href="/fleet-vehicles">Fleet QR</a>
+  </div>
+
+  <a href="/api/fleet/logout">Logout</a>
+
+</div>
+
+<main class="main-content">
+
+<div class="container">
+
+<div class="hero">
+
+  <h1>Vehicle Assignment System</h1>
+
+  <p>
+    Assign vehicles to drivers with shift timing,
+    operational accountability, opening KM,
+    fuel tracking and assignment lifecycle management.
+  </p>
+
+</div>
+
+<div id="message"></div>
+
+<div class="summary-grid">
+
+  <div class="summary-card">
+    <h3>Total Assignments</h3>
+    <p id="sumTotal">0</p>
+  </div>
+
+  <div class="summary-card">
+    <h3>Active</h3>
+    <p id="sumActive">0</p>
+  </div>
+
+  <div class="summary-card">
+    <h3>Closed</h3>
+    <p id="sumClosed">0</p>
+  </div>
+
+  <div class="summary-card">
+    <h3>Vehicles In Use</h3>
+    <p id="sumInUse">0</p>
+  </div>
+
+</div>
+
+<div class="card">
+
+  <h2>Assign Vehicle to Driver</h2>
+
+  <form id="assignmentForm">
+
+    <div class="form-grid">
+
+      <div>
+        <label>Select Vehicle</label>
+
+        <select name="vehicleId" id="vehicleSelect" required>
+          <option value="">Loading vehicles...</option>
+        </select>
+      </div>
+
+      <div>
+        <label>Select Driver</label>
+
+        <select name="driverId" id="driverSelect" required>
+          <option value="">Loading drivers...</option>
+        </select>
+      </div>
+
+      <div>
+        <label>Shift Name</label>
+
+        <input
+          type="text"
+          name="shiftName"
+          placeholder="Morning / Evening / Night"/>
+      </div>
+
+      <div>
+        <label>Assignment Start Time</label>
+
+        <input
+          type="datetime-local"
+          name="startTime"
+          required/>
+      </div>
+
+      <div>
+        <label>Expected End Time</label>
+
+        <input
+          type="datetime-local"
+          name="endTime"/>
+      </div>
+
+      <div>
+        <label>Opening Kilometres</label>
+
+        <input
+          type="number"
+          name="openingKm"
+          placeholder="Enter opening KM"
+          required/>
+      </div>
+
+      <div>
+        <label>Fuel Level at Handover</label>
+
+        <select name="fuelLevel">
+          <option value="">Select Fuel Level</option>
+          <option value="Full">Full</option>
+          <option value="3/4">3/4</option>
+          <option value="1/2">1/2</option>
+          <option value="1/4">1/4</option>
+          <option value="Low">Low</option>
+        </select>
+      </div>
+
+      <div class="full">
+
+        <label>Assignment / Handover Notes</label>
+
+        <textarea
+          name="notes"
+          placeholder="Vehicle condition, existing damage, handover remarks or operational instructions">
+        </textarea>
+
+      </div>
+
+      <div style="display:flex;align-items:end;">
+
+        <button type="submit" style="width:100%;">
+          Assign Vehicle
+        </button>
+
+      </div>
+
     </div>
 
-    <div id="message"></div>
+  </form>
 
-    <div class="card">
-      <h2>Assign Vehicle to Driver</h2>
+</div>
 
-      <form id="assignmentForm">
-        <div class="form-grid">
+<div class="card">
 
-          <div>
-            <label>Select Vehicle</label>
-            <select name="vehicleId" id="vehicleSelect" required>
-              <option value="">Loading vehicles...</option>
-            </select>
-          </div>
+  <h2>Assignment Records</h2>
 
-          <div>
-            <label>Select Driver</label>
-            <select name="driverId" id="driverSelect" required>
-              <option value="">Loading drivers...</option>
-            </select>
-          </div>
+  <div id="assignmentsList" class="assignment-grid">
+    Loading...
+  </div>
 
-          <div>
-            <label>Shift Name</label>
-            <input
-              type="text"
-              name="shiftName"
-              placeholder="Morning / Evening / Night"
-            />
-          </div>
+</div>
 
-          <div>
-            <label>Assignment Start Time</label>
-            <input
-              type="datetime-local"
-              name="startTime"
-              required
-            />
-          </div>
+</div>
 
-          <div>
-            <label>Expected End Time</label>
-            <input
-              type="datetime-local"
-              name="endTime"
-            />
-          </div>
+<script>
+const form = document.getElementById("assignmentForm");
+const messageBox = document.getElementById("message");
+const vehicleSelect = document.getElementById("vehicleSelect");
+const driverSelect = document.getElementById("driverSelect");
+const assignmentsList = document.getElementById("assignmentsList");
 
-          <div>
-            <label>Opening Kilometres</label>
-            <input
-              type="number"
-              name="openingKm"
-              placeholder="Enter opening KM"
-              required
-            />
-          </div>
+function showMessage(text,type){
 
-          <div>
-            <label>Fuel Level at Handover</label>
-            <select name="fuelLevel">
-              <option value="">Select Fuel Level</option>
-              <option value="Full">Full</option>
-              <option value="3/4">3/4</option>
-              <option value="1/2">1/2</option>
-              <option value="1/4">1/4</option>
-              <option value="Low">Low</option>
-            </select>
-          </div>
+  messageBox.className = type;
+  messageBox.textContent = text;
+  messageBox.style.display = "block";
 
-          <div class="full">
-            <label>Assignment / Handover Notes</label>
-            <textarea
-              name="notes"
-              placeholder="Mention vehicle condition, existing damage, handover remarks or special instructions"
-            ></textarea>
-          </div>
+  setTimeout(()=>{
+    messageBox.className = "";
+    messageBox.style.display = "none";
+  },4000);
+}
 
-          <div style="display:flex; align-items:end;">
-            <button type="submit" style="width:100%;">
-              Assign Vehicle
-            </button>
-          </div>
+function formatDateTime(value){
+
+  if(!value) return "-";
+
+  try{
+    return new Date(value).toLocaleString();
+  }catch{
+    return value;
+  }
+}
+
+function updateSummary(rows){
+
+  document.getElementById("sumTotal").textContent =
+    rows.length;
+
+  document.getElementById("sumActive").textContent =
+    rows.filter(r => r.status !== "closed").length;
+
+  document.getElementById("sumClosed").textContent =
+    rows.filter(r => r.status === "closed").length;
+
+  document.getElementById("sumInUse").textContent =
+    rows.filter(r => r.status !== "closed").length;
+}
+
+async function loadVehiclesAndDrivers(){
+
+  try{
+
+    const [vehicleRes, driverRes] = await Promise.all([
+      fetch("/api/fleet/vehicles"),
+      fetch("/api/fleet/drivers")
+    ]);
+
+    const vehicleData = await vehicleRes.json();
+    const driverData = await driverRes.json();
+
+    vehicleSelect.innerHTML =
+      `<option value="">Select Vehicle</option>`;
+
+    driverSelect.innerHTML =
+      `<option value="">Select Driver</option>`;
+
+    if(vehicleData.success && vehicleData.vehicles.length){
+
+      vehicleData.vehicles.forEach(vehicle=>{
+
+        const isAssigned =
+          vehicle.status === "assigned";
+
+        vehicleSelect.innerHTML += `
+          <option
+            value="${vehicle.id}"
+            ${isAssigned ? "disabled" : ""}>
+
+            ${vehicle.vehicleNumber || "-"}
+
+            ${isAssigned ? "(Already Assigned)" : ""}
+
+          </option>
+        `;
+      });
+
+    }else{
+
+      vehicleSelect.innerHTML =
+        `<option value="">No vehicles available</option>`;
+    }
+
+    if(driverData.success && driverData.drivers.length){
+
+      driverData.drivers.forEach(driver=>{
+
+        const isAssigned =
+          !!driver.assignedVehicleId;
+
+        const isInactive =
+          driver.status !== "active";
+
+        driverSelect.innerHTML += `
+          <option
+            value="${driver.id}"
+            ${(isAssigned || isInactive)
+              ? "disabled"
+              : ""}>
+
+            ${driver.driverName || "-"}
+
+            ${isAssigned
+              ? "(Already Assigned)"
+              : ""}
+
+            ${isInactive
+              ? "(Not Active)"
+              : ""}
+
+          </option>
+        `;
+      });
+
+    }else{
+
+      driverSelect.innerHTML =
+        `<option value="">No drivers available</option>`;
+    }
+
+  }catch(error){
+
+    console.error(error);
+
+    showMessage(
+      "Unable to load vehicles or drivers.",
+      "error"
+    );
+  }
+}
+
+async function loadAssignments(){
+
+  try{
+
+    const res =
+      await fetch("/api/fleet/reports/assignments");
+
+    const data = await res.json();
+
+    if(!data.success){
+
+      assignmentsList.innerHTML =
+        "Please login to Fleet Dashboard.";
+
+      return;
+    }
+
+    assignmentsList.innerHTML = "";
+
+    const rows = data.rows || [];
+
+    updateSummary(rows);
+
+    if(!rows.length){
+
+      assignmentsList.innerHTML = `
+        <div class="assignment-card">
+          No vehicle assignments created yet.
+        </div>
+      `;
+
+      return;
+    }
+
+    rows.forEach(item=>{
+
+      const statusClass =
+        item.status === "closed"
+        ? "closed"
+        : "active";
+
+      assignmentsList.innerHTML += `
+
+        <div class="assignment-card">
+
+          <h3>
+            ${item.vehicleNumber || "-"}
+            →
+            ${item.driverName || "-"}
+          </h3>
+
+          <p>
+            <strong>Shift:</strong>
+            ${item.shiftName || "-"}
+          </p>
+
+          <p>
+            <strong>Start Time:</strong>
+            ${formatDateTime(item.startTime)}
+          </p>
+
+          <p>
+            <strong>Expected End Time:</strong>
+            ${formatDateTime(item.endTime)}
+          </p>
+
+          <p>
+            <strong>Opening KM:</strong>
+            ${item.openingKm || 0}
+          </p>
+
+          <p>
+            <strong>Closing KM:</strong>
+            ${item.closingKm || "-"}
+          </p>
+
+          <p>
+            <strong>Fuel Level:</strong>
+            ${item.fuelLevel || "-"}
+          </p>
+
+          <p>
+            <strong>Notes:</strong>
+            ${item.notes || "-"}
+          </p>
+
+          <span class="status-badge ${statusClass}">
+            ${item.status || "active"}
+          </span>
+
+          ${
+            item.status !== "closed"
+            ? `
+            <div class="close-box">
+
+              <label>Closing Kilometres</label>
+
+              <input
+                type="number"
+                id="closingKm-${item.id}"
+                placeholder="Enter closing KM"/>
+
+              <label style="margin-top:12px;">
+                Closing Fuel Level
+              </label>
+
+              <select id="closingFuel-${item.id}">
+                <option value="">Select Closing Fuel Level</option>
+                <option value="Full">Full</option>
+                <option value="3/4">3/4</option>
+                <option value="1/2">1/2</option>
+                <option value="1/4">1/4</option>
+                <option value="Low">Low</option>
+              </select>
+
+              <label style="margin-top:12px;">
+                Closing Notes
+              </label>
+
+              <textarea
+                id="closingNotes-${item.id}"
+                placeholder="Vehicle return remarks, damage, fuel or operational notes">
+              </textarea>
+
+              <button
+                class="close-btn"
+                onclick="closeAssignment('${item.id}')">
+
+                Close Assignment
+
+              </button>
+
+            </div>
+            `
+            : ""
+          }
 
         </div>
-      </form>
-    </div>
-
-    <div class="card">
-      <h2>Assignment Records</h2>
-      <div id="assignmentsList" class="assignment-grid">Loading...</div>
-    </div>
-
-  </div>
-
-  <script>
-    const form = document.getElementById("assignmentForm");
-    const messageBox = document.getElementById("message");
-    const vehicleSelect = document.getElementById("vehicleSelect");
-    const driverSelect = document.getElementById("driverSelect");
-    const assignmentsList = document.getElementById("assignmentsList");
-
-    function showMessage(text, type) {
-      messageBox.className = type;
-      messageBox.textContent = text;
-      setTimeout(() => {
-        messageBox.className = "";
-        messageBox.style.display = "none";
-      }, 4000);
-    }
-
-    function formatDateTime(value) {
-      if (!value) return "-";
-      try {
-        return new Date(value).toLocaleString();
-      } catch {
-        return value;
-      }
-    }
-
-    async function loadVehiclesAndDrivers() {
-      try {
-        const [vehicleRes, driverRes] = await Promise.all([
-          fetch("/api/fleet/vehicles"),
-          fetch("/api/fleet/drivers")
-        ]);
-
-        const vehicleData = await vehicleRes.json();
-        const driverData = await driverRes.json();
-
-        vehicleSelect.innerHTML = `<option value="">Select Vehicle</option>`;
-        driverSelect.innerHTML = `<option value="">Select Driver</option>`;
-
-        if (vehicleData.success && vehicleData.vehicles.length) {
-          vehicleData.vehicles.forEach(vehicle => {
-            const isAssigned = vehicle.status === "assigned";
-            vehicleSelect.innerHTML += `
-              <option value="${vehicle.id}" ${isAssigned ? "disabled" : ""}>
-                ${vehicle.vehicleNumber || "-"} ${isAssigned ? "(Already Assigned)" : ""}
-              </option>
-            `;
-          });
-        } else {
-          vehicleSelect.innerHTML = `<option value="">No vehicles available</option>`;
-        }
-
-        if (driverData.success && driverData.drivers.length) {
-          driverData.drivers.forEach(driver => {
-            const isAssigned = !!driver.assignedVehicleId;
-            const isInactive = driver.status !== "active";
-
-            driverSelect.innerHTML += `
-              <option value="${driver.id}" ${(isAssigned || isInactive) ? "disabled" : ""}>
-                ${driver.driverName || "-"} ${isAssigned ? "(Already Assigned)" : ""} ${isInactive ? "(Not Active)" : ""}
-              </option>
-            `;
-          });
-        } else {
-          driverSelect.innerHTML = `<option value="">No drivers available</option>`;
-        }
-
-      } catch (error) {
-        console.error(error);
-        showMessage("Unable to load vehicles or drivers.", "error");
-      }
-    }
-
-    async function loadAssignments() {
-      try {
-        const res = await fetch("/api/fleet/reports/assignments");
-        const data = await res.json();
-
-        if (!data.success) {
-          assignmentsList.innerHTML = "Please login to Fleet Dashboard.";
-          return;
-        }
-
-        assignmentsList.innerHTML = "";
-
-        if (!data.rows.length) {
-          assignmentsList.innerHTML = `
-            <div class="assignment-card">
-              No vehicle assignments created yet.
-            </div>
-          `;
-          return;
-        }
-
-        data.rows.forEach(item => {
-          const statusClass = item.status === "closed" ? "closed" : "active";
-
-          assignmentsList.innerHTML += `
-            <div class="assignment-card">
-              <h3>${item.vehicleNumber || "-"} → ${item.driverName || "-"}</h3>
-
-              <p><strong>Shift:</strong> ${item.shiftName || "-"}</p>
-              <p><strong>Start Time:</strong> ${formatDateTime(item.startTime)}</p>
-              <p><strong>Expected End Time:</strong> ${formatDateTime(item.endTime)}</p>
-              <p><strong>Opening KM:</strong> ${item.openingKm || 0}</p>
-              <p><strong>Closing KM:</strong> ${item.closingKm || "-"}</p>
-              <p><strong>Fuel Level:</strong> ${item.fuelLevel || "-"}</p>
-              <p><strong>Notes:</strong> ${item.notes || "-"}</p>
-
-              <span class="status-badge ${statusClass}">
-                ${item.status || "active"}
-              </span>
-
-              ${
-                item.status !== "closed"
-                ? `
-                  <div class="close-box">
-                    <label>Closing Kilometres</label>
-                    <input type="number" id="closingKm-${item.id}" placeholder="Enter closing KM" />
-
-                    <label style="margin-top:12px;">Closing Fuel Level</label>
-                    <select id="closingFuel-${item.id}">
-                      <option value="">Select Closing Fuel Level</option>
-                      <option value="Full">Full</option>
-                      <option value="3/4">3/4</option>
-                      <option value="1/2">1/2</option>
-                      <option value="1/4">1/4</option>
-                      <option value="Low">Low</option>
-                    </select>
-
-                    <label style="margin-top:12px;">Closing Notes</label>
-                    <textarea id="closingNotes-${item.id}" placeholder="Vehicle return remarks, damage, fuel or handover notes"></textarea>
-
-                    <button class="close-btn" onclick="closeAssignment('${item.id}')">
-                      Close Assignment
-                    </button>
-                  </div>
-                `
-                : ""
-              }
-            </div>
-          `;
-        });
-
-      } catch (error) {
-        console.error(error);
-        assignmentsList.innerHTML = "Unable to load assignments.";
-      }
-    }
-
-    async function closeAssignment(assignmentId) {
-      const closingKm = document.getElementById(`closingKm-${assignmentId}`).value;
-      const closingFuelLevel = document.getElementById(`closingFuel-${assignmentId}`).value;
-      const closingNotes = document.getElementById(`closingNotes-${assignmentId}`).value;
-
-      if (!closingKm) {
-        showMessage("Closing KM is required.", "error");
-        return;
-      }
-
-      try {
-        const res = await fetch(`/api/fleet/assignments/${assignmentId}/close`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            closingKm,
-            closingFuelLevel,
-            closingNotes
-          })
-        });
-
-        const result = await res.json();
-
-        if (result.success) {
-          showMessage(result.message, "success");
-          await loadVehiclesAndDrivers();
-          await loadAssignments();
-        } else {
-          showMessage(result.message || "Unable to close assignment.", "error");
-        }
-
-      } catch (error) {
-        console.error(error);
-        showMessage("Server error while closing assignment.", "error");
-      }
-    }
-
-    form.addEventListener("submit", async function(e) {
-      e.preventDefault();
-
-      const formData = new FormData(form);
-      const data = Object.fromEntries(formData.entries());
-
-      try {
-        const res = await fetch("/api/fleet/assignments", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify(data)
-        });
-
-        const result = await res.json();
-
-        if (result.success) {
-          showMessage(result.message, "success");
-          form.reset();
-          await loadVehiclesAndDrivers();
-          await loadAssignments();
-        } else {
-          showMessage(result.message || "Unable to create assignment.", "error");
-        }
-
-      } catch (error) {
-        console.error(error);
-        showMessage("Server error while assigning vehicle.", "error");
-      }
+      `;
     });
 
-    loadVehiclesAndDrivers();
-    loadAssignments();
-  </script>
+  }catch(error){
+
+    console.error(error);
+
+    assignmentsList.innerHTML =
+      "Unable to load assignments.";
+  }
+}
+
+async function closeAssignment(assignmentId){
+
+  const closingKm =
+    document.getElementById(`closingKm-${assignmentId}`).value;
+
+  const closingFuelLevel =
+    document.getElementById(`closingFuel-${assignmentId}`).value;
+
+  const closingNotes =
+    document.getElementById(`closingNotes-${assignmentId}`).value;
+
+  if(!closingKm){
+
+    showMessage(
+      "Closing KM is required.",
+      "error"
+    );
+
+    return;
+  }
+
+  try{
+
+    const res =
+      await fetch(`/api/fleet/assignments/${assignmentId}/close`,{
+
+      method:"POST",
+
+      headers:{
+        "Content-Type":"application/json"
+      },
+
+      body:JSON.stringify({
+        closingKm,
+        closingFuelLevel,
+        closingNotes
+      })
+    });
+
+    const result = await res.json();
+
+    if(result.success){
+
+      showMessage(result.message,"success");
+
+      await loadVehiclesAndDrivers();
+      await loadAssignments();
+
+    }else{
+
+      showMessage(
+        result.message || "Unable to close assignment.",
+        "error"
+      );
+    }
+
+  }catch(error){
+
+    console.error(error);
+
+    showMessage(
+      "Server error while closing assignment.",
+      "error"
+    );
+  }
+}
+
+form.addEventListener("submit", async function(e){
+
+  e.preventDefault();
+
+  const formData = new FormData(form);
+
+  const data =
+    Object.fromEntries(formData.entries());
+
+  try{
+
+    const res = await fetch("/api/fleet/assignments",{
+
+      method:"POST",
+
+      headers:{
+        "Content-Type":"application/json"
+      },
+
+      body:JSON.stringify(data)
+    });
+
+    const result = await res.json();
+
+    if(result.success){
+
+      showMessage(result.message,"success");
+
+      form.reset();
+
+      await loadVehiclesAndDrivers();
+      await loadAssignments();
+
+    }else{
+
+      showMessage(
+        result.message || "Unable to create assignment.",
+        "error"
+      );
+    }
+
+  }catch(error){
+
+    console.error(error);
+
+    showMessage(
+      "Server error while assigning vehicle.",
+      "error"
+    );
+  }
+});
+
+loadVehiclesAndDrivers();
+loadAssignments();
+</script>
+
+</main>
+</div>
 
 </body>
 </html>

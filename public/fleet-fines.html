@@ -5,160 +5,397 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Vehicall Traffic Fine Attribution</title>
 
+<link rel="stylesheet" href="/fleet-ui.css">
+
 <style>
 body{margin:0;font-family:Arial,sans-serif;background:#07111f;color:#fff}
-.header{display:flex;justify-content:space-between;align-items:center;padding:18px 30px;background:#0b1b2d;border-bottom:1px solid #1d3553}
-.brand{display:flex;align-items:center;gap:14px}
-.brand img{height:46px}
-.brand h2{margin:0}
-.brand p{margin:2px 0 0;color:#9fb0c5;font-size:13px}
-.nav a{color:#6ecbff;margin-left:16px;text-decoration:none;font-size:14px}
-.container{max-width:1250px;margin:30px auto;padding:0 20px}
+.container{max-width:1250px;margin:0 auto;padding:0 20px}
 .card{background:#0f1f33;border:1px solid #20344d;border-radius:20px;padding:24px;margin-bottom:24px}
-.form-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
-label{display:block;margin-bottom:8px;color:#9fb0c5}
-input,select,textarea{width:100%;padding:13px;border-radius:10px;border:1px solid #29496d;background:#081827;color:#fff;box-sizing:border-box}
-textarea{min-height:80px}
-button{padding:13px 18px;border:none;border-radius:12px;background:linear-gradient(135deg,#00c2ff,#0066ff);color:#fff;font-weight:bold;cursor:pointer}
-.btn-green{background:#16a34a}
-.btn-gray{background:#475569}
-#message{display:none;margin-bottom:18px;padding:13px;border-radius:12px}
-.success{display:block!important;background:rgba(0,180,120,.15);color:#70ffc8}
-.error{display:block!important;background:rgba(255,70,70,.15);color:#ff9c9c}
-.match-box{background:#081827;border:1px solid #223854;border-radius:16px;padding:18px;margin-top:18px}
-.match-box strong{color:#6ecbff}
-.table-wrap{overflow-x:auto}
-table{width:100%;border-collapse:collapse;min-width:1200px}
-th,td{padding:12px;border-bottom:1px solid #20344d;text-align:left;font-size:13px}
-th{background:#081827;color:#6ecbff}
-tr:hover{background:#10243b}
-@media(max-width:900px){.form-grid{grid-template-columns:1fr}.header{flex-direction:column;align-items:flex-start;gap:12px}}
+
+.hero h1{
+  margin:0 0 8px;
+}
+
+.hero p{
+  margin:0;
+  color:#b7c4d4;
+  line-height:1.6;
+}
+
+.form-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:14px;
+}
+
+label{
+  display:block;
+  margin-bottom:8px;
+  color:#9fb0c5;
+}
+
+input,select,textarea{
+  width:100%;
+  padding:13px;
+  border-radius:10px;
+  border:1px solid #29496d;
+  background:#081827;
+  color:#fff;
+  box-sizing:border-box;
+}
+
+textarea{
+  min-height:80px;
+}
+
+button{
+  padding:13px 18px;
+  border:none;
+  border-radius:12px;
+  background:linear-gradient(135deg,#00c2ff,#0066ff);
+  color:#fff;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+.btn-green{
+  background:#16a34a;
+}
+
+.btn-gray{
+  background:#475569;
+}
+
+#message{
+  display:none;
+  margin-bottom:18px;
+  padding:13px;
+  border-radius:12px;
+}
+
+.success{
+  display:block!important;
+  background:rgba(0,180,120,.15);
+  color:#70ffc8;
+}
+
+.error{
+  display:block!important;
+  background:rgba(255,70,70,.15);
+  color:#ff9c9c;
+}
+
+.match-box{
+  background:#081827;
+  border:1px solid #223854;
+  border-radius:16px;
+  padding:18px;
+  margin-top:18px;
+}
+
+.match-box strong{
+  color:#6ecbff;
+}
+
+.table-wrap{
+  overflow-x:auto;
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  min-width:1200px;
+}
+
+th,td{
+  padding:12px;
+  border-bottom:1px solid #20344d;
+  text-align:left;
+  font-size:13px;
+}
+
+th{
+  background:#081827;
+  color:#6ecbff;
+}
+
+tr:hover{
+  background:#10243b;
+}
+
+.badge{
+  display:inline-block;
+  padding:5px 10px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:bold;
+}
+
+.badge-matched{
+  background:rgba(0,180,120,.15);
+  color:#70ffc8;
+}
+
+.badge-manual{
+  background:rgba(255,193,7,.15);
+  color:#ffd666;
+}
+
+.badge-unmatched{
+  background:rgba(255,70,70,.15);
+  color:#ff9c9c;
+}
+
+input[type="datetime-local"]{
+  color-scheme:dark;
+}
+
+input[type="datetime-local"]::-webkit-calendar-picker-indicator{
+  filter:invert(1);
+  cursor:pointer;
+}
+
+@media(max-width:900px){
+  .form-grid{
+    grid-template-columns:1fr;
+  }
+}
 </style>
 </head>
 
 <body>
 
-<div class="header">
-  <div class="brand">
-    <img src="/logo.png">
-    <div>
-      <h2>Traffic Fine Attribution</h2>
-      <p>Identify responsible driver using vehicle, date and time</p>
-    </div>
+<div class="app-layout">
+
+<div class="sidebar">
+
+  <h2>Vehicall Fleet</h2>
+
+  <a href="/fleet-dashboard">Dashboard</a>
+
+  <div class="menu-group">
+    <h3>Operations</h3>
+
+    <a href="/fleet-checklist">Daily Checklist</a>
+    <a href="/fleet-daily-trips">Trips</a>
+    <a href="/fleet-replacements">Temporary Replacement</a>
+    <a href="/fleet-fines">Traffic Fines</a>
   </div>
-  <div class="nav">
-    <a href="/fleet-dashboard">Dashboard</a>
+
+  <div class="menu-group">
+    <h3>Fleet Assets</h3>
+
     <a href="/fleet-vehicles">Vehicles</a>
-    <a href="/fleet-reports">Reports</a>
-    <a href="/api/fleet/logout">Logout</a>
+    <a href="/fleet-fuel-cards">Fuel Cards</a>
   </div>
+
+  <div class="menu-group">
+    <h3>Fuel Management</h3>
+
+    <a href="/fleet-fuel">Fuel Entries</a>
+    <a href="/fleet-fuel-statements">Supplier Statements</a>
+  </div>
+
+  <div class="menu-group">
+    <h3>People</h3>
+
+    <a href="/fleet-drivers">Drivers</a>
+    <a href="/fleet-users">Users</a>
+    <a href="/fleet-assignments">Assignments</a>
+  </div>
+
+  <div class="menu-group">
+    <h3>Reports</h3>
+
+    <a href="/fleet-reports">Reports</a>
+  </div>
+
+  <div class="menu-group">
+    <h3>QR Fleet Alerts</h3>
+
+    <a href="/fleet-vehicles">Fleet QR</a>
+  </div>
+
+  <a href="/api/fleet/logout">Logout</a>
+
 </div>
+
+<main class="main-content">
 
 <div class="container">
 
-  <div id="message"></div>
+<div class="card hero">
 
-  <div class="card">
-    <h2>Enter Traffic Fine</h2>
+  <h1>Traffic Fine Attribution</h1>
 
-    <form id="fineForm">
-      <div class="form-grid">
+  <p>
+    Automatically identify responsible drivers using
+    assignment time, vehicle and operational shift history.
+    Supports manual supervisor override with audit tracking.
+  </p>
 
-        <div>
-          <label>Vehicle</label>
-          <select id="vehicleId" name="vehicleId" required>
-            <option value="">Loading vehicles...</option>
-          </select>
-        </div>
+</div>
 
-        <div>
-          <label>Fine Date & Time</label>
-          <input type="datetime-local" id="fineDateTime" name="fineDateTime" required>
-        </div>
+<div id="message"></div>
 
-        <div>
-          <label>Fine Type</label>
-          <select id="fineType" name="fineType" required>
-            <option value="">Select Fine Type</option>
-            <option value="Wrong Parking">Wrong Parking</option>
-            <option value="Speeding">Speeding</option>
-            <option value="Signal Violation">Signal Violation</option>
-            <option value="Vehicle Not Clean">Vehicle Not Clean</option>
-            <option value="Unsafe Driving">Unsafe Driving</option>
-            <option value="Other">Other</option>
-          </select>
-        </div>
+<div class="card">
 
-        <div>
-          <label>Fine Amount OMR</label>
-          <input type="number" step="0.001" name="fineAmount" placeholder="0.000">
-        </div>
+  <h2>Enter Traffic Fine</h2>
 
-        <div>
-          <label>Fine Number / Reference</label>
-          <input name="fineNumber" placeholder="ROP / internal reference">
-        </div>
+  <form id="fineForm">
 
-        <div>
-          <label>Location</label>
-          <input name="location" placeholder="Fine location">
-        </div>
+    <div class="form-grid">
 
-        <div class="full" style="grid-column:span 3;">
-          <label>Description</label>
-          <textarea name="description" placeholder="Fine details"></textarea>
-        </div>
+      <div>
+        <label>Vehicle</label>
 
-        <div style="display:flex;gap:12px;align-items:end;">
-          <button type="button" onclick="matchDriver()">Find Driver</button>
-          <button type="submit" class="btn-green">Save Fine</button>
-        </div>
-
-      </div>
-
-      <input type="hidden" id="responsibleDriverId" name="responsibleDriverId">
-      <input type="hidden" id="responsibleDriverName" name="responsibleDriverName">
-      <input type="hidden" id="matchedAssignmentId" name="matchedAssignmentId">
-      <input type="hidden" id="attributionStatus" name="attributionStatus" value="unmatched">
-
-      <div id="matchBox" class="match-box" style="display:none;"></div>
-
-      <div id="manualDriverBox" class="match-box" style="display:none;">
-        <label>Manual Responsible Driver</label>
-        <select id="manualDriverSelect" onchange="setManualDriver()">
-          <option value="">Select Driver Manually</option>
+        <select id="vehicleId" name="vehicleId" required>
+          <option value="">Loading vehicles...</option>
         </select>
-
-        <label style="margin-top:14px;">Supervisor Remarks</label>
-        <textarea id="supervisorRemarks" name="supervisorRemarks" placeholder="Reason for manual attribution or dispute notes"></textarea>
       </div>
 
-    </form>
+      <div>
+        <label>Fine Date & Time</label>
+
+        <input
+          type="datetime-local"
+          id="fineDateTime"
+          name="fineDateTime"
+          required>
+      </div>
+
+      <div>
+        <label>Fine Type</label>
+
+        <select id="fineType" name="fineType" required>
+
+          <option value="">Select Fine Type</option>
+
+          <option value="Wrong Parking">Wrong Parking</option>
+          <option value="Speeding">Speeding</option>
+          <option value="Signal Violation">Signal Violation</option>
+          <option value="Vehicle Not Clean">Vehicle Not Clean</option>
+          <option value="Unsafe Driving">Unsafe Driving</option>
+          <option value="Other">Other</option>
+
+        </select>
+      </div>
+
+      <div>
+        <label>Fine Amount OMR</label>
+
+        <input
+          type="number"
+          step="0.001"
+          name="fineAmount"
+          placeholder="0.000">
+      </div>
+
+      <div>
+        <label>Fine Number / Reference</label>
+
+        <input
+          name="fineNumber"
+          placeholder="ROP / internal reference">
+      </div>
+
+      <div>
+        <label>Location</label>
+
+        <input
+          name="location"
+          placeholder="Fine location">
+      </div>
+
+      <div style="grid-column:span 3;">
+
+        <label>Description</label>
+
+        <textarea
+          name="description"
+          placeholder="Fine details">
+        </textarea>
+
+      </div>
+
+      <div style="display:flex;gap:12px;align-items:end;flex-wrap:wrap;">
+
+        <button type="button" onclick="matchDriver()">
+          Find Driver
+        </button>
+
+        <button type="submit" class="btn-green">
+          Save Fine
+        </button>
+
+      </div>
+
+    </div>
+
+    <input type="hidden" id="responsibleDriverId" name="responsibleDriverId">
+    <input type="hidden" id="responsibleDriverName" name="responsibleDriverName">
+    <input type="hidden" id="matchedAssignmentId" name="matchedAssignmentId">
+    <input type="hidden" id="attributionStatus" name="attributionStatus" value="unmatched">
+
+    <div id="matchBox" class="match-box" style="display:none;"></div>
+
+    <div id="manualDriverBox" class="match-box" style="display:none;">
+
+      <label>Manual Responsible Driver</label>
+
+      <select id="manualDriverSelect" onchange="setManualDriver()">
+        <option value="">Select Driver Manually</option>
+      </select>
+
+      <label style="margin-top:14px;">
+        Supervisor Remarks
+      </label>
+
+      <textarea
+        id="supervisorRemarks"
+        name="supervisorRemarks"
+        placeholder="Reason for manual attribution or dispute notes">
+      </textarea>
+
+    </div>
+
+  </form>
+
+</div>
+
+<div class="card">
+
+  <h2>Recent Traffic Fine Entries</h2>
+
+  <div class="table-wrap">
+
+    <table>
+
+      <thead>
+        <tr>
+          <th>Fine Date/Time</th>
+          <th>Vehicle</th>
+          <th>Fine Type</th>
+          <th>Amount</th>
+          <th>Fine No.</th>
+          <th>Driver</th>
+          <th>Attribution</th>
+          <th>Status</th>
+          <th>Location</th>
+        </tr>
+      </thead>
+
+      <tbody id="fineList">
+        <tr>
+          <td colspan="9">Loading...</td>
+        </tr>
+      </tbody>
+
+    </table>
+
   </div>
 
-  <div class="card">
-    <h2>Recent Traffic Fine Entries</h2>
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Fine Date/Time</th>
-            <th>Vehicle</th>
-            <th>Fine Type</th>
-            <th>Amount</th>
-            <th>Fine No.</th>
-            <th>Driver</th>
-            <th>Attribution</th>
-            <th>Status</th>
-            <th>Location</th>
-          </tr>
-        </thead>
-        <tbody id="fineList">
-          <tr><td colspan="9">Loading...</td></tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
+</div>
 
 </div>
 
@@ -177,77 +414,145 @@ function showMessage(text,type){
   messageBox.className=type;
   messageBox.textContent=text;
   messageBox.style.display="block";
-  setTimeout(()=>{messageBox.className="";messageBox.style.display="none"},4000);
+
+  setTimeout(()=>{
+    messageBox.className="";
+    messageBox.style.display="none";
+  },4000);
 }
 
 async function loadVehicles(){
+
   const res = await fetch("/api/fleet/vehicles");
   const data = await res.json();
 
-  vehicleSelect.innerHTML = '<option value="">Select Vehicle</option>';
+  vehicleSelect.innerHTML =
+    '<option value="">Select Vehicle</option>';
 
   if(data.success){
+
     data.vehicles.forEach(v=>{
-      vehicleSelect.innerHTML += `<option value="${v.id}">${v.vehicleNumber}</option>`;
+
+      vehicleSelect.innerHTML += `
+        <option value="${v.id}">
+          ${v.vehicleNumber}
+        </option>
+      `;
     });
   }
 }
 
 async function loadDrivers(){
+
   const res = await fetch("/api/fleet/drivers");
   const data = await res.json();
 
-  manualDriverSelect.innerHTML = '<option value="">Select Driver Manually</option>';
+  manualDriverSelect.innerHTML =
+    '<option value="">Select Driver Manually</option>';
 
   if(data.success){
+
     drivers = data.drivers || [];
+
     drivers.forEach(d=>{
-      manualDriverSelect.innerHTML += `<option value="${d.id}" data-name="${d.driverName || ''}">${d.driverName || '-'}</option>`;
+
+      manualDriverSelect.innerHTML += `
+        <option
+          value="${d.id}"
+          data-name="${d.driverName || ''}">
+          ${d.driverName || '-'}
+        </option>
+      `;
     });
   }
 }
 
+function attributionBadge(status){
+
+  if(status === "matched"){
+    return `<span class="badge badge-matched">Matched</span>`;
+  }
+
+  if(status === "manual"){
+    return `<span class="badge badge-manual">Manual</span>`;
+  }
+
+  return `<span class="badge badge-unmatched">Unmatched</span>`;
+}
+
 async function loadFines(){
+
   const res = await fetch("/api/fleet/reports/fines");
   const data = await res.json();
 
   fineList.innerHTML = "";
 
   if(!data.success || !data.rows.length){
-    fineList.innerHTML = `<tr><td colspan="9">No traffic fines found.</td></tr>`;
+
+    fineList.innerHTML = `
+      <tr>
+        <td colspan="9">
+          No traffic fines found.
+        </td>
+      </tr>
+    `;
+
     return;
   }
 
   data.rows.forEach(f=>{
+
     fineList.innerHTML += `
       <tr>
+
         <td>${f.fineDateTime || "-"}</td>
+
         <td>${f.vehicleNumber || "-"}</td>
+
         <td>${f.fineType || "-"}</td>
+
         <td>${f.fineAmount || "0"} OMR</td>
+
         <td>${f.fineNumber || "-"}</td>
+
         <td>${f.responsibleDriverName || "-"}</td>
-        <td>${f.attributionStatus || "-"}</td>
+
+        <td>${attributionBadge(f.attributionStatus)}</td>
+
         <td>${f.status || "-"}</td>
+
         <td>${f.location || "-"}</td>
+
       </tr>
     `;
   });
 }
 
 async function matchDriver(){
-  const vehicleId = document.getElementById("vehicleId").value;
-  const fineDateTime = document.getElementById("fineDateTime").value;
+
+  const vehicleId =
+    document.getElementById("vehicleId").value;
+
+  const fineDateTime =
+    document.getElementById("fineDateTime").value;
 
   if(!vehicleId || !fineDateTime){
-    showMessage("Select vehicle and fine date/time first","error");
+
+    showMessage(
+      "Select vehicle and fine date/time first",
+      "error"
+    );
+
     return;
   }
 
   const res = await fetch("/api/fleet/fines/match",{
     method:"POST",
     headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({ vehicleId, fineDateTime })
+    body:JSON.stringify({
+      vehicleId,
+      fineDateTime
+    })
   });
 
   const result = await res.json();
@@ -256,51 +561,81 @@ async function matchDriver(){
   manualDriverBox.style.display = "block";
 
   if(result.success && result.matched){
+
     const m = result.match;
 
-    document.getElementById("responsibleDriverId").value = m.driverId || "";
-    document.getElementById("responsibleDriverName").value = m.driverName || "";
-    document.getElementById("matchedAssignmentId").value = m.assignmentId || "";
-    document.getElementById("attributionStatus").value = "matched";
+    document.getElementById("responsibleDriverId").value =
+      m.driverId || "";
+
+    document.getElementById("responsibleDriverName").value =
+      m.driverName || "";
+
+    document.getElementById("matchedAssignmentId").value =
+      m.assignmentId || "";
+
+    document.getElementById("attributionStatus").value =
+      "matched";
 
     matchBox.innerHTML = `
-      <strong>Matched Driver Found</strong><br>
+      <strong>Matched Driver Found</strong><br><br>
+
       Driver: ${m.driverName || "-"}<br>
       Vehicle: ${m.vehicleNumber || "-"}<br>
       Source: ${m.matchSource || "-"}
     `;
 
-    showMessage("Driver matched successfully","success");
+    showMessage(
+      "Driver matched successfully",
+      "success"
+    );
 
   }else{
+
     document.getElementById("responsibleDriverId").value = "";
     document.getElementById("responsibleDriverName").value = "";
     document.getElementById("matchedAssignmentId").value = "";
-    document.getElementById("attributionStatus").value = "unmatched";
+
+    document.getElementById("attributionStatus").value =
+      "unmatched";
 
     matchBox.innerHTML = `
-      <strong>No Driver Match Found</strong><br>
+      <strong>No Driver Match Found</strong><br><br>
+
       Please select responsible driver manually if known.
     `;
 
-    showMessage(result.message || "No matching driver found","error");
+    showMessage(
+      result.message || "No matching driver found",
+      "error"
+    );
   }
 }
 
 function setManualDriver(){
-  const selected = manualDriverSelect.options[manualDriverSelect.selectedIndex];
+
+  const selected =
+    manualDriverSelect.options[
+      manualDriverSelect.selectedIndex
+    ];
 
   if(!selected || !selected.value) return;
 
-  document.getElementById("responsibleDriverId").value = selected.value;
-  document.getElementById("responsibleDriverName").value = selected.dataset.name || selected.textContent;
-  document.getElementById("attributionStatus").value = "manual";
+  document.getElementById("responsibleDriverId").value =
+    selected.value;
+
+  document.getElementById("responsibleDriverName").value =
+    selected.dataset.name || selected.textContent;
+
+  document.getElementById("attributionStatus").value =
+    "manual";
 }
 
 fineForm.addEventListener("submit", async e=>{
+
   e.preventDefault();
 
-  const data = Object.fromEntries(new FormData(fineForm).entries());
+  const data =
+    Object.fromEntries(new FormData(fineForm).entries());
 
   const res = await fetch("/api/fleet/fines",{
     method:"POST",
@@ -311,14 +646,25 @@ fineForm.addEventListener("submit", async e=>{
   const result = await res.json();
 
   if(result.success){
+
     showMessage(result.message,"success");
+
     fineForm.reset();
+
     matchBox.style.display = "none";
     manualDriverBox.style.display = "none";
-    document.getElementById("attributionStatus").value = "unmatched";
+
+    document.getElementById("attributionStatus").value =
+      "unmatched";
+
     loadFines();
+
   }else{
-    showMessage(result.message || "Unable to save fine","error");
+
+    showMessage(
+      result.message || "Unable to save fine",
+      "error"
+    );
   }
 });
 
@@ -326,6 +672,9 @@ loadVehicles();
 loadDrivers();
 loadFines();
 </script>
+
+</main>
+</div>
 
 </body>
 </html>

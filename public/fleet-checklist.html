@@ -5,113 +5,286 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Vehicall Daily Fleet Checklist</title>
 
+<link rel="stylesheet" href="/fleet-ui.css">
+
 <style>
 body{margin:0;font-family:Arial,sans-serif;background:#07111f;color:#fff}
-.header{display:flex;justify-content:space-between;align-items:center;padding:18px 30px;background:#0b1b2d;border-bottom:1px solid #1d3553}
-.brand{display:flex;align-items:center;gap:14px}
-.brand img{height:46px}
-.brand h2{margin:0;font-size:21px}
-.brand p{margin:2px 0 0;color:#9fb0c5;font-size:13px}
-.nav a{color:#6ecbff;margin-left:16px;text-decoration:none;font-size:14px}
-.container{max-width:1400px;margin:30px auto;padding:0 20px}
+.container{max-width:1400px;margin:0 auto;padding:0 20px}
 .hero,.card{background:#0f1f33;border:1px solid #20344d;border-radius:20px;padding:24px;margin-bottom:24px}
-.hero h1{margin:0 0 8px}
-.hero p{margin:0;color:#b7c4d4;line-height:1.5}
-label{display:block;margin-bottom:8px;color:#9fb0c5;font-size:14px}
-input,select,textarea{width:100%;padding:10px;border-radius:8px;border:1px solid #29496d;background:#081827;color:#fff;box-sizing:border-box}
-textarea{min-height:45px;resize:vertical}
-button{padding:10px 14px;border:none;border-radius:10px;background:linear-gradient(135deg,#00c2ff,#0066ff);color:#fff;font-weight:bold;cursor:pointer}
-#message{display:none;margin-bottom:18px;padding:13px;border-radius:12px}
-.success{display:block!important;background:rgba(0,180,120,.15);color:#70ffc8;border:1px solid rgba(0,180,120,.35)}
-.error{display:block!important;background:rgba(255,70,70,.15);color:#ff9c9c;border:1px solid rgba(255,70,70,.35)}
-.top-row{display:grid;grid-template-columns:260px 1fr;gap:16px;align-items:end}
-.table-wrap{overflow-x:auto}
-table{width:100%;border-collapse:collapse;min-width:1500px}
-th,td{padding:10px;border-bottom:1px solid #20344d;text-align:left;font-size:13px;vertical-align:top}
-th{background:#081827;color:#6ecbff}
-tr:hover{background:#10243b}
-.small-input{width:110px}
-.checkbox-cell{text-align:center}
-.checkbox-cell input{width:auto;transform:scale(1.2)}
-.km-used{font-weight:bold;color:#70ffc8}
-.badge{display:inline-block;padding:5px 9px;border-radius:999px;font-size:12px;background:rgba(0,194,255,.15);color:#6ecbff}
-@media(max-width:900px){.top-row{grid-template-columns:1fr}.header{flex-direction:column;align-items:flex-start;gap:12px}}
+
+.hero h1{
+  margin:0 0 8px;
+}
+
+.hero p{
+  margin:0;
+  color:#b7c4d4;
+  line-height:1.5;
+}
+
+label{
+  display:block;
+  margin-bottom:8px;
+  color:#9fb0c5;
+  font-size:14px;
+}
+
+input,select,textarea{
+  width:100%;
+  padding:10px;
+  border-radius:8px;
+  border:1px solid #29496d;
+  background:#081827;
+  color:#fff;
+  box-sizing:border-box;
+}
+
+textarea{
+  min-height:45px;
+  resize:vertical;
+}
+
+button{
+  padding:10px 14px;
+  border:none;
+  border-radius:10px;
+  background:linear-gradient(135deg,#00c2ff,#0066ff);
+  color:#fff;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+#message{
+  display:none;
+  margin-bottom:18px;
+  padding:13px;
+  border-radius:12px;
+}
+
+.success{
+  display:block!important;
+  background:rgba(0,180,120,.15);
+  color:#70ffc8;
+}
+
+.error{
+  display:block!important;
+  background:rgba(255,70,70,.15);
+  color:#ff9c9c;
+}
+
+.top-row{
+  display:grid;
+  grid-template-columns:260px 1fr;
+  gap:16px;
+  align-items:end;
+}
+
+.table-wrap{
+  overflow-x:auto;
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  min-width:1500px;
+}
+
+th,td{
+  padding:10px;
+  border-bottom:1px solid #20344d;
+  text-align:left;
+  font-size:13px;
+  vertical-align:top;
+}
+
+th{
+  background:#081827;
+  color:#6ecbff;
+}
+
+tr:hover{
+  background:#10243b;
+}
+
+.small-input{
+  width:110px;
+}
+
+.checkbox-cell{
+  text-align:center;
+}
+
+.checkbox-cell input{
+  width:auto;
+  transform:scale(1.2);
+}
+
+.km-used{
+  font-weight:bold;
+  color:#70ffc8;
+}
+
+.badge{
+  display:inline-block;
+  padding:5px 9px;
+  border-radius:999px;
+  font-size:12px;
+  background:rgba(0,194,255,.15);
+  color:#6ecbff;
+}
+
+input[type="date"]{
+  color-scheme:dark;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator{
+  filter:invert(1);
+  cursor:pointer;
+}
+
+@media(max-width:900px){
+  .top-row{
+    grid-template-columns:1fr;
+  }
+}
 </style>
 </head>
 
 <body>
 
-<div class="header">
-  <div class="brand">
-    <img src="/logo.png" alt="Vehicall Logo">
-    <div>
-      <h2>Vehicall Daily Fleet Checklist</h2>
-      <p>End-of-day vehicle inspection, KM tracking and operational accountability</p>
-    </div>
+<div class="app-layout">
+
+<div class="sidebar">
+
+  <h2>Vehicall Fleet</h2>
+
+  <a href="/fleet-dashboard">Dashboard</a>
+
+  <div class="menu-group">
+    <h3>Operations</h3>
+
+    <a href="/fleet-checklist">Daily Checklist</a>
+    <a href="/fleet-daily-trips">Trips</a>
+    <a href="/fleet-replacements">Temporary Replacement</a>
+    <a href="/fleet-fines">Traffic Fines</a>
   </div>
 
-  <div class="nav">
-    <a href="/fleet-dashboard">Dashboard</a>
+  <div class="menu-group">
+    <h3>Fleet Assets</h3>
+
     <a href="/fleet-vehicles">Vehicles</a>
-    <a href="/fleet-assignments">Assignments</a>
-    <a href="/fleet-reports">Reports</a>
-    <a href="/api/fleet/logout">Logout</a>
+    <a href="/fleet-fuel-cards">Fuel Cards</a>
   </div>
+
+  <div class="menu-group">
+    <h3>Fuel Management</h3>
+
+    <a href="/fleet-fuel">Fuel Entries</a>
+    <a href="/fleet-fuel-statements">Supplier Statements</a>
+  </div>
+
+  <div class="menu-group">
+    <h3>People</h3>
+
+    <a href="/fleet-drivers">Drivers</a>
+    <a href="/fleet-users">Users</a>
+    <a href="/fleet-assignments">Assignments</a>
+  </div>
+
+  <div class="menu-group">
+    <h3>Reports</h3>
+
+    <a href="/fleet-reports">Reports</a>
+  </div>
+
+  <div class="menu-group">
+    <h3>QR Fleet Alerts</h3>
+
+    <a href="/fleet-vehicles">Fleet QR</a>
+  </div>
+
+  <a href="/api/fleet/logout">Logout</a>
+
 </div>
+
+<main class="main-content">
 
 <div class="container">
 
-  <div class="hero">
-    <h1>Daily Vehicle Checklist</h1>
-    <p>
-      Select one checklist date for the day. Assigned vehicles will appear in table format.
-      Supervisor enters closing KM, inspection status, damage notes and remarks.
-    </p>
-  </div>
+<div class="hero">
 
-  <div id="message"></div>
+  <h1>Daily Vehicle Checklist</h1>
 
-  <div class="card">
-    <div class="top-row">
-      <div>
-        <label>Checklist Date</label>
-        <input type="date" id="checklistDate" required>
-      </div>
-      <div>
-        <span class="badge">Opening KM comes from active assignment</span>
-      </div>
+  <p>
+    Daily operational closing checklist for assigned vehicles,
+    including KM usage, safety inspection, damage reporting
+    and driver accountability.
+  </p>
+
+</div>
+
+<div id="message"></div>
+
+<div class="card">
+
+  <div class="top-row">
+
+    <div>
+      <label>Checklist Date</label>
+      <input type="date" id="checklistDate" required>
     </div>
-  </div>
 
-  <div class="card">
-    <h2>Assigned Vehicles Checklist</h2>
-
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Vehicle</th>
-            <th>Driver</th>
-            <th>Opening KM</th>
-            <th>Closing KM</th>
-            <th>KM Used</th>
-            <th>Tires</th>
-            <th>Brakes</th>
-            <th>Lights</th>
-            <th>Fuel Level</th>
-            <th>Damage</th>
-            <th>Safe</th>
-            <th>Damage Notes</th>
-            <th>Remarks</th>
-            <th>Submit</th>
-          </tr>
-        </thead>
-        <tbody id="checklistRows">
-          <tr><td colspan="14">Loading assigned vehicles...</td></tr>
-        </tbody>
-      </table>
+    <div>
+      <span class="badge">
+        Opening KM comes automatically from active assignment
+      </span>
     </div>
+
   </div>
+
+</div>
+
+<div class="card">
+
+  <h2>Assigned Vehicles Checklist</h2>
+
+  <div class="table-wrap">
+
+    <table>
+
+      <thead>
+        <tr>
+          <th>Vehicle</th>
+          <th>Driver</th>
+          <th>Opening KM</th>
+          <th>Closing KM</th>
+          <th>KM Used</th>
+          <th>Tires</th>
+          <th>Brakes</th>
+          <th>Lights</th>
+          <th>Fuel Level</th>
+          <th>Damage</th>
+          <th>Safe</th>
+          <th>Damage Notes</th>
+          <th>Remarks</th>
+          <th>Submit</th>
+        </tr>
+      </thead>
+
+      <tbody id="checklistRows">
+        <tr>
+          <td colspan="14">
+            Loading assigned vehicles...
+          </td>
+        </tr>
+      </tbody>
+
+    </table>
+
+  </div>
+
+</div>
 
 </div>
 
@@ -123,6 +296,7 @@ const checklistDate = document.getElementById("checklistDate");
 let assignments = [];
 
 function showMessage(text,type){
+
   messageBox.className = type;
   messageBox.textContent = text;
   messageBox.style.display = "block";
@@ -141,9 +315,15 @@ function todayDate(){
 checklistDate.value = todayDate();
 
 function calculateKmUsed(assignmentId){
-  const opening = Number(document.getElementById(`opening_${assignmentId}`).value || 0);
-  const closing = Number(document.getElementById(`closing_${assignmentId}`).value || 0);
-  const kmUsedBox = document.getElementById(`kmused_${assignmentId}`);
+
+  const opening =
+    Number(document.getElementById(`opening_${assignmentId}`).value || 0);
+
+  const closing =
+    Number(document.getElementById(`closing_${assignmentId}`).value || 0);
+
+  const kmUsedBox =
+    document.getElementById(`kmused_${assignmentId}`);
 
   if(!closing){
     kmUsedBox.textContent = "-";
@@ -161,40 +341,75 @@ function calculateKmUsed(assignmentId){
 }
 
 async function loadAssignments(){
+
   try{
+
     const res = await fetch("/api/fleet/assignments");
     const data = await res.json();
 
     checklistRows.innerHTML = "";
 
     if(!data.success){
-      checklistRows.innerHTML = `<tr><td colspan="14">Please login to Fleet Dashboard.</td></tr>`;
+
+      checklistRows.innerHTML = `
+        <tr>
+          <td colspan="14">
+            Please login to Fleet Dashboard.
+          </td>
+        </tr>
+      `;
+
       return;
     }
 
-    assignments = (data.assignments || []).filter(a => a.status === "active");
+    assignments =
+      (data.assignments || [])
+      .filter(a => a.status === "active");
 
     if(!assignments.length){
-      checklistRows.innerHTML = `<tr><td colspan="14">No active assigned vehicles found.</td></tr>`;
+
+      checklistRows.innerHTML = `
+        <tr>
+          <td colspan="14">
+            No active assigned vehicles found.
+          </td>
+        </tr>
+      `;
+
       return;
     }
 
     assignments.forEach(a=>{
+
       checklistRows.innerHTML += `
         <tr>
+
           <td>${a.vehicleNumber || "-"}</td>
+
           <td>${a.driverName || "-"}</td>
 
           <td>
-            <input class="small-input" id="opening_${a.id}" value="${a.openingKm || 0}" readonly>
+            <input
+              class="small-input"
+              id="opening_${a.id}"
+              value="${a.openingKm || 0}"
+              readonly>
           </td>
 
           <td>
-            <input class="small-input" type="number" id="closing_${a.id}" oninput="calculateKmUsed('${a.id}')">
+            <input
+              class="small-input"
+              type="number"
+              id="closing_${a.id}"
+              oninput="calculateKmUsed('${a.id}')">
           </td>
 
           <td>
-            <span class="km-used" id="kmused_${a.id}">-</span>
+            <span
+              class="km-used"
+              id="kmused_${a.id}">
+              -
+            </span>
           </td>
 
           <td class="checkbox-cell">
@@ -235,28 +450,47 @@ async function loadAssignments(){
           </td>
 
           <td>
-            <textarea id="damageNotes_${a.id}" placeholder="Damage / issue notes"></textarea>
+            <textarea
+              id="damageNotes_${a.id}"
+              placeholder="Damage / issue notes">
+            </textarea>
           </td>
 
           <td>
-            <textarea id="remarks_${a.id}" placeholder="Operational remarks"></textarea>
+            <textarea
+              id="remarks_${a.id}"
+              placeholder="Operational remarks">
+            </textarea>
           </td>
 
           <td>
-            <button onclick="submitChecklist('${a.id}')">Save</button>
+            <button onclick="submitChecklist('${a.id}')">
+              Save
+            </button>
           </td>
+
         </tr>
       `;
     });
 
   }catch(error){
+
     console.error(error);
-    checklistRows.innerHTML = `<tr><td colspan="14">Unable to load assigned vehicles.</td></tr>`;
+
+    checklistRows.innerHTML = `
+      <tr>
+        <td colspan="14">
+          Unable to load assigned vehicles.
+        </td>
+      </tr>
+    `;
   }
 }
 
 async function submitChecklist(assignmentId){
-  const a = assignments.find(x => x.id === assignmentId);
+
+  const a =
+    assignments.find(x => x.id === assignmentId);
 
   if(!a){
     showMessage("Assignment not found","error");
@@ -268,8 +502,11 @@ async function submitChecklist(assignmentId){
     return;
   }
 
-  const openingKm = Number(document.getElementById(`opening_${assignmentId}`).value || 0);
-  const closingKm = Number(document.getElementById(`closing_${assignmentId}`).value || 0);
+  const openingKm =
+    Number(document.getElementById(`opening_${assignmentId}`).value || 0);
+
+  const closingKm =
+    Number(document.getElementById(`closing_${assignmentId}`).value || 0);
 
   if(!closingKm){
     showMessage("Closing KM is required","error");
@@ -282,25 +519,41 @@ async function submitChecklist(assignmentId){
   }
 
   const payload = {
+
     checklistDate: checklistDate.value,
+
     vehicleId: a.vehicleId,
     driverId: a.driverId,
+
     checklistType: "closing",
 
     openingKm,
     closingKm,
     kmUsed: closingKm - openingKm,
 
-    tireCheck: document.getElementById(`tire_${assignmentId}`).checked,
-    brakeCheck: document.getElementById(`brake_${assignmentId}`).checked,
-    lightsCheck: document.getElementById(`lights_${assignmentId}`).checked,
+    tireCheck:
+      document.getElementById(`tire_${assignmentId}`).checked,
 
-    fuelLevel: document.getElementById(`fuel_${assignmentId}`).value,
-    damageFound: document.getElementById(`damage_${assignmentId}`).value === "true",
-    safetyConfirmed: document.getElementById(`safe_${assignmentId}`).value === "true",
+    brakeCheck:
+      document.getElementById(`brake_${assignmentId}`).checked,
 
-    damageNotes: document.getElementById(`damageNotes_${assignmentId}`).value,
-    remarks: document.getElementById(`remarks_${assignmentId}`).value
+    lightsCheck:
+      document.getElementById(`lights_${assignmentId}`).checked,
+
+    fuelLevel:
+      document.getElementById(`fuel_${assignmentId}`).value,
+
+    damageFound:
+      document.getElementById(`damage_${assignmentId}`).value === "true",
+
+    safetyConfirmed:
+      document.getElementById(`safe_${assignmentId}`).value === "true",
+
+    damageNotes:
+      document.getElementById(`damageNotes_${assignmentId}`).value,
+
+    remarks:
+      document.getElementById(`remarks_${assignmentId}`).value
   };
 
   const res = await fetch("/api/fleet/checklists",{
@@ -312,8 +565,11 @@ async function submitChecklist(assignmentId){
   const result = await res.json();
 
   if(result.success){
+
     showMessage(result.message,"success");
+
     loadAssignments();
+
   }else{
     showMessage(result.message || "Unable to save checklist","error");
   }
@@ -321,6 +577,9 @@ async function submitChecklist(assignmentId){
 
 loadAssignments();
 </script>
+
+</main>
+</div>
 
 </body>
 </html>

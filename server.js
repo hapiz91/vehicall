@@ -297,9 +297,7 @@ app.post('/register', async (req, res) => {
       plateNumber,
       vehicleNumber,
       password,
-      consentAccepted,
-      consentAcceptedAt,
-      acceptedDocuments
+      agreements
     } = req.body;
 
     vehicleNumber = buildOmanVehicleNumber(plateCode, plateNumber) || normalizeVehicleNumber(vehicleNumber);
@@ -310,8 +308,15 @@ app.post('/register', async (req, res) => {
       });
     }
 
-    if (!consentAccepted) {
-      return res.status(400).json({ message: 'Consent required' });
+    if (
+      !agreements ||
+      agreements.privacyPolicy !== true ||
+      agreements.termsConditions !== true ||
+      agreements.consentLiability !== true
+    ) {
+      return res.status(400).json({
+        message: 'All agreements must be accepted before registration.'
+      });
     }
 
     vehicleNumber = vehicleNumber.toUpperCase().trim();
@@ -330,42 +335,76 @@ app.post('/register', async (req, res) => {
     const welcomeDetails = getPlanDetails('Welcome', 'trial');
 
     await userRef.set({
-      name,
-      mobile,
-      vehicleNumber,
-      plateCode: plateCode || '',
-      plateNumber: plateNumber || '',
-      password: hashedPassword,
+  // USER DETAILS
+  name,
+  mobile,
+  vehicleNumber,
+  plateCode: plateCode || '',
+  plateNumber: plateNumber || '',
+  password: hashedPassword,
 
-      qr_id,
-      qr_generated: false,
-      alertUrl: '',
+  // QR SYSTEM
+  qr_id,
+  qr_generated: false,
+  alertUrl: '',
 
-      plan: 'Welcome',
-      billingCycle: 'free-trial',
-      packageSaved: true,
-      paymentStatus: 'free-trial',
+  // PLAN DETAILS
+  plan: 'Welcome',
+  billingCycle: 'free-trial',
+  packageSaved: true,
+  paymentStatus: 'free-trial',
 
-      price: 0,
-      alertsUsed: 0,
-      alertsLimit: welcomeDetails.alertsLimit,
-      planStart: now,
-      planEnd: addMonths(now, welcomeDetails.validityMonths),
+  // PLAN LIMITS
+  price: 0,
+  alertsUsed: 0,
+  alertsLimit: welcomeDetails.alertsLimit,
 
-      contactsLimit: welcomeDetails.contactsLimit,
-      locationEnabled: false,
-      contacts: [makePrimaryContact(name, mobile)],
+  // PLAN VALIDITY
+  planStart: now,
+  planEnd: addMonths(now, welcomeDetails.validityMonths),
 
-      consentAccepted: true,
-      consentAcceptedAt: consentAcceptedAt || now,
-      acceptedDocuments: acceptedDocuments || [],
+  // CONTACT SYSTEM
+  contactsLimit: welcomeDetails.contactsLimit,
+  locationEnabled: false,
+  contacts: [makePrimaryContact(name, mobile)],
 
-      accountType: 'individual',
-      companyId: null,
-      accountStatus: 'active',
+  // AGREEMENT & COMPLIANCE
+  agreements: {
+    privacyPolicy: {
+      accepted: true,
+      acceptedAt: agreements.privacyPolicyAcceptedAt || now,
+      version: agreements.agreementVersion || 'v1.0'
+    },
 
-      createdAt: now
-    });
+    termsConditions: {
+      accepted: true,
+      acceptedAt: agreements.termsConditionsAcceptedAt || now,
+      version: agreements.agreementVersion || 'v1.0'
+    },
+
+    consentLiability: {
+      accepted: true,
+      acceptedAt: agreements.consentLiabilityAcceptedAt || now,
+      version: agreements.agreementVersion || 'v1.0'
+    }
+  },
+
+  // TRA / AUDIT STRUCTURE
+  compliance: {
+    registrationSource: 'web',
+    agreementVersion: agreements.agreementVersion || 'v1.0',
+    country: 'Oman',
+    dataUsePurpose: 'Vehicle QR alert notification service'
+  },
+
+  // ACCOUNT TYPE
+  accountType: 'individual',
+  companyId: null,
+  accountStatus: 'active',
+
+  // CREATED DATE
+  createdAt: now
+});
 
     res.json({
       message: 'Registration successful. Welcome Plan activated for 2 months.',

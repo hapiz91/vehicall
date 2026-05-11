@@ -401,13 +401,31 @@ function applyLang() {
   document.getElementById("btnAr").classList.toggle("active", lang === "ar");
 }
 
+function formatDate(dateValue) {
+  if (!dateValue) return "-";
+
+  const date = new Date(dateValue);
+
+  if (isNaN(date.getTime())) return "-";
+
+  const day = String(date.getDate()).padStart(2, "0");
+
+  const month = date.toLocaleString("en-US", {
+    month: "short"
+  });
+
+  const year = date.getFullYear();
+
+  return `${day}-${month}-${year}`;
+}
+
 function loadUserData() {
   document.getElementById('vehicleNumber').innerText = user.vehicleNumber || '-';
   document.getElementById('detailVehicle').innerText = user.vehicleNumber || '-';
   document.getElementById('planInfo').innerText = user.plan || '-';
   document.getElementById('alertsUsed').innerText = user.alertsUsed || 0;
   document.getElementById('alertsLimit').innerText = user.alertsLimit || 0;
-  document.getElementById('planEnd').innerText = user.planEnd ? new Date(user.planEnd).toLocaleDateString() : '-';
+  document.getElementById('planEnd').innerText = user.planEnd ? formatDate(user.planEnd) : '-';
   document.getElementById('qrStatus').innerText = user.qr_generated ? t('active') : t('pending');
   document.getElementById('contactsCount').innerText = user.contactsLimit || 1;
   document.getElementById('locationStatus').innerText = user.locationEnabled ? t('yes') : t('no');
@@ -473,14 +491,14 @@ function showLiveAlert(alert) {
   text.innerText = `${alert.alertLabel || alert.alertType || t('liveDefault')} - ${alert.vehicleNumber || user.vehicleNumber}`;
 
   popup.classList.remove('hidden');
-
-  setTimeout(() => {
-    popup.classList.add('hidden');
-  }, 12000);
 }
 
 function closeLivePopup() {
-  document.getElementById('liveAlertPopup').classList.add('hidden');
+  const popup = document.getElementById('liveAlertPopup');
+
+  if (popup) {
+    popup.classList.add('hidden');
+  }
 }
 
 function playAlertSound() {

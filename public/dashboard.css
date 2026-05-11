@@ -12,12 +12,22 @@ body {
 }
 
 .dashboard-header {
-  background: #ffffff;
-  border-bottom: 1px solid #e6edf5;
-  padding: 16px 32px;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
+
+  padding: 18px 28px;
+
+  background: rgba(255,255,255,0.96);
+  backdrop-filter: blur(10px);
+
+  border-bottom: 1px solid #e5e7eb;
+
+  width: 100%;
 }
 
 .brand {
@@ -57,9 +67,8 @@ body {
 .container {
   width: min(1180px, 92%);
   margin: auto;
-  padding: 34px 0;
+  padding: 120px 0 34px;
 }
-
 .hero-card {
   background: linear-gradient(135deg, #0b1f3a, #123b63);
   color: #ffffff;

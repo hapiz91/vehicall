@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vehicall Fleet Management</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;font-family:Arial,sans-serif}
+    html{scroll-behavior:smooth}
+    body{background:#f4f8fc;color:#081827;overflow-x:hidden}
+    a{text-decoration:none;color:inherit}
+    .nav{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.96);backdrop-filter:blur(10px);border-bottom:1px solid #e5edf6;padding:16px 7%;display:flex;justify-content:space-between;align-items:center;animation:slideDown .6s ease both}
+    .brand{display:flex;gap:12px;align-items:center}.brand img{width:54px}.brand h2{font-size:28px}.brand p{color:#526579;font-size:14px}
+    .nav-actions{display:flex;gap:12px;align-items:center}.btn{padding:13px 22px;border-radius:14px;font-weight:800;display:inline-block;border:1px solid #d8e4f1;transition:.25s ease}.btn:hover{transform:translateY(-2px);box-shadow:0 16px 30px rgba(8,24,39,.12)}.btn-dark{background:#081827;color:#fff}.btn-blue{background:linear-gradient(90deg,#02b8ff,#0575ff);color:#fff;box-shadow:0 15px 30px rgba(5,117,255,.25)}.btn-light{background:#fff;color:#081827}
+    .hero{position:relative;overflow:hidden;padding:86px 7% 60px;background:radial-gradient(circle at top right,#dcecff,transparent 40%),linear-gradient(135deg,#f8fbff,#eef6ff)}
+    .hero:before{content:"";position:absolute;width:420px;height:420px;border-radius:50%;background:linear-gradient(135deg,rgba(0,184,255,.20),rgba(5,117,255,.08));right:-120px;top:70px;animation:floatOrb 8s ease-in-out infinite}.hero:after{content:"";position:absolute;width:260px;height:260px;border-radius:50%;background:rgba(34,197,94,.12);left:-90px;bottom:20px;animation:floatOrb 10s ease-in-out infinite reverse}
+    .hero-grid{position:relative;z-index:2;max-width:1180px;margin:auto;display:grid;grid-template-columns:1.05fr .95fr;gap:48px;align-items:center}.badge{display:inline-block;background:#e3f1ff;color:#0052a8;padding:10px 16px;border-radius:999px;font-weight:800;margin-bottom:18px;animation:fadeUp .7s ease both}.hero h1{font-size:56px;line-height:1.05;letter-spacing:-1px;margin-bottom:20px;animation:fadeUp .8s ease both}.hero p{font-size:19px;color:#53657b;line-height:1.7;margin-bottom:28px;animation:fadeUp .9s ease both}.hero-actions{display:flex;gap:14px;flex-wrap:wrap;animation:fadeUp 1s ease both}.trust-row{display:flex;gap:12px;flex-wrap:wrap;margin-top:28px;animation:fadeUp 1.1s ease both}.chip{background:#fff;border:1px solid #e1e9f2;border-radius:999px;padding:10px 14px;color:#314255;font-weight:700}
+    .mockup{position:relative;background:#081827;color:#fff;border-radius:32px;padding:24px;box-shadow:0 30px 70px rgba(8,24,39,.25);animation:floatCard 5s ease-in-out infinite}.mockup:before{content:"";position:absolute;inset:-2px;border-radius:34px;background:linear-gradient(135deg,#02b8ff,#22c55e,#0575ff);z-index:-1;opacity:.55}.mockup-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}.mockup-head span{background:#12385b;padding:8px 12px;border-radius:999px;font-size:13px}.stats{display:grid;grid-template-columns:1fr 1fr;gap:14px}.stat{background:#102b49;border:1px solid #1e466c;border-radius:20px;padding:18px;transition:.25s ease}.stat:hover{transform:translateY(-4px);border-color:#37bdf8}.stat small{color:#9db8d5}.stat b{display:block;font-size:28px;margin-top:8px}.mock-list{margin-top:18px;background:#fff;color:#081827;border-radius:22px;padding:18px}.mock-list h3{margin-bottom:12px}.task{display:flex;justify-content:space-between;border-bottom:1px solid #edf2f7;padding:10px 0;color:#526579}.task:last-child{border-bottom:0}.ok{color:#16a34a;font-weight:800}.warn{color:#f59e0b;font-weight:800}
+    .section{padding:70px 7%}.section-inner{max-width:1180px;margin:auto}.center{text-align:center}.section h2{font-size:40px;margin-bottom:12px}.section .lead{color:#607085;font-size:18px;line-height:1.7;max-width:780px;margin:0 auto 36px}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}.card{background:#fff;border:1px solid #e4edf6;border-radius:24px;padding:24px;box-shadow:0 18px 40px rgba(8,24,39,.05);transition:.3s ease}.card:hover{transform:translateY(-7px);box-shadow:0 24px 50px rgba(8,24,39,.10)}.icon{width:52px;height:52px;border-radius:16px;background:#eaf4ff;display:flex;align-items:center;justify-content:center;font-size:25px;margin-bottom:18px}.card h3{font-size:21px;margin-bottom:10px}.card p{color:#5d6f84;line-height:1.6}
+    .visual-strip{padding:34px 7% 70px}.visual-grid{max-width:1180px;margin:auto;display:grid;grid-template-columns:1.2fr .8fr;gap:20px}.photo-card{min-height:300px;border-radius:30px;overflow:hidden;position:relative;box-shadow:0 24px 55px rgba(8,24,39,.14);background:linear-gradient(135deg,rgba(8,24,39,.92),rgba(8,56,94,.72)),url('https://images.unsplash.com/photo-1601584115197-04ecc0da31d7?auto=format&fit=crop&w=1400&q=80') center/cover}.photo-card.small{background:linear-gradient(135deg,rgba(8,24,39,.88),rgba(8,56,94,.66)),url('https://images.unsplash.com/photo-1558618666-fcd25c85cd64?auto=format&fit=crop&w=900&q=80') center/cover}.photo-content{position:absolute;left:28px;right:28px;bottom:26px;color:#fff}.photo-content span{display:inline-block;background:rgba(255,255,255,.16);backdrop-filter:blur(8px);padding:8px 12px;border-radius:999px;margin-bottom:12px;font-weight:800}.photo-content h3{font-size:30px;margin-bottom:8px}.photo-content p{color:#d9e6f3;line-height:1.6}.floating-kpi{position:absolute;top:24px;right:24px;background:#fff;color:#081827;border-radius:20px;padding:16px;min-width:150px;box-shadow:0 16px 36px rgba(0,0,0,.18);animation:floatCard 4s ease-in-out infinite}.floating-kpi small{color:#607085}.floating-kpi b{display:block;font-size:26px;margin-top:5px}
+    .dark{background:#071827;color:#fff}.dark .lead{color:#b8c9db}.module-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}.module{background:#102b49;border:1px solid #1e466c;border-radius:18px;padding:18px;transition:.25s ease}.module:hover{transform:translateY(-5px);border-color:#02b8ff}.module b{display:block;margin-bottom:8px}.module span{color:#b8c9db;font-size:14px;line-height:1.5}
+    .flow{display:grid;grid-template-columns:repeat(4,1fr);gap:18px}.step{background:#fff;border:1px solid #e4edf6;border-radius:22px;padding:22px;text-align:center;transition:.25s ease}.step:hover{transform:translateY(-5px)}.num{width:42px;height:42px;background:#081827;color:#fff;border-radius:14px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-weight:900}.industries{display:flex;gap:14px;flex-wrap:wrap;justify-content:center}.industry{background:#fff;border:1px solid #e4edf6;border-radius:999px;padding:13px 18px;font-weight:800;color:#26384d;transition:.2s}.industry:hover{background:#081827;color:#fff;transform:translateY(-3px)}
+    .cta{max-width:1180px;margin:auto;background:linear-gradient(135deg,#081827,#0b3b66);color:#fff;border-radius:32px;padding:46px;text-align:center;position:relative;overflow:hidden}.cta:before{content:"";position:absolute;width:260px;height:260px;background:rgba(2,184,255,.18);border-radius:50%;right:-80px;top:-90px}.cta h2{font-size:38px;position:relative}.cta p{color:#c6d6e6;margin:14px auto 26px;max-width:760px;line-height:1.7;position:relative}.cta a{position:relative}
+    footer{text-align:center;padding:30px;color:#6b7b8e}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:translateY(0)}}@keyframes slideDown{from{opacity:0;transform:translateY(-20px)}to{opacity:1;transform:translateY(0)}}@keyframes floatCard{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}@keyframes floatOrb{0%,100%{transform:translate(0,0)}50%{transform:translate(-18px,18px)}}
+    @media(max-width:900px){.hero-grid,.grid,.flow,.visual-grid{grid-template-columns:1fr}.module-grid{grid-template-columns:1fr 1fr}.hero h1{font-size:40px}.nav{padding:14px 5%;flex-wrap:wrap}.nav-actions{margin-top:12px}.section{padding:48px 5%}.visual-strip{padding:20px 5% 48px}}
+    @media(max-width:560px){.module-grid,.stats{grid-template-columns:1fr}.hero-actions .btn,.nav-actions .btn{width:100%;text-align:center}.card{padding:20px}.cta{padding:30px 20px}.floating-kpi{position:static;margin:18px}.photo-card{min-height:360px}}
+  </style>
+</head>
+<body>
+  <nav class="nav">
+    <a class="brand" href="/">
+      <img src="/logo.png" alt="Vehicall" />
+      <div><h2>Vehicall</h2><p>Fleet Management</p></div>
+    </a>
+    <div class="nav-actions">
+      <a class="btn btn-light" href="/fleet-login">Fleet Login</a>
+      <a class="btn btn-blue" href="/fleet-register">Register Fleet Company</a>
+    </div>
+  </nav>
+
+  <section class="hero">
+    <div class="hero-grid">
+      <div>
+        <span class="badge">For Oman business fleets</span>
+        <h1>Fleet operations in one secure dashboard.</h1>
+        <p>Manage vehicles, drivers, assignments, daily trips, checklists, fuel cards, maintenance, incidents, traffic fines and reports from one Vehicall platform.</p>
+        <div class="hero-actions">
+          <a class="btn btn-blue" href="/fleet-register">Register Fleet Company</a>
+          <a class="btn btn-dark" href="/fleet-login">Fleet Login</a>
+          <a class="btn btn-light" href="#modules">View Modules</a>
+        </div>
+        <div class="trust-row">
+          <span class="chip">QR Fleet Alerts</span>
+          <span class="chip">Driver Portal</span>
+          <span class="chip">Fuel Control</span>
+          <span class="chip">Audit Ready</span>
+        </div>
+      </div>
+
+      <div class="mockup">
+        <div class="mockup-head">
+          <h2>Fleet Dashboard</h2>
+          <span>Live operations</span>
+        </div>
+        <div class="stats">
+          <div class="stat"><small>Total Vehicles</small><b>48</b></div>
+          <div class="stat"><small>Active Drivers</small><b>36</b></div>
+          <div class="stat"><small>Open Incidents</small><b>04</b></div>
+          <div class="stat"><small>Fuel Entries</small><b>128</b></div>
+        </div>
+        <div class="mock-list">
+          <h3>Today’s control board</h3>
+          <div class="task"><span>Daily checklist submitted</span><b class="ok">32/48</b></div>
+          <div class="task"><span>Fuel card reconciliation</span><b class="warn">Review</b></div>
+          <div class="task"><span>Vehicles due for service</span><b>05</b></div>
+          <div class="task"><span>Driver assignments active</span><b class="ok">36</b></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="visual-strip">
+    <div class="visual-grid">
+      <div class="photo-card">
+        <div class="floating-kpi"><small>Fleet visibility</small><b>24/7</b></div>
+        <div class="photo-content">
+          <span>Operations control</span>
+          <h3>From vehicle assignment to daily reporting</h3>
+          <p>Give fleet owners and managers a clear view of vehicles, drivers, checklists, fuel and incidents.</p>
+        </div>
+      </div>
+      <div class="photo-card small">
+        <div class="photo-content">
+          <span>Driver accountability</span>
+          <h3>Simple driver workflows</h3>
+          <p>Drivers only see assigned work, while managers keep control and audit visibility.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-inner center">
+      <h2>Built for real fleet operations</h2>
+      <p class="lead">Vehicall Fleet Management helps companies control daily movement, responsibility, compliance and cost without depending on scattered Excel sheets and WhatsApp messages.</p>
+      <div class="grid">
+        <div class="card"><div class="icon">🚚</div><h3>Vehicle Management</h3><p>Register fleet vehicles, categories, ownership type, expiry dates, QR status and operational condition.</p></div>
+        <div class="card"><div class="icon">👨‍✈️</div><h3>Driver Management</h3><p>Create drivers, activate login access, assign vehicles and restrict drivers to assigned operations only.</p></div>
+        <div class="card"><div class="icon">📋</div><h3>Daily Checklist</h3><p>Record tyres, brakes, lights, fuel level, safety confirmation, damage notes and daily condition reports.</p></div>
+        <div class="card"><div class="icon">⛽</div><h3>Fuel & Fuel Cards</h3><p>Track fuel entries, dedicated cards, open cards, emergency reasons and statement reconciliation data.</p></div>
+        <div class="card"><div class="icon">🛠️</div><h3>Maintenance</h3><p>Monitor service records, rental vehicle responsibility, repair costs, downtime and upcoming due dates.</p></div>
+        <div class="card"><div class="icon">⚠️</div><h3>Incidents & Fines</h3><p>Log complaints, accidents, damages and traffic fines with driver accountability and report history.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section dark" id="modules">
+    <div class="section-inner center">
+      <h2>Fleet modules included</h2>
+      <p class="lead">Start with core fleet operations and expand into alerts, reports, reconciliation and enterprise control.</p>
+      <div class="module-grid">
+        <div class="module"><b>Vehicle Master</b><span>Vehicle records, QR identity and active status.</span></div>
+        <div class="module"><b>Driver Portal</b><span>Driver-only trips, fuel and checklist workflow.</span></div>
+        <div class="module"><b>Assignments</b><span>Daily driver-to-vehicle responsibility tracking.</span></div>
+        <div class="module"><b>Trip KM</b><span>Opening KM, closing KM and usage records.</span></div>
+        <div class="module"><b>Fuel Control</b><span>Fuel entries, receipts and approval workflow.</span></div>
+        <div class="module"><b>Fuel Cards</b><span>Dedicated/open card logic for reconciliation.</span></div>
+        <div class="module"><b>Maintenance</b><span>Service, repair, downtime and cost control.</span></div>
+        <div class="module"><b>Reports</b><span>Excel/PDF-ready fleet operational reports.</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-inner center">
+      <h2>How fleet onboarding works</h2>
+      <p class="lead">A simple B2B setup flow for companies that want structured control over vehicles and drivers.</p>
+      <div class="flow">
+        <div class="step"><div class="num">01</div><h3>Register Company</h3><p>Submit fleet company details and package requirement.</p></div>
+        <div class="step"><div class="num">02</div><h3>Add Vehicles</h3><p>Create fleet vehicles and QR identities.</p></div>
+        <div class="step"><div class="num">03</div><h3>Add Drivers</h3><p>Create driver records and optional login access.</p></div>
+        <div class="step"><div class="num">04</div><h3>Operate & Report</h3><p>Track checklists, fuel, trips, incidents and reports.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-inner center">
+      <h2>Ideal for</h2>
+      <p class="lead">Designed for companies operating vehicles across Oman.</p>
+      <div class="industries">
+        <span class="industry">Delivery Fleets</span>
+        <span class="industry">Rental Companies</span>
+        <span class="industry">Logistics Operators</span>
+        <span class="industry">Corporate Vehicles</span>
+        <span class="industry">Service Teams</span>
+        <span class="industry">Construction Fleets</span>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="cta">
+      <h2>Start managing your fleet with Vehicall</h2>
+      <p>Move from manual tracking to a structured fleet operations platform with driver accountability, QR alerts and reporting.</p>
+      <a class="btn btn-blue" href="/fleet-register">Register Fleet Company</a>
+      <a class="btn btn-light" href="/fleet-login" style="margin-left:10px">Fleet Login</a>
+    </div>
+  </section>
+
+  <footer>© Vehicall Oman — Fleet Management Platform</footer>
+</body>
+</html>

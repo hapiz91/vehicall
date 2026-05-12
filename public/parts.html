@@ -1,0 +1,1048 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vehicall Parts | Spare Parts Marketplace in Oman</title>
+
+  <style>
+    :root {
+      --bg: #07111f;
+      --bg2: #0b1729;
+      --card: rgba(255, 255, 255, 0.08);
+      --card2: rgba(255, 255, 255, 0.12);
+      --text: #f4f7fb;
+      --muted: #aab7c8;
+      --primary: #f59e0b;
+      --primary2: #fb923c;
+      --gold: #facc15;
+      --line: rgba(255, 255, 255, 0.12);
+      --shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: Inter, Arial, sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(20, 184, 166, 0.22), transparent 34%),
+        radial-gradient(circle at top right, rgba(34, 197, 94, 0.18), transparent 36%),
+        linear-gradient(180deg, #06101f 0%, #081426 45%, #050b14 100%);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .container {
+      width: min(1180px, calc(100% - 32px));
+      margin: 0 auto;
+    }
+
+    .nav {
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      backdrop-filter: blur(22px);
+      background:
+        linear-gradient(90deg, rgba(2, 6, 23, 0.94), rgba(8, 16, 31, 0.9)),
+        rgba(5, 11, 20, 0.9);
+      border-bottom: 1px solid rgba(250, 204, 21, 0.16);
+      box-shadow: 0 14px 45px rgba(0, 0, 0, 0.32);
+    }
+
+    .nav-inner {
+      min-height: 78px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      padding: 10px 0;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 900;
+      letter-spacing: -0.04em;
+      font-size: 24px;
+      white-space: nowrap;
+    }
+
+    .logo {
+      width: 58px;
+      height: 58px;
+      object-fit: contain;
+      border-radius: 18px;
+      background: #ffffff;
+      padding: 6px;
+      box-shadow:
+        0 0 0 1px rgba(250, 204, 21, 0.22),
+        0 0 34px rgba(245, 158, 11, 0.34);
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      padding: 7px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.045);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
+    }
+
+    .nav-links a {
+      position: relative;
+      padding: 12px 18px;
+      border-radius: 999px;
+      color: #cbd5e1;
+      font-size: 14px;
+      font-weight: 900;
+      letter-spacing: 0.01em;
+      transition: 0.35s ease;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: linear-gradient(180deg, rgba(255,255,255,0.075), rgba(255,255,255,0.025));
+      overflow: hidden;
+      isolation: isolate;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.1);
+    }
+
+    .nav-links a::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, #f59e0b, #facc15, #fb923c);
+      opacity: 0;
+      transform: scaleX(0.25) translateX(-18px);
+      transform-origin: left;
+      transition: 0.4s ease;
+      z-index: -2;
+    }
+
+    .nav-links a::after {
+      content: "";
+      position: absolute;
+      top: -55%;
+      left: -45%;
+      width: 42%;
+      height: 210%;
+      background: rgba(255, 255, 255, 0.42);
+      transform: rotate(25deg) translateX(-130%);
+      transition: 0.75s ease;
+      z-index: -1;
+    }
+
+    .nav-links a:hover {
+      color: #07111f;
+      transform: translateY(-4px) scale(1.02);
+      border-color: rgba(250, 204, 21, 0.75);
+      box-shadow:
+        0 14px 34px rgba(245, 158, 11, 0.32),
+        0 0 0 1px rgba(250, 204, 21, 0.18);
+    }
+
+    .nav-links a:hover::before,
+    .nav-links .active::before,
+    .nav-links .primary::before {
+      opacity: 1;
+      transform: scaleX(1) translateX(0);
+    }
+
+    .nav-links a:hover::after {
+      transform: rotate(25deg) translateX(380%);
+    }
+
+    .nav-links .active,
+    .nav-links .primary {
+      color: #07111f;
+      border-color: rgba(250, 204, 21, 0.75);
+      box-shadow:
+        0 12px 32px rgba(245, 158, 11, 0.28),
+        0 0 24px rgba(250, 204, 21, 0.15);
+      animation: activePulse 2.6s ease-in-out infinite;
+    }
+
+    .hero {
+      position: relative;
+      padding: 86px 0 62px;
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.05fr 0.95fr;
+      align-items: center;
+      gap: 46px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 9px 14px;
+      border: 1px solid rgba(34, 197, 94, 0.35);
+      background: rgba(34, 197, 94, 0.1);
+      color: #bbf7d0;
+      border-radius: 999px;
+      font-size: 14px;
+      margin-bottom: 20px;
+    }
+
+    h1 {
+      font-size: clamp(42px, 6vw, 76px);
+      line-height: 0.96;
+      letter-spacing: -0.075em;
+      margin-bottom: 22px;
+    }
+
+    .gradient-text {
+      background: linear-gradient(135deg, #fff, #bbf7d0 38%, #fef08a 78%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .lead {
+      color: var(--muted);
+      font-size: 18px;
+      line-height: 1.75;
+      max-width: 630px;
+      margin-bottom: 28px;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-bottom: 30px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 14px 20px;
+      border-radius: 16px;
+      font-weight: 900;
+      border: 1px solid var(--line);
+      transition: 0.25s ease;
+      text-align: center;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary), var(--primary2));
+      color: #03100b;
+      box-shadow: 0 18px 40px rgba(34, 197, 94, 0.25);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.08);
+      color: white;
+    }
+
+    .btn-gold {
+      background: linear-gradient(135deg, var(--gold), #fb923c);
+      color: #1c1000;
+    }
+
+    .btn:hover {
+      transform: translateY(-3px);
+    }
+
+    .quick-switch {
+      margin-top: 28px;
+      padding: 18px;
+      border-radius: 24px;
+      background: rgba(255, 255, 255, 0.065);
+      border: 1px solid var(--line);
+      max-width: 760px;
+    }
+
+    .quick-switch-title {
+      color: white;
+      font-weight: 900;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .quick-buttons {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+    }
+
+    .quick-btn {
+      padding: 13px 12px;
+      border-radius: 16px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.11);
+      color: #dce8f8;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      transition: 0.25s ease;
+      min-height: 82px;
+      justify-content: center;
+    }
+
+    .quick-btn strong {
+      font-size: 14px;
+    }
+
+    .quick-btn small {
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.3;
+    }
+
+    .quick-btn:hover,
+    .quick-btn.active {
+      transform: translateY(-4px);
+      border-color: rgba(34, 197, 94, 0.45);
+      background: rgba(34, 197, 94, 0.13);
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      max-width: 660px;
+    }
+
+    .stat {
+      padding: 18px;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid var(--line);
+    }
+
+    .stat strong {
+      display: block;
+      font-size: 24px;
+      color: #fff;
+      margin-bottom: 5px;
+    }
+
+    .stat span {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .visual {
+      position: relative;
+      min-height: 520px;
+      border-radius: 36px;
+      padding: 24px;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      background:
+        linear-gradient(145deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.04)),
+        radial-gradient(circle at 50% 20%, rgba(250, 204, 21, 0.2), transparent 28%);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .visual::before {
+      content: "";
+      position: absolute;
+      inset: -80px;
+      background: conic-gradient(from 0deg, transparent, rgba(34,197,94,0.2), transparent, rgba(20,184,166,0.22), transparent);
+      animation: rotate 10s linear infinite;
+    }
+
+    .mockup {
+      position: relative;
+      z-index: 1;
+      height: 100%;
+      border-radius: 28px;
+      background: rgba(2, 6, 23, 0.72);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .mock-logo-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: white;
+      font-weight: 900;
+      margin-bottom: 4px;
+    }
+
+    .mock-logo-row img {
+      width: 34px;
+      height: 34px;
+      object-fit: contain;
+    }
+
+    .search-card {
+      padding: 18px;
+      border-radius: 22px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid var(--line);
+    }
+
+    .search-title {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 14px;
+      color: #fff;
+      font-weight: 900;
+    }
+
+    .coming {
+      color: #03100b;
+      background: var(--gold);
+      border-radius: 999px;
+      padding: 5px 10px;
+      font-size: 12px;
+      font-weight: 900;
+    }
+
+    .fake-search {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .fake-input {
+      padding: 13px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--muted);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      font-size: 13px;
+    }
+
+    .part-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .part-item {
+      display: grid;
+      grid-template-columns: 54px 1fr auto;
+      align-items: center;
+      gap: 12px;
+      padding: 14px;
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.07);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      animation: float 4s ease-in-out infinite;
+    }
+
+    .part-item:nth-child(2) { animation-delay: 0.7s; }
+    .part-item:nth-child(3) { animation-delay: 1.4s; }
+
+    .part-icon {
+      width: 54px;
+      height: 54px;
+      display: grid;
+      place-items: center;
+      border-radius: 16px;
+      background: linear-gradient(135deg, rgba(34,197,94,0.22), rgba(20,184,166,0.18));
+      font-size: 26px;
+    }
+
+    .part-info b {
+      display: block;
+      margin-bottom: 5px;
+    }
+
+    .part-info small {
+      color: var(--muted);
+    }
+
+    .price {
+      color: #bbf7d0;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    section {
+      padding: 72px 0;
+    }
+
+    .section-head {
+      text-align: center;
+      max-width: 760px;
+      margin: 0 auto 38px;
+    }
+
+    .section-head h2 {
+      font-size: clamp(32px, 4vw, 50px);
+      letter-spacing: -0.05em;
+      margin-bottom: 14px;
+    }
+
+    .section-head p {
+      color: var(--muted);
+      font-size: 17px;
+      line-height: 1.7;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+    }
+
+    .card {
+      padding: 26px;
+      border-radius: 28px;
+      background: var(--card);
+      border: 1px solid var(--line);
+      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.18);
+      transition: 0.25s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-6px);
+      background: var(--card2);
+    }
+
+    .card-icon {
+      width: 54px;
+      height: 54px;
+      border-radius: 18px;
+      display: grid;
+      place-items: center;
+      font-size: 26px;
+      background: rgba(34, 197, 94, 0.14);
+      margin-bottom: 18px;
+    }
+
+    .card h3 {
+      font-size: 21px;
+      margin-bottom: 10px;
+    }
+
+    .card p {
+      color: var(--muted);
+      line-height: 1.65;
+    }
+
+    .categories {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+    }
+
+    .cat {
+      padding: 20px;
+      min-height: 138px;
+      border-radius: 24px;
+      background: linear-gradient(145deg, rgba(255,255,255,0.1), rgba(255,255,255,0.045));
+      border: 1px solid var(--line);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      transition: 0.25s ease;
+    }
+
+    .cat:hover {
+      transform: translateY(-5px) scale(1.01);
+      border-color: rgba(34, 197, 94, 0.45);
+    }
+
+    .cat span {
+      font-size: 34px;
+    }
+
+    .cat b {
+      font-size: 17px;
+    }
+
+    .cta-panel {
+      display: grid;
+      grid-template-columns: 1fr 0.8fr;
+      gap: 26px;
+      align-items: center;
+      padding: 38px;
+      border-radius: 34px;
+      background:
+        linear-gradient(135deg, rgba(34,197,94,0.16), rgba(20,184,166,0.1)),
+        rgba(255,255,255,0.06);
+      border: 1px solid rgba(34, 197, 94, 0.25);
+      box-shadow: var(--shadow);
+    }
+
+    .cta-panel h2 {
+      font-size: clamp(30px, 4vw, 48px);
+      letter-spacing: -0.05em;
+      margin-bottom: 14px;
+    }
+
+    .cta-panel p {
+      color: var(--muted);
+      line-height: 1.7;
+      margin-bottom: 22px;
+    }
+
+    .shop-box {
+      padding: 24px;
+      border-radius: 26px;
+      background: rgba(2, 6, 23, 0.58);
+      border: 1px solid var(--line);
+    }
+
+    .shop-box ul {
+      list-style: none;
+      display: grid;
+      gap: 14px;
+    }
+
+    .shop-box li {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .shop-box li::before {
+      content: "✓";
+      color: #03100b;
+      background: var(--primary);
+      border-radius: 50%;
+      width: 22px;
+      height: 22px;
+      display: inline-grid;
+      place-items: center;
+      flex: 0 0 22px;
+      font-weight: 900;
+    }
+
+    .ecosystem {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+    }
+
+    .eco {
+      padding: 22px 18px;
+      border-radius: 24px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.06);
+      text-align: center;
+      transition: 0.25s ease;
+    }
+
+    .eco:hover,
+    .eco.active {
+      transform: translateY(-5px);
+      background: rgba(34, 197, 94, 0.12);
+      border-color: rgba(34, 197, 94, 0.4);
+    }
+
+    .eco-icon {
+      font-size: 32px;
+      margin-bottom: 10px;
+      display: block;
+    }
+
+    .eco small {
+      display: inline-block;
+      margin-top: 8px;
+      padding: 5px 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.08);
+      color: var(--muted);
+    }
+
+    .footer {
+      padding: 34px 0;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+    }
+
+    .footer-inner {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .footer-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .footer-brand img {
+      width: 34px;
+      height: 34px;
+      object-fit: contain;
+    }
+
+    .footer-links {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    .footer-links a:hover {
+      color: white;
+    }
+
+    @keyframes rotate {
+      to { transform: rotate(360deg); }
+    }
+
+    @keyframes activePulse {
+      0%, 100% { box-shadow: 0 12px 32px rgba(245, 158, 11, 0.24), 0 0 16px rgba(250, 204, 21, 0.10); }
+      50% { box-shadow: 0 16px 42px rgba(245, 158, 11, 0.42), 0 0 28px rgba(250, 204, 21, 0.22); }
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-8px); }
+    }
+
+    @media (max-width: 980px) {
+      .hero-grid,
+      .cta-panel {
+        grid-template-columns: 1fr;
+      }
+
+      .visual {
+        min-height: 460px;
+      }
+
+      .cards,
+      .categories,
+      .ecosystem,
+      .quick-buttons {
+        grid-template-columns: repeat(2, 1fr);
+      }
+
+      .nav-inner {
+        height: auto;
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .nav-links {
+        justify-content: flex-start;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .hero {
+        padding-top: 48px;
+      }
+
+      .stats,
+      .cards,
+      .categories,
+      .fake-search,
+      .ecosystem,
+      .quick-buttons {
+        grid-template-columns: 1fr;
+      }
+
+      .visual {
+        min-height: auto;
+        padding: 14px;
+      }
+
+      .mockup {
+        padding: 16px;
+      }
+
+      .part-item {
+        grid-template-columns: 46px 1fr;
+      }
+
+      .price {
+        grid-column: 2;
+      }
+
+      .cta-panel {
+        padding: 24px;
+      }
+
+      .nav-links a {
+        font-size: 13px;
+        padding: 9px 11px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <nav class="nav">
+    <div class="container nav-inner">
+      <a class="brand" href="/">
+        <img src="/images/vehicall-logo.png" alt="Vehicall Logo" class="logo" />
+        <span>Vehicall</span>
+      </a>
+
+      <div class="nav-links">
+        <a href="/">Home</a>
+        <a href="/">Vehicall Alert</a>
+        <a href="/fleet-management.html">Fleet Management</a>
+        <a href="/parts">Vehicall Parts</a>
+        <a href="/garage.html">Vehicall Garage</a>
+        <a href="/login.html">Login</a>
+        <a href="/register.html" class="primary">Register</a>
+      </div>
+    </div>
+  </nav>
+
+  <main>
+    <section class="hero">
+      <div class="container hero-grid">
+        <div>
+          <div class="badge">🚗 Coming Soon in Oman</div>
+          <h1><span class="gradient-text">Vehicall Parts</span><br />Spare Parts Marketplace</h1>
+          <p class="lead">
+            A smart online platform to help drivers, garages, fleets, and spare parts shops find and connect faster across Oman. Search parts, compare shops, contact sellers, and simplify vehicle maintenance through the Vehicall ecosystem.
+          </p>
+
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="#shop-register">Register Your Shop</a>
+            <a class="btn btn-secondary" href="#how-it-works">How It Works</a>
+            <a class="btn btn-gold" href="https://wa.me/96879117236?text=Hi%20Vehicall%2C%20I%20want%20to%20know%20more%20about%20Vehicall%20Parts." target="_blank">WhatsApp Us</a>
+          </div>
+
+          <div class="stats">
+            <div class="stat">
+              <strong>Excel</strong>
+              <span>Easy stock upload for shops</span>
+            </div>
+            <div class="stat">
+              <strong>WhatsApp</strong>
+              <span>Quick customer inquiries</span>
+            </div>
+            <div class="stat">
+              <strong>Oman</strong>
+              <span>Built for local market</span>
+            </div>
+          </div>
+
+          <div class="quick-switch">
+            <div class="quick-switch-title">⚡ Quick Vehicall Services</div>
+            <div class="quick-buttons">
+              <a class="quick-btn" href="/">
+                <strong>Vehicall Alert</strong>
+                <small>QR vehicle alert system</small>
+              </a>
+              <a class="quick-btn" href="/fleet-management.html">
+                <strong>Fleet Management</strong>
+                <small>B2B vehicle control</small>
+              </a>
+              <a class="quick-btn active" href="/parts">
+                <strong>Vehicall Parts</strong>
+                <small>Spare parts marketplace</small>
+              </a>
+              <a class="quick-btn" href="/garage.html">
+                <strong>Vehicall Garage</strong>
+                <small>Garage & service network</small>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div class="visual">
+          <div class="mockup">
+            <div class="mock-logo-row">
+              <img src="/images/Vehicall Logo.png" alt="Vehicall Logo" />
+              <span>Vehicall Parts Preview</span>
+            </div>
+
+            <div class="search-card">
+              <div class="search-title">
+                <span>Find Spare Parts</span>
+                <span class="coming">Preview</span>
+              </div>
+              <div class="fake-search">
+                <div class="fake-input">Vehicle Brand</div>
+                <div class="fake-input">Model / Year</div>
+                <div class="fake-input">Part Name</div>
+                <div class="fake-input">Location</div>
+              </div>
+            </div>
+
+            <div class="part-list">
+              <div class="part-item">
+                <div class="part-icon">🔧</div>
+                <div class="part-info">
+                  <b>Brake Pads</b>
+                  <small>Toyota • Honda • Nissan</small>
+                </div>
+                <div class="price">Contact Shop</div>
+              </div>
+
+              <div class="part-item">
+                <div class="part-icon">🛞</div>
+                <div class="part-info">
+                  <b>Tires & Batteries</b>
+                  <small>Multiple suppliers in Oman</small>
+                </div>
+                <div class="price">Available Soon</div>
+              </div>
+
+              <div class="part-item">
+                <div class="part-icon">💡</div>
+                <div class="part-info">
+                  <b>Lights & Body Parts</b>
+                  <small>New, used, and aftermarket</small>
+                </div>
+                <div class="price">WhatsApp Inquiry</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="container">
+        <div class="section-head">
+          <h2>Move Across Vehicall Easily</h2>
+          <p>Customers, fleet companies, drivers, garages, and spare parts shops can quickly move to the required Vehicall service from one page.</p>
+        </div>
+
+        <div class="ecosystem">
+          <a class="eco" href="/">
+            <span class="eco-icon">📲</span>
+            <b>Vehicall Alert</b><br />
+            <small>Smart QR Alerts</small>
+          </a>
+          <a class="eco" href="/fleet-management.html">
+            <span class="eco-icon">🚚</span>
+            <b>Vehicall Fleet Management</b><br />
+            <small>Business Fleet System</small>
+          </a>
+          <a class="eco active" href="/parts">
+            <span class="eco-icon">🔧</span>
+            <b>Vehicall Parts</b><br />
+            <small>Spare Parts Marketplace</small>
+          </a>
+          <a class="eco" href="/garage.html">
+            <span class="eco-icon">🧰</span>
+            <b>Vehicall Garage</b><br />
+            <small>Garage & Service Network</small>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    <section id="how-it-works">
+      <div class="container">
+        <div class="section-head">
+          <h2>How Vehicall Parts Will Work</h2>
+          <p>Simple for customers, easy for shops, and powerful for future fleet procurement.</p>
+        </div>
+
+        <div class="cards">
+          <div class="card">
+            <div class="card-icon">🔍</div>
+            <h3>Search Required Parts</h3>
+            <p>Customers can search by vehicle brand, model, year, part name, or location.</p>
+          </div>
+
+          <div class="card">
+            <div class="card-icon">🏪</div>
+            <h3>Compare Shops</h3>
+            <p>Available shops can display stock, price indication, location, and contact options.</p>
+          </div>
+
+          <div class="card">
+            <div class="card-icon">📲</div>
+            <h3>Contact Instantly</h3>
+            <p>Customers can send WhatsApp inquiries directly to registered spare parts shops.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="container">
+        <div class="section-head">
+          <h2>Parts Categories</h2>
+          <p>Vehicall Parts will support common vehicle spare parts categories for daily users, garages, and fleet companies.</p>
+        </div>
+
+        <div class="categories">
+          <div class="cat"><span>⚙️</span><b>Engine Parts</b></div>
+          <div class="cat"><span>🛑</span><b>Brake Parts</b></div>
+          <div class="cat"><span>🛞</span><b>Tires & Batteries</b></div>
+          <div class="cat"><span>💡</span><b>Lights</b></div>
+          <div class="cat"><span>🚘</span><b>Body Parts</b></div>
+          <div class="cat"><span>🧰</span><b>Suspension</b></div>
+          <div class="cat"><span>🛢️</span><b>Oils & Filters</b></div>
+          <div class="cat"><span>✨</span><b>Accessories</b></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="shop-register">
+      <div class="container">
+        <div class="cta-panel">
+          <div>
+            <h2>Register Your Spare Parts Shop Early</h2>
+            <p>
+              Vehicall Parts will help shops publish inventory with minimum effort. Shops will be able to upload Excel stock lists and receive inquiries from customers, garages, and fleet companies.
+            </p>
+            <div class="hero-actions">
+              <a class="btn btn-primary" href="mailto:info@vehicallapp.com?subject=Vehicall Parts Shop Registration">Join Waiting List</a>
+              <a class="btn btn-secondary" href="https://wa.me/96879117236?text=Hi%20Vehicall%2C%20I%20want%20to%20register%20my%20spare%20parts%20shop%20for%20Vehicall%20Parts." target="_blank">WhatsApp Vehicall</a>
+            </div>
+          </div>
+
+          <div class="shop-box">
+            <ul>
+              <li>Easy shop profile and location display</li>
+              <li>Excel-based inventory upload planned</li>
+              <li>WhatsApp inquiry support for customers</li>
+              <li>Featured shop and promoted listing options</li>
+              <li>Future connection with Fleet Management maintenance requests</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer-inner">
+      <div class="footer-brand">
+        <img src="/images/Vehicall Logo.png" alt="Vehicall Logo" />
+        <p>© 2026 Vehicall. Smart vehicle ecosystem for Oman.</p>
+      </div>
+
+      <div class="footer-links">
+        <a href="/">Home</a>
+        <a href="/alert">Vehicall Alert</a>
+        <a href="/fleet-management">Fleet Management</a>
+        <a href="/parts">Vehicall Parts</a>
+        <a href="/garage">Vehicall Garage</a>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

@@ -24,6 +24,18 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
+app.get("/parts", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "parts.html"));
+});
+
+app.get("/garage.html", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "garage.html"));
+});
+
+app.get("/fleet-management.html", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "fleet-management.html"));
+});
+
 app.get('/fleet-forgot-password', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'fleet-forgot-password.html'));
 });
@@ -122,6 +134,7 @@ app.get('/fleet-upgrade', (req, res) => {
 app.get('/admin-fleet', requireAdmin, (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'admin-fleet.html'));
 });
+
 
 /* PLANS */
 const plans = {

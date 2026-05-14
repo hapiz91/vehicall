@@ -8,12 +8,89 @@
 <link rel="stylesheet" href="/fleet-ui.css">
 
 <style>
-body{margin:0;font-family:Arial,sans-serif;background:#07111f;color:#fff}
-.container{max-width:1250px;margin:0 auto;padding:0 20px}
-.card{background:#0f1f33;border:1px solid #20344d;border-radius:20px;padding:24px;margin-bottom:24px}
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:#07111f;
+  color:#fff;
+}
+
+.app-layout{
+  display:flex;
+  min-height:100vh;
+}
+
+.sidebar{
+  width:260px;
+  background:#081827;
+  border-right:1px solid #1d3248;
+  padding:20px;
+  position:fixed;
+  left:0;
+  top:0;
+  bottom:0;
+  overflow-y:auto;
+  z-index:1000;
+}
+
+.sidebar h2{
+  margin:0 0 25px;
+  color:#54c8ff;
+}
+
+.sidebar a{
+  display:block;
+  color:#fff;
+  text-decoration:none;
+  padding:11px 12px;
+  margin-bottom:6px;
+  border-radius:10px;
+}
+
+.sidebar a:hover,
+.sidebar a.active{
+  background:#10243a;
+  color:#54c8ff;
+}
+
+.menu-group h3{
+  color:#8fb3d9;
+  font-size:12px;
+  text-transform:uppercase;
+  margin:22px 0 8px;
+}
+
+.main-content{
+  margin-left:260px;
+  width:calc(100% - 260px);
+  padding:24px;
+}
+
+.container{
+  max-width:1600px;
+}
+
+.sticky-header{
+  position:sticky;
+  top:0;
+  background:#07111f;
+  z-index:500;
+  padding-bottom:18px;
+}
+
+.card{
+  background:#0f1f33;
+  border:1px solid #20344d;
+  border-radius:20px;
+  padding:24px;
+  margin-bottom:24px;
+}
 
 .hero h1{
   margin:0 0 8px;
+  color:#6ecbff;
 }
 
 .hero p{
@@ -41,7 +118,6 @@ input,select,textarea{
   border:1px solid #29496d;
   background:#081827;
   color:#fff;
-  box-sizing:border-box;
 }
 
 textarea{
@@ -49,7 +125,7 @@ textarea{
 }
 
 button{
-  padding:13px 18px;
+  padding:12px 16px;
   border:none;
   border-radius:12px;
   background:linear-gradient(135deg,#00c2ff,#0066ff);
@@ -58,13 +134,9 @@ button{
   cursor:pointer;
 }
 
-.btn-green{
-  background:#16a34a;
-}
-
-.btn-gray{
-  background:#475569;
-}
+.btn-green{background:#16a34a}
+.btn-gray{background:#475569}
+.btn-edit{background:#475569}
 
 #message{
   display:none;
@@ -99,12 +171,14 @@ button{
 
 .table-wrap{
   overflow-x:auto;
+  border:1px solid #20344d;
+  border-radius:14px;
 }
 
 table{
   width:100%;
   border-collapse:collapse;
-  min-width:1200px;
+  min-width:1450px;
 }
 
 th,td{
@@ -112,11 +186,15 @@ th,td{
   border-bottom:1px solid #20344d;
   text-align:left;
   font-size:13px;
+  white-space:nowrap;
 }
 
 th{
   background:#081827;
   color:#6ecbff;
+  position:sticky;
+  top:0;
+  z-index:5;
 }
 
 tr:hover{
@@ -155,9 +233,62 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator{
   cursor:pointer;
 }
 
+.modal-overlay{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.75);
+  z-index:9999;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+}
+
+.modal-box{
+  width:100%;
+  max-width:800px;
+  max-height:90vh;
+  overflow-y:auto;
+  background:#0f1f33;
+  border:1px solid #29496d;
+  border-radius:20px;
+  padding:22px;
+}
+
+.modal-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:14px;
+}
+
+.modal-actions{
+  display:flex;
+  gap:12px;
+  margin-top:18px;
+}
+
 @media(max-width:900px){
-  .form-grid{
+  .app-layout{display:block}
+
+  .sidebar{
+    position:relative;
+    width:100%;
+    height:auto;
+  }
+
+  .main-content{
+    margin-left:0;
+    width:100%;
+    padding:14px;
+  }
+
+  .form-grid,
+  .modal-grid{
     grid-template-columns:1fr;
+  }
+
+  .modal-actions{
+    flex-direction:column;
   }
 }
 </style>
@@ -168,37 +299,32 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator{
 <div class="app-layout">
 
 <div class="sidebar">
-
   <h2>Vehicall Fleet</h2>
 
   <a href="/fleet-dashboard">Dashboard</a>
 
   <div class="menu-group">
     <h3>Operations</h3>
-
     <a href="/fleet-checklist">Daily Checklist</a>
     <a href="/fleet-daily-trips">Trips</a>
     <a href="/fleet-replacements">Temporary Replacement</a>
-    <a href="/fleet-fines">Traffic Fines</a>
+    <a class="active" href="/fleet-fines">Traffic Fines</a>
   </div>
 
   <div class="menu-group">
     <h3>Fleet Assets</h3>
-
     <a href="/fleet-vehicles">Vehicles</a>
     <a href="/fleet-fuel-cards">Fuel Cards</a>
   </div>
 
   <div class="menu-group">
     <h3>Fuel Management</h3>
-
     <a href="/fleet-fuel">Fuel Entries</a>
     <a href="/fleet-fuel-statements">Supplier Statements</a>
   </div>
 
   <div class="menu-group">
     <h3>People</h3>
-
     <a href="/fleet-drivers">Drivers</a>
     <a href="/fleet-users">Users</a>
     <a href="/fleet-assignments">Assignments</a>
@@ -206,49 +332,41 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator{
 
   <div class="menu-group">
     <h3>Reports</h3>
-
     <a href="/fleet-reports">Reports</a>
   </div>
 
   <div class="menu-group">
     <h3>QR Fleet Alerts</h3>
-
     <a href="/fleet-vehicles">Fleet QR</a>
   </div>
 
   <a href="/api/fleet/logout">Logout</a>
-
 </div>
 
 <main class="main-content">
 
 <div class="container">
 
-<div class="card hero">
-
-  <h1>Traffic Fine Attribution</h1>
-
-  <p>
-    Automatically identify responsible drivers using
-    assignment time, vehicle and operational shift history.
-    Supports manual supervisor override with audit tracking.
-  </p>
-
+<div class="sticky-header">
+  <div class="card hero">
+    <h1>Traffic Fine Attribution</h1>
+    <p>
+      Automatically identify responsible drivers using assignment time, vehicle and operational shift history.
+      Supervisor can manually correct wrong driver attribution with correction reason.
+    </p>
+  </div>
 </div>
 
 <div id="message"></div>
 
 <div class="card">
-
   <h2>Enter Traffic Fine</h2>
 
   <form id="fineForm">
-
     <div class="form-grid">
 
       <div>
         <label>Vehicle</label>
-
         <select id="vehicleId" name="vehicleId" required>
           <option value="">Loading vehicles...</option>
         </select>
@@ -256,78 +374,45 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator{
 
       <div>
         <label>Fine Date & Time</label>
-
-        <input
-          type="datetime-local"
-          id="fineDateTime"
-          name="fineDateTime"
-          required>
+        <input type="datetime-local" id="fineDateTime" name="fineDateTime" required>
       </div>
 
       <div>
         <label>Fine Type</label>
-
         <select id="fineType" name="fineType" required>
-
           <option value="">Select Fine Type</option>
-
           <option value="Wrong Parking">Wrong Parking</option>
           <option value="Speeding">Speeding</option>
           <option value="Signal Violation">Signal Violation</option>
           <option value="Vehicle Not Clean">Vehicle Not Clean</option>
           <option value="Unsafe Driving">Unsafe Driving</option>
           <option value="Other">Other</option>
-
         </select>
       </div>
 
       <div>
         <label>Fine Amount OMR</label>
-
-        <input
-          type="number"
-          step="0.001"
-          name="fineAmount"
-          placeholder="0.000">
+        <input type="number" step="0.001" name="fineAmount" placeholder="0.000">
       </div>
 
       <div>
         <label>Fine Number / Reference</label>
-
-        <input
-          name="fineNumber"
-          placeholder="ROP / internal reference">
+        <input name="fineNumber" placeholder="ROP / internal reference">
       </div>
 
       <div>
         <label>Location</label>
-
-        <input
-          name="location"
-          placeholder="Fine location">
+        <input name="location" placeholder="Fine location">
       </div>
 
       <div style="grid-column:span 3;">
-
         <label>Description</label>
-
-        <textarea
-          name="description"
-          placeholder="Fine details">
-        </textarea>
-
+        <textarea name="description" placeholder="Fine details"></textarea>
       </div>
 
       <div style="display:flex;gap:12px;align-items:end;flex-wrap:wrap;">
-
-        <button type="button" onclick="matchDriver()">
-          Find Driver
-        </button>
-
-        <button type="submit" class="btn-green">
-          Save Fine
-        </button>
-
+        <button type="button" onclick="matchDriver()">Find Driver</button>
+        <button type="submit" class="btn-green">Save Fine</button>
       </div>
 
     </div>
@@ -340,37 +425,22 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator{
     <div id="matchBox" class="match-box" style="display:none;"></div>
 
     <div id="manualDriverBox" class="match-box" style="display:none;">
-
       <label>Manual Responsible Driver</label>
-
       <select id="manualDriverSelect" onchange="setManualDriver()">
         <option value="">Select Driver Manually</option>
       </select>
 
-      <label style="margin-top:14px;">
-        Supervisor Remarks
-      </label>
-
-      <textarea
-        id="supervisorRemarks"
-        name="supervisorRemarks"
-        placeholder="Reason for manual attribution or dispute notes">
-      </textarea>
-
+      <label style="margin-top:14px;">Supervisor Remarks</label>
+      <textarea id="supervisorRemarks" name="supervisorRemarks" placeholder="Reason for manual attribution or dispute notes"></textarea>
     </div>
-
   </form>
-
 </div>
 
 <div class="card">
-
   <h2>Recent Traffic Fine Entries</h2>
 
   <div class="table-wrap">
-
     <table>
-
       <thead>
         <tr>
           <th>Fine Date/Time</th>
@@ -382,21 +452,98 @@ input[type="datetime-local"]::-webkit-calendar-picker-indicator{
           <th>Attribution</th>
           <th>Status</th>
           <th>Location</th>
+          <th>Action</th>
         </tr>
       </thead>
 
       <tbody id="fineList">
-        <tr>
-          <td colspan="9">Loading...</td>
-        </tr>
+        <tr><td colspan="10">Loading...</td></tr>
       </tbody>
-
     </table>
-
   </div>
-
 </div>
 
+</div>
+</main>
+</div>
+
+<div id="fineEditModal" class="modal-overlay">
+  <div class="modal-box">
+    <h2 style="color:#6ecbff;margin-top:0;">Edit Traffic Fine</h2>
+
+    <input type="hidden" id="editFineId">
+
+    <div class="modal-grid">
+      <div>
+        <label>Vehicle</label>
+        <select id="editVehicleId"></select>
+      </div>
+
+      <div>
+        <label>Fine Date & Time</label>
+        <input type="datetime-local" id="editFineDateTime">
+      </div>
+
+      <div>
+        <label>Fine Type</label>
+        <select id="editFineType">
+          <option value="">Select Fine Type</option>
+          <option value="Wrong Parking">Wrong Parking</option>
+          <option value="Speeding">Speeding</option>
+          <option value="Signal Violation">Signal Violation</option>
+          <option value="Vehicle Not Clean">Vehicle Not Clean</option>
+          <option value="Unsafe Driving">Unsafe Driving</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+
+      <div>
+        <label>Fine Amount OMR</label>
+        <input type="number" step="0.001" id="editFineAmount">
+      </div>
+
+      <div>
+        <label>Fine Number / Reference</label>
+        <input id="editFineNumber">
+      </div>
+
+      <div>
+        <label>Location</label>
+        <input id="editLocation">
+      </div>
+
+      <div>
+        <label>Responsible Driver</label>
+        <select id="editResponsibleDriverId"></select>
+      </div>
+
+      <div>
+        <label>Status</label>
+        <select id="editStatus">
+          <option value="open">Open</option>
+          <option value="pending">Pending</option>
+          <option value="deducted">Deducted</option>
+          <option value="paid">Paid</option>
+          <option value="cancelled">Cancelled</option>
+        </select>
+      </div>
+
+      <div style="grid-column:span 2;">
+        <label>Description</label>
+        <textarea id="editDescription"></textarea>
+      </div>
+
+      <div style="grid-column:span 2;">
+        <label>Correction Reason <span style="color:#ff9c9c">*</span></label>
+        <textarea id="editCorrectionReason" placeholder="Example: Wrong driver was selected during fine entry."></textarea>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-gray" onclick="closeFineEditModal()">Cancel</button>
+      <button class="btn-green" onclick="saveFineChanges()">Save Changes</button>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -409,6 +556,8 @@ const matchBox = document.getElementById("matchBox");
 const manualDriverBox = document.getElementById("manualDriverBox");
 
 let drivers = [];
+let vehicles = [];
+let fines = [];
 
 function showMessage(text,type){
   messageBox.className=type;
@@ -421,54 +570,45 @@ function showMessage(text,type){
   },4000);
 }
 
-async function loadVehicles(){
+function vehicleOptions(selectedId=""){
+  return `<option value="">Select Vehicle</option>` +
+    vehicles.map(v=>`
+      <option value="${v.id}" ${v.id === selectedId ? "selected" : ""}>
+        ${v.vehicleNumber || "-"}
+      </option>
+    `).join("");
+}
 
+function driverOptions(selectedId=""){
+  return `<option value="">Select Driver</option>` +
+    drivers.map(d=>`
+      <option value="${d.id}" data-name="${d.driverName || ""}" ${d.id === selectedId ? "selected" : ""}>
+        ${d.driverName || "-"}
+      </option>
+    `).join("");
+}
+
+async function loadVehicles(){
   const res = await fetch("/api/fleet/vehicles");
   const data = await res.json();
 
-  vehicleSelect.innerHTML =
-    '<option value="">Select Vehicle</option>';
+  vehicles = data.success ? data.vehicles || [] : [];
 
-  if(data.success){
-
-    data.vehicles.forEach(v=>{
-
-      vehicleSelect.innerHTML += `
-        <option value="${v.id}">
-          ${v.vehicleNumber}
-        </option>
-      `;
-    });
-  }
+  vehicleSelect.innerHTML = vehicleOptions();
+  document.getElementById("editVehicleId").innerHTML = vehicleOptions();
 }
 
 async function loadDrivers(){
-
   const res = await fetch("/api/fleet/drivers");
   const data = await res.json();
 
-  manualDriverSelect.innerHTML =
-    '<option value="">Select Driver Manually</option>';
+  drivers = data.success ? data.drivers || [] : [];
 
-  if(data.success){
-
-    drivers = data.drivers || [];
-
-    drivers.forEach(d=>{
-
-      manualDriverSelect.innerHTML += `
-        <option
-          value="${d.id}"
-          data-name="${d.driverName || ''}">
-          ${d.driverName || '-'}
-        </option>
-      `;
-    });
-  }
+  manualDriverSelect.innerHTML = driverOptions();
+  document.getElementById("editResponsibleDriverId").innerHTML = driverOptions();
 }
 
 function attributionBadge(status){
-
   if(status === "matched"){
     return `<span class="badge badge-matched">Matched</span>`;
   }
@@ -481,78 +621,51 @@ function attributionBadge(status){
 }
 
 async function loadFines(){
-
   const res = await fetch("/api/fleet/reports/fines");
   const data = await res.json();
 
   fineList.innerHTML = "";
 
   if(!data.success || !data.rows.length){
-
-    fineList.innerHTML = `
-      <tr>
-        <td colspan="9">
-          No traffic fines found.
-        </td>
-      </tr>
-    `;
-
+    fineList.innerHTML = `<tr><td colspan="10">No traffic fines found.</td></tr>`;
     return;
   }
 
-  data.rows.forEach(f=>{
+  fines = data.rows || [];
 
+  fines.forEach(f=>{
     fineList.innerHTML += `
       <tr>
-
         <td>${f.fineDateTime || "-"}</td>
-
         <td>${f.vehicleNumber || "-"}</td>
-
         <td>${f.fineType || "-"}</td>
-
         <td>${f.fineAmount || "0"} OMR</td>
-
         <td>${f.fineNumber || "-"}</td>
-
         <td>${f.responsibleDriverName || "-"}</td>
-
         <td>${attributionBadge(f.attributionStatus)}</td>
-
         <td>${f.status || "-"}</td>
-
         <td>${f.location || "-"}</td>
-
+        <td>
+          <button class="btn-edit" onclick="openFineEditModal('${f.id}')">Edit</button>
+        </td>
       </tr>
     `;
   });
 }
 
 async function matchDriver(){
-
-  const vehicleId =
-    document.getElementById("vehicleId").value;
-
-  const fineDateTime =
-    document.getElementById("fineDateTime").value;
+  const vehicleId = document.getElementById("vehicleId").value;
+  const fineDateTime = document.getElementById("fineDateTime").value;
 
   if(!vehicleId || !fineDateTime){
-
-    showMessage(
-      "Select vehicle and fine date/time first",
-      "error"
-    );
-
+    showMessage("Select vehicle and fine date/time first","error");
     return;
   }
 
   const res = await fetch("/api/fleet/fines/match",{
     method:"POST",
     headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({
-      vehicleId,
-      fineDateTime
-    })
+    body:JSON.stringify({vehicleId,fineDateTime})
   });
 
   const result = await res.json();
@@ -561,81 +674,50 @@ async function matchDriver(){
   manualDriverBox.style.display = "block";
 
   if(result.success && result.matched){
-
     const m = result.match;
 
-    document.getElementById("responsibleDriverId").value =
-      m.driverId || "";
-
-    document.getElementById("responsibleDriverName").value =
-      m.driverName || "";
-
-    document.getElementById("matchedAssignmentId").value =
-      m.assignmentId || "";
-
-    document.getElementById("attributionStatus").value =
-      "matched";
+    document.getElementById("responsibleDriverId").value = m.driverId || "";
+    document.getElementById("responsibleDriverName").value = m.driverName || "";
+    document.getElementById("matchedAssignmentId").value = m.assignmentId || "";
+    document.getElementById("attributionStatus").value = "matched";
 
     matchBox.innerHTML = `
       <strong>Matched Driver Found</strong><br><br>
-
       Driver: ${m.driverName || "-"}<br>
       Vehicle: ${m.vehicleNumber || "-"}<br>
       Source: ${m.matchSource || "-"}
     `;
 
-    showMessage(
-      "Driver matched successfully",
-      "success"
-    );
-
+    showMessage("Driver matched successfully","success");
   }else{
-
     document.getElementById("responsibleDriverId").value = "";
     document.getElementById("responsibleDriverName").value = "";
     document.getElementById("matchedAssignmentId").value = "";
-
-    document.getElementById("attributionStatus").value =
-      "unmatched";
+    document.getElementById("attributionStatus").value = "unmatched";
 
     matchBox.innerHTML = `
       <strong>No Driver Match Found</strong><br><br>
-
       Please select responsible driver manually if known.
     `;
 
-    showMessage(
-      result.message || "No matching driver found",
-      "error"
-    );
+    showMessage(result.message || "No matching driver found","error");
   }
 }
 
 function setManualDriver(){
-
-  const selected =
-    manualDriverSelect.options[
-      manualDriverSelect.selectedIndex
-    ];
+  const selected = manualDriverSelect.options[manualDriverSelect.selectedIndex];
 
   if(!selected || !selected.value) return;
 
-  document.getElementById("responsibleDriverId").value =
-    selected.value;
-
-  document.getElementById("responsibleDriverName").value =
-    selected.dataset.name || selected.textContent;
-
-  document.getElementById("attributionStatus").value =
-    "manual";
+  document.getElementById("responsibleDriverId").value = selected.value;
+  document.getElementById("responsibleDriverName").value = selected.dataset.name || selected.textContent;
+  document.getElementById("attributionStatus").value = "manual";
 }
 
 fineForm.addEventListener("submit", async e=>{
-
   e.preventDefault();
 
-  const data =
-    Object.fromEntries(new FormData(fineForm).entries());
+  const data = Object.fromEntries(new FormData(fineForm).entries());
 
   const res = await fetch("/api/fleet/fines",{
     method:"POST",
@@ -646,35 +728,96 @@ fineForm.addEventListener("submit", async e=>{
   const result = await res.json();
 
   if(result.success){
-
     showMessage(result.message,"success");
-
     fineForm.reset();
-
     matchBox.style.display = "none";
     manualDriverBox.style.display = "none";
-
-    document.getElementById("attributionStatus").value =
-      "unmatched";
-
+    document.getElementById("attributionStatus").value = "unmatched";
     loadFines();
-
   }else{
-
-    showMessage(
-      result.message || "Unable to save fine",
-      "error"
-    );
+    showMessage(result.message || "Unable to save fine","error");
   }
 });
 
-loadVehicles();
-loadDrivers();
-loadFines();
-</script>
+function openFineEditModal(fineId){
+  const item = fines.find(x => x.id === fineId);
 
-</main>
-</div>
+  if(!item){
+    showMessage("Fine record not found","error");
+    return;
+  }
+
+  document.getElementById("editFineId").value = item.id;
+  document.getElementById("editVehicleId").innerHTML = vehicleOptions(item.vehicleId || "");
+  document.getElementById("editFineDateTime").value = item.fineDateTime || "";
+  document.getElementById("editFineType").value = item.fineType || "";
+  document.getElementById("editFineAmount").value = item.fineAmount || "";
+  document.getElementById("editFineNumber").value = item.fineNumber || "";
+  document.getElementById("editLocation").value = item.location || "";
+  document.getElementById("editResponsibleDriverId").innerHTML = driverOptions(item.responsibleDriverId || "");
+  document.getElementById("editStatus").value = item.status || "open";
+  document.getElementById("editDescription").value = item.description || "";
+  document.getElementById("editCorrectionReason").value = "";
+
+  document.getElementById("fineEditModal").style.display = "flex";
+}
+
+function closeFineEditModal(){
+  document.getElementById("fineEditModal").style.display = "none";
+}
+
+async function saveFineChanges(){
+  const fineId = document.getElementById("editFineId").value;
+  const driverSelect = document.getElementById("editResponsibleDriverId");
+  const selectedDriver = driverSelect.options[driverSelect.selectedIndex];
+
+  const correctionReason = document.getElementById("editCorrectionReason").value;
+
+  if(!correctionReason){
+    showMessage("Correction reason is required","error");
+    return;
+  }
+
+  const payload = {
+    vehicleId: document.getElementById("editVehicleId").value,
+    fineDateTime: document.getElementById("editFineDateTime").value,
+    fineType: document.getElementById("editFineType").value,
+    fineAmount: document.getElementById("editFineAmount").value,
+    fineNumber: document.getElementById("editFineNumber").value,
+    location: document.getElementById("editLocation").value,
+    responsibleDriverId: driverSelect.value,
+    responsibleDriverName: selectedDriver ? (selectedDriver.dataset.name || selectedDriver.textContent) : "",
+    attributionStatus: driverSelect.value ? "manual" : "unmatched",
+    status: document.getElementById("editStatus").value,
+    description: document.getElementById("editDescription").value,
+    correctionReason
+  };
+
+  const res = await fetch(`/api/fleet/fines/${fineId}/update`,{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify(payload)
+  });
+
+  const result = await res.json();
+
+  if(result.success){
+    showMessage(result.message || "Traffic fine updated successfully","success");
+    closeFineEditModal();
+    loadFines();
+  }else{
+    showMessage(result.message || "Unable to update traffic fine. Backend route may still need to be added.","error");
+  }
+}
+
+async function init(){
+  await loadVehicles();
+  await loadDrivers();
+  loadFines();
+}
+
+init();
+</script>
 
 </body>
 </html>

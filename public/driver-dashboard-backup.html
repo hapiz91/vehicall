@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vehicall Driver Dashboard</title>
+
+<style>
+body{margin:0;font-family:Arial,sans-serif;background:#07111f;color:#fff}
+.header{padding:18px;background:#0b1b2d;border-bottom:1px solid #1d3553;display:flex;justify-content:space-between;align-items:center}
+.brand{display:flex;align-items:center;gap:12px}.brand img{height:42px}.brand h2{margin:0}.brand p{margin:2px 0 0;color:#9fb0c5;font-size:13px}
+.container{max-width:760px;margin:24px auto;padding:0 16px}
+.card{background:#0f1f33;border:1px solid #20344d;border-radius:20px;padding:22px;margin-bottom:18px}
+.card h2{margin-top:0;color:#6ecbff}
+.kpi{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.box{background:#081827;border:1px solid #223854;border-radius:14px;padding:15px}
+.box span{color:#9fb0c5;font-size:13px}.box h3{margin:8px 0 0}
+button{width:100%;padding:14px;margin-top:12px;border:none;border-radius:14px;background:linear-gradient(135deg,#00c2ff,#0066ff);color:#fff;font-weight:bold;cursor:pointer}
+.logout{background:#8a1f1f}
+#message{display:none;padding:12px;border-radius:12px;margin-bottom:15px}.success{display:block!important;background:rgba(0,180,120,.15);color:#70ffc8}.error{display:block!important;background:rgba(255,70,70,.15);color:#ff9c9c}
+p{color:#d6e2f0;line-height:1.5}
+strong{color:#8fb3d9}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+  <div class="brand">
+    <img src="/logo.png">
+    <div>
+      <h2>Driver Portal</h2>
+      <p id="driverName">Loading...</p>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div id="message"></div>
+
+  <div class="card">
+    <h2>My Assigned Vehicle</h2>
+    <p><strong>Vehicle:</strong> <span id="vehicleNumber">-</span></p>
+    <p><strong>Company:</strong> <span id="companyName">-</span></p>
+    <p><strong>Current Assignment:</strong> <span id="assignmentStatus">-</span></p>
+  </div>
+
+  <div class="card">
+    <h2>Today</h2>
+    <div class="kpi">
+      <div class="box">
+        <span>Open Trips</span>
+        <h3 id="openTrips">0</h3>
+      </div>
+      <div class="box">
+        <span>Open Incidents</span>
+        <h3 id="openIncidents">0</h3>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Driver Actions</h2>
+    <button onclick="goTo('/driver-trip')">Start / Close My Trip</button>
+    <button onclick="goTo('/driver-fuel')">Add Fuel for My Vehicle</button>
+    <button onclick="goTo('/driver-incident')">Report Incident</button>
+    <button class="logout" onclick="goTo('/api/driver/logout')">Logout</button>
+  </div>
+</div>
+
+<script>
+function goTo(url){ window.location.href=url; }
+
+function showMessage(text,type){
+  const box=document.getElementById("message");
+  box.className=type;
+  box.textContent=text;
+  box.style.display="block";
+}
+
+async function loadDriverDashboard(){
+  try{
+    const res=await fetch("/api/driver/dashboard");
+    const data=await res.json();
+
+    if(!data.success){
+      window.location.href="/driver-login";
+      return;
+    }
+
+    document.getElementById("driverName").textContent=data.driver.name || "Driver";
+    document.getElementById("companyName").textContent=data.company.companyName || "-";
+    document.getElementById("vehicleNumber").textContent=data.assignedVehicle.vehicleNumber || "Not assigned";
+    document.getElementById("assignmentStatus").textContent=data.assignedVehicle.status || "-";
+    document.getElementById("openTrips").textContent=data.stats.openTrips || 0;
+    document.getElementById("openIncidents").textContent=data.stats.openIncidents || 0;
+
+  }catch(err){
+    console.error(err);
+    showMessage("Unable to load driver dashboard","error");
+  }
+}
+
+loadDriverDashboard();
+</script>
+
+</body>
+</html>

@@ -4,44 +4,251 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Vehicall Fleet Fuel</title>
+
 <link rel="stylesheet" href="/fleet-ui.css">
 
 <style>
-body{margin:0;font-family:Arial,sans-serif;background:#07111f;color:#fff}
-.container{max-width:1250px;margin:0 auto;padding:0 20px}
-.card{background:#0f1f33;border:1px solid #20344d;border-radius:20px;padding:24px;margin-bottom:24px}
-.form-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
-label{display:block;margin-bottom:8px;color:#9fb0c5}
-input,select,textarea{width:100%;padding:13px;border-radius:10px;border:1px solid #29496d;background:#081827;color:#fff;box-sizing:border-box}
-textarea{min-height:80px}
-button{padding:13px 18px;border:none;border-radius:12px;background:linear-gradient(135deg,#00c2ff,#0066ff);color:#fff;font-weight:bold;cursor:pointer}
-.fuel-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
-.fuel-card{background:#081827;border:1px solid #223854;border-radius:16px;padding:18px}
-.fuel-card h3{margin:0 0 10px;color:#6ecbff}
-.fuel-card p{margin:7px 0;color:#d6e2f0;font-size:14px}
-.fuel-card strong{color:#8fb3d9}
-#message{display:none;margin-bottom:18px;padding:13px;border-radius:12px}
-.success{display:block!important;background:rgba(0,180,120,.15);color:#70ffc8}
-.error{display:block!important;background:rgba(255,70,70,.15);color:#ff9c9c}
-.badge{display:inline-block;padding:6px 10px;border-radius:999px;font-size:12px;font-weight:bold;margin-bottom:8px}
-.badge-pending{background:rgba(255,193,7,.15);color:#ffd666}
-.badge-approved{background:rgba(0,200,120,.15);color:#70ffc8}
-.badge-rejected{background:rgba(255,70,70,.15);color:#ff9c9c}
-.action-row{display:flex;gap:8px;margin-top:12px}
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:#07111f;
+  color:#fff;
+}
+
+.app-layout{
+  display:flex;
+  min-height:100vh;
+}
+
+.sidebar{
+  width:260px;
+  background:#081827;
+  border-right:1px solid #1d3248;
+  padding:20px;
+  position:fixed;
+  left:0;
+  top:0;
+  bottom:0;
+  overflow-y:auto;
+  z-index:1000;
+}
+
+.sidebar h2{
+  margin:0 0 25px;
+  color:#54c8ff;
+}
+
+.sidebar a{
+  display:block;
+  color:#fff;
+  text-decoration:none;
+  padding:11px 12px;
+  margin-bottom:6px;
+  border-radius:10px;
+}
+
+.sidebar a:hover,
+.sidebar a.active{
+  background:#10243a;
+  color:#54c8ff;
+}
+
+.menu-group h3{
+  color:#8fb3d9;
+  font-size:12px;
+  text-transform:uppercase;
+  margin:22px 0 8px;
+}
+
+.main-content{
+  margin-left:260px;
+  width:calc(100% - 260px);
+  padding:24px;
+}
+
+.sticky-header{
+  position:sticky;
+  top:0;
+  background:#07111f;
+  z-index:500;
+  padding-bottom:18px;
+}
+
+.hero,.card{
+  background:#0f1f33;
+  border:1px solid #20344d;
+  border-radius:18px;
+  padding:22px;
+  margin-bottom:18px;
+}
+
+.hero h1{
+  margin:0 0 8px;
+  color:#6ecbff;
+  font-size:30px;
+}
+
+.hero p{
+  margin:0;
+  color:#b7c4d4;
+  line-height:1.6;
+}
+
+.form-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:14px;
+}
+
+label{
+  display:block;
+  margin-bottom:8px;
+  color:#9fb0c5;
+  font-size:14px;
+}
+
+input,select,textarea{
+  width:100%;
+  padding:12px;
+  border-radius:10px;
+  border:1px solid #29496d;
+  background:#081827;
+  color:#fff;
+}
+
+textarea{
+  min-height:80px;
+}
+
+button{
+  padding:12px 18px;
+  border:none;
+  border-radius:12px;
+  background:linear-gradient(135deg,#00c2ff,#0066ff);
+  color:#fff;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+.table-wrap{
+  overflow-x:auto;
+  border:1px solid #20344d;
+  border-radius:14px;
+}
+
+table{
+  width:100%;
+  min-width:1450px;
+  border-collapse:collapse;
+}
+
+th{
+  background:#10243a;
+  color:#9fc2e4;
+  padding:12px;
+  text-align:left;
+  font-size:13px;
+  border-bottom:1px solid #29496d;
+  position:sticky;
+  top:0;
+  z-index:5;
+  white-space:nowrap;
+}
+
+td{
+  padding:10px;
+  border-bottom:1px solid #1d3248;
+  color:#d6e2f0;
+  font-size:13px;
+  white-space:nowrap;
+}
+
+.action-row{
+  display:flex;
+  gap:8px;
+}
+
 .btn-approve{background:linear-gradient(135deg,#16a34a,#22c55e)}
 .btn-reject{background:linear-gradient(135deg,#dc2626,#ef4444)}
 .btn-edit{background:#475569}
-.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:9999;align-items:center;justify-content:center;padding:20px}
-.modal-box{width:100%;max-width:760px;background:#0f1f33;border:1px solid #29496d;border-radius:20px;padding:22px;box-shadow:0 20px 60px rgba(0,0,0,.5)}
-.modal-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
-.modal-actions{display:flex;gap:12px;margin-top:18px}
+
+.badge{
+  display:inline-block;
+  padding:6px 10px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:bold;
+}
+
+.badge-pending{background:rgba(255,193,7,.15);color:#ffd666}
+.badge-approved{background:rgba(0,200,120,.15);color:#70ffc8}
+.badge-rejected{background:rgba(255,70,70,.15);color:#ff9c9c}
+
+#message{
+  display:none;
+  margin-bottom:18px;
+  padding:13px;
+  border-radius:12px;
+}
+
+.success{
+  display:block!important;
+  background:rgba(0,180,120,.15);
+  color:#70ffc8;
+}
+
+.error{
+  display:block!important;
+  background:rgba(255,70,70,.15);
+  color:#ff9c9c;
+}
+
+.modal-overlay{
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.75);
+  z-index:9999;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+}
+
+.modal-box{
+  width:100%;
+  max-width:760px;
+  max-height:90vh;
+  overflow-y:auto;
+  background:#0f1f33;
+  border:1px solid #29496d;
+  border-radius:20px;
+  padding:22px;
+  box-shadow:0 20px 60px rgba(0,0,0,.5);
+}
+
+.modal-grid{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:14px;
+}
+
+.modal-actions{
+  display:flex;
+  gap:12px;
+  margin-top:18px;
+}
+
 .btn-save{background:#2563eb}
 .btn-save-approve{background:#16a34a}
 .btn-cancel{background:#475569}
 
 input[type="date"],
 input[type="datetime-local"],
-input[type="month"]{color-scheme:dark}
+input[type="month"]{
+  color-scheme:dark;
+}
 
 input[type="date"]::-webkit-calendar-picker-indicator,
 input[type="datetime-local"]::-webkit-calendar-picker-indicator,
@@ -51,12 +258,28 @@ input[type="month"]::-webkit-calendar-picker-indicator{
 }
 
 @media(max-width:900px){
-  .form-grid,.fuel-grid{grid-template-columns:1fr}
-}
+  .app-layout{display:block}
 
-@media(max-width:700px){
-  .modal-grid{grid-template-columns:1fr}
-  .modal-actions{flex-direction:column}
+  .sidebar{
+    position:relative;
+    width:100%;
+    height:auto;
+  }
+
+  .main-content{
+    margin-left:0;
+    width:100%;
+    padding:14px;
+  }
+
+  .form-grid,
+  .modal-grid{
+    grid-template-columns:1fr;
+  }
+
+  .modal-actions{
+    flex-direction:column;
+  }
 }
 </style>
 </head>
@@ -66,7 +289,6 @@ input[type="month"]::-webkit-calendar-picker-indicator{
 <div class="app-layout">
 
 <div class="sidebar">
-
   <h2>Vehicall Fleet</h2>
 
   <a href="/fleet-dashboard">Dashboard</a>
@@ -87,7 +309,7 @@ input[type="month"]::-webkit-calendar-picker-indicator{
 
   <div class="menu-group">
     <h3>Fuel Management</h3>
-    <a href="/fleet-fuel">Fuel Entries</a>
+    <a class="active" href="/fleet-fuel">Fuel Entries</a>
     <a href="/fleet-fuel-statements">Supplier Statements</a>
   </div>
 
@@ -109,137 +331,267 @@ input[type="month"]::-webkit-calendar-picker-indicator{
   </div>
 
   <a href="/api/fleet/logout">Logout</a>
-
 </div>
 
 <main class="main-content">
 
-<div class="container">
-
-  <div class="card">
-    <h1 style="margin-top:0;color:#6ecbff;">Fuel Management</h1>
-    <p style="color:#b7c4d4;line-height:1.6;">
+<div class="sticky-header">
+  <div class="hero">
+    <h1>Fuel Management</h1>
+    <p>
       Manage fuel, oil, AdBlue, fuel cards, supplier reconciliation,
       vehicle consumption and driver fuel accountability.
     </p>
   </div>
+</div>
 
-  <div id="message"></div>
+<div id="message"></div>
 
-  <div class="card">
-    <h2>Add Fuel / Oil Entry</h2>
+<div class="card">
+  <h2>Add Fuel / Oil Entry</h2>
 
-    <form id="fuelForm">
-      <div class="form-grid">
+  <form id="fuelForm">
+    <div class="form-grid">
 
-        <div>
-          <label>Select Vehicle</label>
-          <select name="vehicleId" id="vehicleId" onchange="loadFuelCardsForVehicle()" required>
-            <option value="">Loading...</option>
-          </select>
-        </div>
-
-        <div>
-          <label>Select Driver</label>
-          <select name="driverId" id="driverSelect">
-            <option value="">Loading...</option>
-          </select>
-        </div>
-
-        <div>
-          <label>Entry Type</label>
-          <select name="entryType" required>
-            <option value="Fuel">Fuel</option>
-            <option value="Engine Oil">Engine Oil</option>
-            <option value="AdBlue">AdBlue</option>
-            <option value="Other">Other</option>
-          </select>
-        </div>
-
-        <div>
-          <label>Fuel Type</label>
-          <select name="fuelType">
-            <option value="">Select</option>
-            <option value="Petrol">Petrol</option>
-            <option value="Diesel">Diesel</option>
-            <option value="Super">Super</option>
-            <option value="Regular">Regular</option>
-          </select>
-        </div>
-
-        <div>
-          <label>Liters / Quantity</label>
-          <input type="number" step="0.001" name="liters" placeholder="0.000">
-        </div>
-
-        <div>
-          <label>Amount OMR</label>
-          <input type="number" step="0.001" name="amount" placeholder="0.000" required>
-        </div>
-
-        <div>
-          <label>Odometer Reading</label>
-          <input type="number" name="odometerReading" placeholder="KM reading">
-        </div>
-
-        <div>
-          <label>Fuel Station / Supplier</label>
-          <input name="fuelStation" placeholder="OQ, Shell, Oman Oil, Workshop">
-        </div>
-
-        <div>
-          <label>Payment Method</label>
-          <select name="paymentMethod" id="paymentMethod" onchange="toggleFuelCardBox()">
-            <option value="Company Card">Company Card</option>
-            <option value="Cash">Cash</option>
-            <option value="Driver Paid">Driver Paid</option>
-            <option value="Credit Account">Credit Account</option>
-          </select>
-        </div>
-
-        <div id="fuelCardBox" style="display:none;">
-          <label>Assigned / Emergency Fuel Card</label>
-          <select name="fuelCardId" id="fuelCardId" onchange="toggleOpenCardReason()">
-            <option value="">Select Fuel Card</option>
-          </select>
-        </div>
-
-        <div id="openCardReasonBox" style="display:none;">
-          <label>Emergency/Open Card Usage Reason</label>
-          <input type="text" name="openCardReason" id="openCardReason" placeholder="Reason for using emergency/open card">
-        </div>
-
-        <div>
-          <label>Receipt / Invoice No.</label>
-          <input name="receiptNo" placeholder="Optional">
-        </div>
-
-        <div>
-          <label>Entry Date</label>
-          <input type="date" name="entryDate">
-        </div>
-
-        <div style="grid-column:span 3;">
-          <label>Remarks</label>
-          <textarea name="remarks" placeholder="Any fuel, oil or payment remarks"></textarea>
-        </div>
-
-        <div>
-          <button type="submit">Save Fuel Entry</button>
-        </div>
-
+      <div>
+        <label>Select Vehicle</label>
+        <select name="vehicleId" id="vehicleId" onchange="loadFuelCardsForVehicle()" required>
+          <option value="">Loading...</option>
+        </select>
       </div>
-    </form>
-  </div>
 
-  <div class="card">
-    <h2>Fuel / Oil Records</h2>
-    <div id="fuelList" class="fuel-grid">Loading...</div>
-  </div>
+      <div>
+        <label>Select Driver</label>
+        <select name="driverId" id="driverSelect">
+          <option value="">Loading...</option>
+        </select>
+      </div>
 
+      <div>
+        <label>Entry Type</label>
+        <select name="entryType" required>
+          <option value="Fuel">Fuel</option>
+          <option value="Engine Oil">Engine Oil</option>
+          <option value="AdBlue">AdBlue</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+
+      <div>
+        <label>Fuel Type</label>
+        <select name="fuelType">
+          <option value="">Select Fuel Type</option>
+
+          <optgroup label="Diesel">
+            <option value="Diesel">Diesel</option>
+          </optgroup>
+
+          <optgroup label="Petrol">
+            <option value="Petrol 91">Petrol 91</option>
+            <option value="Petrol 95">Petrol 95</option>
+            <option value="Super Petrol">Super Petrol</option>
+          </optgroup>
+
+          <optgroup label="Other">
+            <option value="Hybrid Petrol">Hybrid Petrol</option>
+            <option value="EV Charging">EV Charging</option>
+            <option value="AdBlue">AdBlue</option>
+          </optgroup>
+        </select>
+      </div>
+
+      <div>
+        <label>Liters / Quantity</label>
+        <input type="number" step="0.001" name="liters" placeholder="0.000">
+      </div>
+
+      <div>
+        <label>Amount OMR</label>
+        <input type="number" step="0.001" name="amount" placeholder="0.000" required>
+      </div>
+
+      <div>
+        <label>Odometer Reading</label>
+        <input type="number" name="odometerReading" placeholder="KM reading">
+      </div>
+
+      <div>
+        <label>Fuel Station / Supplier</label>
+        <input name="fuelStation" placeholder="OQ, Shell, Oman Oil, Workshop">
+      </div>
+
+      <div>
+        <label>Payment Method</label>
+        <select name="paymentMethod" id="paymentMethod" onchange="toggleFuelCardBox()">
+          <option value="Company Card">Company Card</option>
+          <option value="Cash">Cash</option>
+          <option value="Driver Paid">Driver Paid</option>
+          <option value="Credit Account">Credit Account</option>
+        </select>
+      </div>
+
+      <div id="fuelCardBox" style="display:none;">
+        <label>Assigned / Emergency Fuel Card</label>
+        <select name="fuelCardId" id="fuelCardId" onchange="toggleOpenCardReason()">
+          <option value="">Select Fuel Card</option>
+        </select>
+      </div>
+
+      <div id="openCardReasonBox" style="display:none;">
+        <label>Emergency/Open Card Usage Reason</label>
+        <input type="text" name="openCardReason" id="openCardReason" placeholder="Reason for using emergency/open card">
+      </div>
+
+      <div>
+        <label>Receipt / Invoice No.</label>
+        <input name="receiptNo" placeholder="Optional">
+      </div>
+
+      <div>
+        <label>Entry Date</label>
+        <input type="date" name="entryDate">
+      </div>
+
+      <div style="grid-column:span 3;">
+        <label>Remarks</label>
+        <textarea name="remarks" placeholder="Any fuel, oil or payment remarks"></textarea>
+      </div>
+
+      <div>
+        <button type="submit">Save Fuel Entry</button>
+      </div>
+
+    </div>
+  </form>
+</div>
+
+<div class="card">
+  <h2>Fuel / Oil Records</h2>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Status</th>
+          <th>Vehicle</th>
+          <th>Driver</th>
+          <th>Entry Type</th>
+          <th>Fuel Type</th>
+          <th>Liters/Qty</th>
+          <th>Amount OMR</th>
+          <th>Odometer</th>
+          <th>Station/Supplier</th>
+          <th>Payment</th>
+          <th>Fuel Card</th>
+          <th>Receipt</th>
+          <th>Date</th>
+          <th>Remarks</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+
+      <tbody id="fuelList">
+        <tr><td colspan="15">Loading...</td></tr>
+      </tbody>
+    </table>
+  </div>
 </div>
 
 </main>
+</div>
+
+<div id="fuelEditModal" class="modal-overlay">
+  <div class="modal-box">
+    <h2 style="color:#6ecbff;margin-top:0;">Edit Fuel Entry</h2>
+
+    <input type="hidden" id="editFuelId">
+
+    <div class="modal-grid">
+      <div>
+        <label>Entry Type</label>
+        <select id="editEntryType">
+          <option value="Fuel">Fuel</option>
+          <option value="Engine Oil">Engine Oil</option>
+          <option value="AdBlue">AdBlue</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+
+      <div>
+        <label>Fuel Type</label>
+        <select id="editFuelType">
+          <option value="">Select Fuel Type</option>
+
+          <optgroup label="Diesel">
+            <option value="Diesel">Diesel</option>
+          </optgroup>
+
+          <optgroup label="Petrol">
+            <option value="Petrol 91">Petrol 91</option>
+            <option value="Petrol 95">Petrol 95</option>
+            <option value="Super Petrol">Super Petrol</option>
+          </optgroup>
+
+          <optgroup label="Other">
+            <option value="Hybrid Petrol">Hybrid Petrol</option>
+            <option value="EV Charging">EV Charging</option>
+            <option value="AdBlue">AdBlue</option>
+          </optgroup>
+        </select>
+      </div>
+
+      <div>
+        <label>Liters / Quantity</label>
+        <input type="number" step="0.001" id="editLiters">
+      </div>
+
+      <div>
+        <label>Amount OMR</label>
+        <input type="number" step="0.001" id="editAmount">
+      </div>
+
+      <div>
+        <label>Odometer Reading</label>
+        <input type="number" id="editOdometerReading">
+      </div>
+
+      <div>
+        <label>Fuel Station / Supplier</label>
+        <input id="editFuelStation">
+      </div>
+
+      <div>
+        <label>Payment Method</label>
+        <select id="editPaymentMethod">
+          <option value="Company Card">Company Card</option>
+          <option value="Cash">Cash</option>
+          <option value="Driver Paid">Driver Paid</option>
+          <option value="Credit Account">Credit Account</option>
+        </select>
+      </div>
+
+      <div>
+        <label>Receipt / Invoice No.</label>
+        <input id="editReceiptNo">
+      </div>
+
+      <div style="grid-column:span 2;">
+        <label>Remarks</label>
+        <textarea id="editRemarks"></textarea>
+      </div>
+
+      <div style="grid-column:span 2;">
+        <label>Correction Reason <span style="color:#ff9c9c">*</span></label>
+        <textarea id="editCorrectionReason" placeholder="Explain why this fuel entry is being corrected"></textarea>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeFuelEditModal()">Cancel</button>
+      <button class="btn-save" onclick="saveFuelChanges(false)">Save Changes</button>
+      <button class="btn-save-approve" onclick="saveFuelChanges(true)">Save & Approve</button>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -255,6 +607,7 @@ function showMessage(text,type){
   messageBox.className=type;
   messageBox.textContent=text;
   messageBox.style.display="block";
+
   setTimeout(()=>{
     messageBox.className="";
     messageBox.style.display="none";
@@ -287,6 +640,23 @@ async function loadDrivers(){
   }
 }
 
+function getBadge(approvalStatus){
+  let badgeClass = "badge-approved";
+  let badgeText = "Approved";
+
+  if(approvalStatus === "pending" || approvalStatus === "pending_approval"){
+    badgeClass = "badge-pending";
+    badgeText = "Pending Approval";
+  }
+
+  if(approvalStatus === "rejected"){
+    badgeClass = "badge-rejected";
+    badgeText = "Rejected";
+  }
+
+  return `<span class="badge ${badgeClass}">${badgeText}</span>`;
+}
+
 async function loadFuel(){
   const res=await fetch("/api/fleet/fuel");
   const data=await res.json();
@@ -294,12 +664,12 @@ async function loadFuel(){
   fuelList.innerHTML="";
 
   if(!data.success){
-    fuelList.innerHTML="Unable to load fuel records.";
+    fuelList.innerHTML=`<tr><td colspan="15">Unable to load fuel records.</td></tr>`;
     return;
   }
 
   if(!data.records.length){
-    fuelList.innerHTML=`<div class="fuel-card">No fuel records yet.</div>`;
+    fuelList.innerHTML=`<tr><td colspan="15">No fuel records yet.</td></tr>`;
     return;
   }
 
@@ -322,20 +692,11 @@ async function loadFuel(){
   fuelRecords.forEach(item=>{
     const approvalStatus = item.approvalStatus || item.status || "approved";
 
-    let badgeClass = "badge-approved";
-    let badgeText = "Approved";
-
-    if(approvalStatus === "pending" || approvalStatus === "pending_approval"){
-      badgeClass = "badge-pending";
-      badgeText = "Pending Approval";
-    }
-
-    if(approvalStatus === "rejected"){
-      badgeClass = "badge-rejected";
-      badgeText = "Rejected";
-    }
-
-    let actionButtons = "";
+    let actionButtons = `
+      <div class="action-row">
+        <button class="btn-edit" onclick="openFuelEditModal('${item.id}')">Edit</button>
+      </div>
+    `;
 
     if(approvalStatus === "pending" || approvalStatus === "pending_approval"){
       actionButtons = `
@@ -348,25 +709,23 @@ async function loadFuel(){
     }
 
     fuelList.innerHTML+=`
-      <div class="fuel-card">
-        <span class="badge ${badgeClass}">${badgeText}</span>
-        <h3>${item.vehicleNumber || "-"}</h3>
-        <p><strong>Driver:</strong> ${item.driverName || "-"}</p>
-        <p><strong>Entry Type:</strong> ${item.entryType || "-"}</p>
-        <p><strong>Fuel Type:</strong> ${item.fuelType || "-"}</p>
-        <p><strong>Liters/Qty:</strong> ${item.liters || "-"}</p>
-        <p><strong>Amount:</strong> ${item.amount || "0"} OMR</p>
-        <p><strong>Odometer:</strong> ${item.odometerReading || "-"}</p>
-        <p><strong>Station/Supplier:</strong> ${item.fuelStation || "-"}</p>
-        <p><strong>Payment:</strong> ${item.paymentMethod || "-"}</p>
-        ${item.fuelCardNumber ? `<p><strong>Fuel Card:</strong> ${item.fuelCardNumber}</p>` : ""}
-        ${item.usedOpenCard ? `<p><strong>Emergency/Open Card Reason:</strong> ${item.openCardReason || "-"}</p>` : ""}
-        <p><strong>Receipt:</strong> ${item.receiptNo || "-"}</p>
-        <p><strong>Date:</strong> ${item.entryDate || "-"}</p>
-        <p><strong>Remarks:</strong> ${item.remarks || "-"}</p>
-        ${item.rejectionReason ? `<p><strong>Rejection Reason:</strong> ${item.rejectionReason}</p>` : ""}
-        ${actionButtons}
-      </div>
+      <tr>
+        <td>${getBadge(approvalStatus)}</td>
+        <td>${item.vehicleNumber || "-"}</td>
+        <td>${item.driverName || "-"}</td>
+        <td>${item.entryType || "-"}</td>
+        <td>${item.fuelType || "-"}</td>
+        <td>${item.liters || "-"}</td>
+        <td>${item.amount || "0"}</td>
+        <td>${item.odometerReading || "-"}</td>
+        <td>${item.fuelStation || "-"}</td>
+        <td>${item.paymentMethod || "-"}</td>
+        <td>${item.fuelCardNumber || "-"}</td>
+        <td>${item.receiptNo || "-"}</td>
+        <td>${item.entryDate || "-"}</td>
+        <td>${item.remarks || item.rejectionReason || "-"}</td>
+        <td>${actionButtons}</td>
+      </tr>
     `;
   });
 }
@@ -590,88 +949,6 @@ loadVehicles();
 loadDrivers();
 loadFuel();
 </script>
-
-<div id="fuelEditModal" class="modal-overlay">
-  <div class="modal-box">
-    <h2 style="color:#6ecbff;margin-top:0;">Edit Fuel Entry Before Approval</h2>
-
-    <input type="hidden" id="editFuelId">
-
-    <div class="modal-grid">
-      <div>
-        <label>Entry Type</label>
-        <select id="editEntryType">
-          <option value="Fuel">Fuel</option>
-          <option value="Engine Oil">Engine Oil</option>
-          <option value="AdBlue">AdBlue</option>
-          <option value="Other">Other</option>
-        </select>
-      </div>
-
-      <div>
-        <label>Fuel Type</label>
-        <select id="editFuelType">
-          <option value="">Select</option>
-          <option value="Petrol">Petrol</option>
-          <option value="Diesel">Diesel</option>
-          <option value="Super">Super</option>
-          <option value="Regular">Regular</option>
-        </select>
-      </div>
-
-      <div>
-        <label>Liters / Quantity</label>
-        <input type="number" step="0.001" id="editLiters">
-      </div>
-
-      <div>
-        <label>Amount OMR</label>
-        <input type="number" step="0.001" id="editAmount">
-      </div>
-
-      <div>
-        <label>Odometer Reading</label>
-        <input type="number" id="editOdometerReading">
-      </div>
-
-      <div>
-        <label>Fuel Station / Supplier</label>
-        <input id="editFuelStation">
-      </div>
-
-      <div>
-        <label>Payment Method</label>
-        <select id="editPaymentMethod">
-          <option value="Company Card">Company Card</option>
-          <option value="Cash">Cash</option>
-          <option value="Driver Paid">Driver Paid</option>
-          <option value="Credit Account">Credit Account</option>
-        </select>
-      </div>
-
-      <div>
-        <label>Receipt / Invoice No.</label>
-        <input id="editReceiptNo">
-      </div>
-
-      <div style="grid-column:span 2;">
-        <label>Remarks</label>
-        <textarea id="editRemarks"></textarea>
-      </div>
-
-      <div style="grid-column:span 2;">
-        <label>Correction Reason <span style="color:#ff9c9c">*</span></label>
-        <textarea id="editCorrectionReason" placeholder="Explain why this driver entry is being corrected"></textarea>
-      </div>
-    </div>
-
-    <div class="modal-actions">
-      <button class="btn-cancel" onclick="closeFuelEditModal()">Cancel</button>
-      <button class="btn-save" onclick="saveFuelChanges(false)">Save Changes</button>
-      <button class="btn-save-approve" onclick="saveFuelChanges(true)">Save & Approve</button>
-    </div>
-  </div>
-</div>
 
 </body>
 </html>

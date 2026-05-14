@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vehicall Driver Incident</title>
+<style>
+body{margin:0;font-family:Arial,sans-serif;background:#07111f;color:#fff}
+.header{position:sticky;top:0;z-index:100;padding:18px 16px;background:#081827;border-bottom:1px solid #1d3553}
+.brand{display:flex;align-items:center;gap:12px}
+.brand img{height:46px;width:46px;object-fit:contain;background:#fff;border-radius:12px;padding:4px}
+.brand h2{margin:0;color:#6ecbff}
+.brand p{margin:3px 0 0;color:#9fb0c5;font-size:13px}
+.container{max-width:820px;margin:22px auto;padding:0 16px 24px}
+.card{background:#0f1f33;border:1px solid #20344d;border-radius:22px;padding:22px;margin-bottom:18px}
+.card h2{margin-top:0;color:#6ecbff}
+label{display:block;margin-top:14px;margin-bottom:8px;color:#9fb0c5}
+input,select,textarea{width:100%;padding:14px;border-radius:12px;border:1px solid #29496d;background:#081827;color:#fff;box-sizing:border-box}
+textarea{min-height:110px}
+button{width:100%;padding:15px;margin-top:18px;border:none;border-radius:14px;background:linear-gradient(135deg,#00c2ff,#0066ff);color:#fff;font-weight:bold;cursor:pointer}
+.secondary{background:#334155}
+#message{display:none;padding:12px;border-radius:12px;margin-bottom:15px}
+.success{display:block!important;background:rgba(0,180,120,.15);color:#70ffc8}
+.error{display:block!important;background:rgba(255,70,70,.15);color:#ff9c9c}
+.info-box{background:#081827;border:1px solid #223854;border-radius:14px;padding:16px}
+.info-box p{margin:8px 0;color:#d6e2f0}
+.info-box strong{color:#8fb3d9}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="brand">
+    <img src="/logo.png" alt="Vehicall Logo">
+    <div>
+      <h2>Report Incident</h2>
+      <p>For assigned vehicle only</p>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div id="message"></div>
+
+  <div class="card">
+    <h2>My Vehicle</h2>
+    <div class="info-box">
+      <p><strong>Vehicle:</strong> <span id="vehicleNumber">Loading...</span></p>
+      <p><strong>Company:</strong> <span id="companyName">Loading...</span></p>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Incident Details</h2>
+
+    <label>Incident Type</label>
+    <select id="incidentType">
+      <option value="">Select Incident Type</option>
+      <option value="Vehicle Damage">Vehicle Damage</option>
+      <option value="Accident">Accident</option>
+      <option value="Breakdown">Breakdown</option>
+      <option value="Tyre Issue">Tyre Issue</option>
+      <option value="Engine Issue">Engine Issue</option>
+      <option value="Fuel Issue">Fuel Issue</option>
+      <option value="Traffic Fine / Police Stop">Traffic Fine / Police Stop</option>
+      <option value="Other">Other</option>
+    </select>
+
+    <label>Priority</label>
+    <select id="priority">
+      <option value="medium">Medium</option>
+      <option value="low">Low</option>
+      <option value="high">High</option>
+      <option value="critical">Critical</option>
+    </select>
+
+    <label>Location</label>
+    <input id="location" placeholder="Incident location">
+
+    <label>Description</label>
+    <textarea id="description" placeholder="Explain what happened"></textarea>
+
+    <div style="display:flex;gap:12px;">
+      <button type="button" class="secondary" onclick="goBack()" style="width:40%;">Back</button>
+      <button type="button" onclick="submitIncident()" style="width:60%;">Submit Incident</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function showMessage(text,type){
+  const box=document.getElementById("message");
+  box.className=type;
+  box.textContent=text;
+  box.style.display="block";
+}
+
+function goBack(){
+  window.location.href="/driver-dashboard";
+}
+
+async function loadDriverInfo(){
+  const res = await fetch("/api/driver/dashboard");
+  const data = await res.json();
+
+  if(!data.success){
+    window.location.href="/driver-login";
+    return;
+  }
+
+  document.getElementById("vehicleNumber").textContent =
+    data.workingVehicle?.vehicleNumber ||
+    data.assignedVehicle?.vehicleNumber ||
+    "Not assigned";
+
+  document.getElementById("companyName").textContent =
+    data.company?.companyName || "-";
+}
+
+async function submitIncident(){
+  const payload = {
+    incidentType: document.getElementById("incidentType").value,
+    priority: document.getElementById("priority").value,
+    location: document.getElementById("location").value,
+    description: document.getElementById("description").value
+  };
+
+  if(!payload.incidentType || !payload.description){
+    showMessage("Incident type and description are required","error");
+    return;
+  }
+
+  const res = await fetch("/api/driver/incident",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify(payload)
+  });
+
+  const data = await res.json();
+
+  if(data.success){
+    showMessage("Incident submitted successfully","success");
+    setTimeout(()=>window.location.href="/driver-dashboard",1200);
+  }else{
+    showMessage(data.message || "Unable to submit incident","error");
+  }
+}
+
+loadDriverInfo();
+</script>
+
+</body>
+</html>

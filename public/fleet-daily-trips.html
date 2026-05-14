@@ -3,11 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Vehicall Daily Trips</title>
+<title>Vehicall Fleet - Daily Trips</title>
 
 <link rel="stylesheet" href="/fleet-ui.css">
 
 <style>
+*{box-sizing:border-box}
+
 body{
   margin:0;
   font-family:Arial,sans-serif;
@@ -15,128 +17,93 @@ body{
   color:#fff;
 }
 
-.container{
-  max-width:1300px;
-  margin:0 auto;
-  padding:0 20px;
+.app-layout{
+  display:flex;
+  min-height:100vh;
+}
+
+.sidebar{
+  width:260px;
+  background:#081827;
+  border-right:1px solid #1d3248;
+  padding:20px;
+  position:fixed;
+  left:0;
+  top:0;
+  bottom:0;
+  overflow-y:auto;
+  z-index:1000;
+}
+
+.sidebar h2{
+  margin:0 0 25px;
+  color:#54c8ff;
+}
+
+.sidebar a{
+  display:block;
+  color:#fff;
+  text-decoration:none;
+  padding:11px 12px;
+  margin-bottom:6px;
+  border-radius:10px;
+}
+
+.sidebar a:hover,
+.sidebar a.active{
+  background:#10243a;
+  color:#54c8ff;
+}
+
+.menu-group h3{
+  color:#8fb3d9;
+  font-size:12px;
+  text-transform:uppercase;
+  margin:22px 0 8px;
+}
+
+.main-content{
+  margin-left:260px;
+  width:calc(100% - 260px);
+  padding:24px;
+}
+
+.sticky-header{
+  position:sticky;
+  top:0;
+  background:#07111f;
+  z-index:500;
+  padding-bottom:18px;
 }
 
 .hero,.card{
   background:#0f1f33;
   border:1px solid #20344d;
-  border-radius:20px;
-  padding:24px;
-  margin-bottom:24px;
+  border-radius:18px;
+  padding:22px;
+  margin-bottom:18px;
 }
 
 .hero h1{
   margin:0 0 8px;
+  font-size:30px;
 }
 
 .hero p{
   margin:0;
   color:#b7c4d4;
-  line-height:1.6;
-}
-
-.form-grid{
-  display:grid;
-  grid-template-columns:repeat(3,1fr);
-  gap:14px;
-}
-
-label{
-  display:block;
-  margin-bottom:8px;
-  color:#9fb0c5;
-}
-
-input,select,textarea{
-  width:100%;
-  padding:13px;
-  border-radius:10px;
-  border:1px solid #29496d;
-  background:#081827;
-  color:#fff;
-  box-sizing:border-box;
-}
-
-textarea{
-  min-height:80px;
-}
-
-button{
-  padding:13px 18px;
-  border:none;
-  border-radius:12px;
-  background:linear-gradient(135deg,#00c2ff,#0066ff);
-  color:#fff;
-  font-weight:bold;
-  cursor:pointer;
-}
-
-.close-btn{
-  background:linear-gradient(135deg,#00c853,#009624);
-}
-
-.trip-grid{
-  display:grid;
-  grid-template-columns:repeat(2,1fr);
-  gap:16px;
-}
-
-.trip-card{
-  background:#081827;
-  border:1px solid #223854;
-  border-radius:16px;
-  padding:18px;
-}
-
-.trip-card h3{
-  margin:0 0 10px;
-  color:#6ecbff;
-}
-
-.trip-card p{
-  margin:7px 0;
-  color:#d6e2f0;
-  font-size:14px;
-}
-
-.trip-card strong{
-  color:#8fb3d9;
-}
-
-.badge{
-  display:inline-block;
-  padding:6px 12px;
-  border-radius:999px;
-  font-size:12px;
-  font-weight:bold;
-  text-transform:uppercase;
-}
-
-.active{
-  background:rgba(0,180,120,.15);
-  color:#70ffc8;
-}
-
-.closed{
-  background:rgba(255,70,70,.15);
-  color:#ff9c9c;
 }
 
 .summary-grid{
   display:grid;
   grid-template-columns:repeat(4,1fr);
   gap:14px;
-  margin-bottom:20px;
 }
 
 .summary-card{
   background:#081827;
   border:1px solid #223854;
-  border-radius:16px;
+  border-radius:14px;
   padding:16px;
 }
 
@@ -148,14 +115,106 @@ button{
 
 .summary-card p{
   margin:0;
-  color:#fff;
-  font-size:22px;
+  font-size:24px;
   font-weight:bold;
+}
+
+.top-form{
+  display:grid;
+  grid-template-columns:220px 220px 1fr;
+  gap:14px;
+  align-items:end;
+  margin-bottom:18px;
+}
+
+label{
+  display:block;
+  color:#9fb0c5;
+  margin-bottom:7px;
+  font-size:14px;
+}
+
+input,select,textarea{
+  width:100%;
+  padding:11px;
+  border-radius:10px;
+  border:1px solid #29496d;
+  background:#081827;
+  color:#fff;
+}
+
+input[type="date"],
+input[type="time"]{
+  color-scheme:dark;
+}
+
+.table-wrap{
+  overflow-x:auto;
+  border:1px solid #20344d;
+  border-radius:14px;
+}
+
+table{
+  width:100%;
+  min-width:1250px;
+  border-collapse:collapse;
+}
+
+th{
+  background:#10243a;
+  color:#9fc2e4;
+  padding:12px;
+  text-align:left;
+  font-size:13px;
+  border-bottom:1px solid #29496d;
+  position:sticky;
+  top:0;
+  z-index:5;
+}
+
+td{
+  padding:10px;
+  border-bottom:1px solid #1d3248;
+}
+
+td input,
+td select{
+  padding:9px;
+  font-size:13px;
+}
+
+button{
+  padding:12px 18px;
+  border:none;
+  border-radius:12px;
+  background:linear-gradient(135deg,#00c2ff,#0066ff);
+  color:#fff;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+.btn-row{
+  margin-top:16px;
+  display:flex;
+  gap:12px;
+}
+
+.secondary{
+  background:#16304b;
+}
+
+.danger{
+  background:#b91c1c;
+}
+
+.close-btn{
+  background:linear-gradient(135deg,#00c853,#009624);
+  margin-top:10px;
 }
 
 #message{
   display:none;
-  margin-bottom:18px;
+  margin-bottom:16px;
   padding:13px;
   border-radius:12px;
 }
@@ -172,20 +231,47 @@ button{
   color:#ff9c9c;
 }
 
-input[type="date"]{
-  color-scheme:dark;
+.records-table td,
+.records-table th{
+  white-space:nowrap;
 }
 
-input[type="date"]::-webkit-calendar-picker-indicator{
-  filter:invert(1);
-  cursor:pointer;
+.badge{
+  padding:5px 10px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:bold;
+}
+
+.active{
+  background:rgba(0,180,120,.15);
+  color:#70ffc8;
+}
+
+.closed{
+  background:rgba(255,70,70,.15);
+  color:#ff9c9c;
 }
 
 @media(max-width:900px){
+  .sidebar{
+    position:relative;
+    width:100%;
+    height:auto;
+  }
 
-  .form-grid,
-  .trip-grid,
-  .summary-grid{
+  .app-layout{
+    display:block;
+  }
+
+  .main-content{
+    margin-left:0;
+    width:100%;
+    padding:14px;
+  }
+
+  .summary-grid,
+  .top-form{
     grid-template-columns:1fr;
   }
 }
@@ -197,37 +283,32 @@ input[type="date"]::-webkit-calendar-picker-indicator{
 <div class="app-layout">
 
 <div class="sidebar">
-
   <h2>Vehicall Fleet</h2>
 
   <a href="/fleet-dashboard">Dashboard</a>
 
   <div class="menu-group">
     <h3>Operations</h3>
-
     <a href="/fleet-checklist">Daily Checklist</a>
-    <a href="/fleet-daily-trips">Trips</a>
+    <a class="active" href="/fleet-daily-trips">Trips</a>
     <a href="/fleet-replacements">Temporary Replacement</a>
     <a href="/fleet-fines">Traffic Fines</a>
   </div>
 
   <div class="menu-group">
     <h3>Fleet Assets</h3>
-
     <a href="/fleet-vehicles">Vehicles</a>
     <a href="/fleet-fuel-cards">Fuel Cards</a>
   </div>
 
   <div class="menu-group">
     <h3>Fuel Management</h3>
-
     <a href="/fleet-fuel">Fuel Entries</a>
     <a href="/fleet-fuel-statements">Supplier Statements</a>
   </div>
 
   <div class="menu-group">
     <h3>People</h3>
-
     <a href="/fleet-drivers">Drivers</a>
     <a href="/fleet-users">Users</a>
     <a href="/fleet-assignments">Assignments</a>
@@ -235,264 +316,303 @@ input[type="date"]::-webkit-calendar-picker-indicator{
 
   <div class="menu-group">
     <h3>Reports</h3>
-
     <a href="/fleet-reports">Reports</a>
   </div>
 
   <div class="menu-group">
     <h3>QR Fleet Alerts</h3>
-
     <a href="/fleet-vehicles">Fleet QR</a>
   </div>
 
   <a href="/api/fleet/logout">Logout</a>
-
 </div>
 
 <main class="main-content">
 
-<div class="container">
+<div class="sticky-header">
+  <div class="hero">
+    <h1>Daily Trip / Vehicle Issue Sheet</h1>
+    <p>Bulk daily vehicle issue workflow for supervisors managing multiple vehicles and drivers.</p>
+  </div>
 
-<div class="hero">
-
-  <h1>Daily Trip Management</h1>
-
-  <p>
-    Manage operational trips, daily movement logs,
-    opening inspection status and trip lifecycle tracking.
-  </p>
-
+  <div class="summary-grid">
+    <div class="summary-card"><h3>Total Trips</h3><p id="sumTotal">0</p></div>
+    <div class="summary-card"><h3>Active Trips</h3><p id="sumActive">0</p></div>
+    <div class="summary-card"><h3>Closed Trips</h3><p id="sumClosed">0</p></div>
+    <div class="summary-card"><h3>Vehicles Running</h3><p id="sumRunning">0</p></div>
+  </div>
 </div>
 
 <div id="message"></div>
 
-<div class="summary-grid">
-
-  <div class="summary-card">
-    <h3>Total Trips</h3>
-    <p id="sumTotal">0</p>
-  </div>
-
-  <div class="summary-card">
-    <h3>Active Trips</h3>
-    <p id="sumActive">0</p>
-  </div>
-
-  <div class="summary-card">
-    <h3>Closed Trips</h3>
-    <p id="sumClosed">0</p>
-  </div>
-
-  <div class="summary-card">
-    <h3>Vehicles Running</h3>
-    <p id="sumRunning">0</p>
-  </div>
-
-</div>
-
 <div class="card">
+  <h2>Start Daily Trips</h2>
 
-  <h2>Start Daily Trip</h2>
-
-  <form id="tripForm">
-
-    <div class="form-grid">
-
-      <div>
-        <label>Select Vehicle</label>
-
-        <select name="vehicleId" id="vehicleSelect" required>
-          <option value="">Loading...</option>
-        </select>
-      </div>
-
-      <div>
-        <label>Select Driver</label>
-
-        <select name="driverId" id="driverSelect" required>
-          <option value="">Loading...</option>
-        </select>
-      </div>
-
-      <div>
-        <label>Shift</label>
-
-        <select name="shift">
-          <option value="Morning">Morning</option>
-          <option value="Evening">Evening</option>
-          <option value="Night">Night</option>
-          <option value="Custom">Custom</option>
-        </select>
-      </div>
-
-      <div>
-        <label>Trip Date</label>
-        <input type="date" name="tripDate">
-      </div>
-
-      <div>
-        <label>Opening KM</label>
-        <input type="number" name="openingKm" required>
-      </div>
-
-      <div>
-        <label>Opening Fuel Level</label>
-
-        <select name="openingFuel">
-          <option value="Full">Full</option>
-          <option value="3/4">3/4</option>
-          <option value="1/2">1/2</option>
-          <option value="1/4">1/4</option>
-          <option value="Low">Low</option>
-        </select>
-      </div>
-
-      <div>
-        <label>Opening Tyre Check</label>
-
-        <select name="openingTyre">
-          <option value="OK">OK</option>
-          <option value="Issue Found">Issue Found</option>
-        </select>
-      </div>
-
-      <div>
-        <label>Opening Lights Check</label>
-
-        <select name="openingLights">
-          <option value="OK">OK</option>
-          <option value="Issue Found">Issue Found</option>
-        </select>
-      </div>
-
-      <div>
-        <label>Opening Damage Status</label>
-
-        <select name="openingDamage">
-          <option value="No Damage">No Damage</option>
-          <option value="Existing Damage">Existing Damage</option>
-          <option value="New Damage Found">New Damage Found</option>
-        </select>
-      </div>
-
-      <div style="grid-column:span 3;">
-        <label>Opening Notes</label>
-
-        <textarea
-          name="openingNotes"
-          placeholder="Opening inspection notes">
-        </textarea>
-      </div>
-
-      <div>
-        <button type="submit">Start Trip</button>
-      </div>
-
+  <div class="top-form">
+    <div>
+      <label>Trip Date</label>
+      <input type="date" id="commonTripDate" required>
     </div>
 
-  </form>
+    <div>
+      <label>Trip Time</label>
+      <input type="time" id="commonTripTime" required>
+    </div>
 
+    <div>
+      <label>Note</label>
+      <input type="text" value="Enter all vehicles issued for the selected date and time." disabled>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Vehicle</th>
+          <th>Driver</th>
+          <th>Shift</th>
+          <th>Opening KM</th>
+          <th>Fuel Level</th>
+          <th>Tyres</th>
+          <th>Lights</th>
+          <th>Damage</th>
+          <th>Opening Notes</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="tripRows"></tbody>
+    </table>
+  </div>
+
+  <div class="btn-row">
+    <button type="button" onclick="addTripRow()">+ Add Row</button>
+    <button type="button" onclick="submitDailyTrips()">Submit Daily Trips</button>
+  </div>
 </div>
 
 <div class="card">
-
   <h2>Daily Trip Records</h2>
 
-  <div id="tripsList" class="trip-grid">
-    Loading...
+  <div class="table-wrap">
+    <table class="records-table">
+      <thead>
+        <tr>
+          <th>Vehicle</th>
+          <th>Driver</th>
+          <th>Shift</th>
+          <th>Date</th>
+          <th>Opening KM</th>
+          <th>Fuel</th>
+          <th>Tyres</th>
+          <th>Lights</th>
+          <th>Damage</th>
+          <th>Status</th>
+          <th>Close</th>
+        </tr>
+      </thead>
+      <tbody id="tripsList">
+        <tr><td colspan="11">Loading...</td></tr>
+      </tbody>
+    </table>
   </div>
-
 </div>
 
+</main>
 </div>
 
 <script>
-const form=document.getElementById("tripForm");
-const messageBox=document.getElementById("message");
-const tripsList=document.getElementById("tripsList");
-const vehicleSelect=document.getElementById("vehicleSelect");
-const driverSelect=document.getElementById("driverSelect");
+const messageBox = document.getElementById("message");
+const tripRows = document.getElementById("tripRows");
+const tripsList = document.getElementById("tripsList");
+
+let vehicles = [];
+let drivers = [];
 
 function showMessage(text,type){
-  messageBox.className=type;
-  messageBox.textContent=text;
-  messageBox.style.display="block";
+  messageBox.className = type;
+  messageBox.textContent = text;
+  messageBox.style.display = "block";
 
   setTimeout(()=>{
-    messageBox.className="";
-    messageBox.style.display="none";
+    messageBox.className = "";
+    messageBox.style.display = "none";
   },4000);
 }
 
-function updateSummary(trips){
+function vehicleOptions(){
+  return `<option value="">Select Vehicle</option>` +
+    vehicles.map(v=>`
+      <option value="${v.id}">${v.vehicleNumber || "-"}</option>
+    `).join("");
+}
 
-  document.getElementById("sumTotal").textContent =
-    trips.length;
+function driverOptions(){
+  return `<option value="">Select Driver</option>` +
+    drivers.map(d=>`
+      <option value="${d.id}">${d.driverName || "-"}</option>
+    `).join("");
+}
 
-  document.getElementById("sumActive").textContent =
-    trips.filter(t => t.status !== "closed").length;
+function addTripRow(){
+  const tr = document.createElement("tr");
 
-  document.getElementById("sumClosed").textContent =
-    trips.filter(t => t.status === "closed").length;
+  tr.innerHTML = `
+    <td>
+      <select class="vehicleId" required>${vehicleOptions()}</select>
+    </td>
 
-  document.getElementById("sumRunning").textContent =
-    trips.filter(t => t.status !== "closed").length;
+    <td>
+      <select class="driverId" required>${driverOptions()}</select>
+    </td>
+
+    <td>
+      <select class="shift">
+        <option value="Morning">Morning</option>
+        <option value="Evening">Evening</option>
+        <option value="Night">Night</option>
+        <option value="Custom">Custom</option>
+      </select>
+    </td>
+
+    <td>
+      <input class="openingKm" type="number" placeholder="KM" required>
+    </td>
+
+    <td>
+      <select class="openingFuel">
+        <option value="Full">Full</option>
+        <option value="3/4">3/4</option>
+        <option value="1/2">1/2</option>
+        <option value="1/4">1/4</option>
+        <option value="Low">Low</option>
+      </select>
+    </td>
+
+    <td>
+      <select class="openingTyre">
+        <option value="OK">OK</option>
+        <option value="Issue Found">Issue Found</option>
+      </select>
+    </td>
+
+    <td>
+      <select class="openingLights">
+        <option value="OK">OK</option>
+        <option value="Issue Found">Issue Found</option>
+      </select>
+    </td>
+
+    <td>
+      <select class="openingDamage">
+        <option value="No Damage">No Damage</option>
+        <option value="Existing Damage">Existing Damage</option>
+        <option value="New Damage Found">New Damage Found</option>
+      </select>
+    </td>
+
+    <td>
+      <input class="openingNotes" type="text" placeholder="Remarks">
+    </td>
+
+    <td>
+      <button type="button" class="danger" onclick="this.closest('tr').remove()">Remove</button>
+    </td>
+  `;
+
+  tripRows.appendChild(tr);
 }
 
 async function loadVehicles(){
+  const res = await fetch("/api/fleet/vehicles");
+  const data = await res.json();
 
-  const res=await fetch("/api/fleet/vehicles");
-  const data=await res.json();
-
-  vehicleSelect.innerHTML=
-    '<option value="">Select Vehicle</option>';
-
-  if(data.success){
-
-    data.vehicles.forEach(v=>{
-
-      vehicleSelect.innerHTML += `
-        <option value="${v.id}">
-          ${v.vehicleNumber}
-        </option>
-      `;
-    });
-  }
+  vehicles = data.success ? data.vehicles || [] : [];
 }
 
 async function loadDrivers(){
+  const res = await fetch("/api/fleet/drivers");
+  const data = await res.json();
 
-  const res=await fetch("/api/fleet/drivers");
-  const data=await res.json();
+  drivers = data.success ? data.drivers || [] : [];
+}
 
-  driverSelect.innerHTML=
-    '<option value="">Select Driver</option>';
+function updateSummary(trips){
+  document.getElementById("sumTotal").textContent = trips.length;
+  document.getElementById("sumActive").textContent = trips.filter(t => t.status !== "closed").length;
+  document.getElementById("sumClosed").textContent = trips.filter(t => t.status === "closed").length;
+  document.getElementById("sumRunning").textContent = trips.filter(t => t.status !== "closed").length;
+}
 
-  if(data.success){
+async function submitDailyTrips(){
+  const tripDate = document.getElementById("commonTripDate").value;
+  const tripTime = document.getElementById("commonTripTime").value;
 
-    data.drivers.forEach(d=>{
-
-      driverSelect.innerHTML += `
-        <option value="${d.id}">
-          ${d.driverName}
-        </option>
-      `;
-    });
+  if(!tripDate){
+    showMessage("Please select trip date.","error");
+    return;
   }
+
+  if(!tripTime){
+    showMessage("Please select trip time.","error");
+    return;
+  }
+
+  const rows = [...tripRows.querySelectorAll("tr")];
+
+  if(!rows.length){
+    showMessage("Please add at least one trip row.","error");
+    return;
+  }
+
+  let successCount = 0;
+
+  for(const row of rows){
+    const data = {
+      vehicleId: row.querySelector(".vehicleId").value,
+      driverId: row.querySelector(".driverId").value,
+      shift: row.querySelector(".shift").value,
+      tripDate,
+      tripTime,
+      openingKm: row.querySelector(".openingKm").value,
+      openingFuel: row.querySelector(".openingFuel").value,
+      openingTyre: row.querySelector(".openingTyre").value,
+      openingLights: row.querySelector(".openingLights").value,
+      openingDamage: row.querySelector(".openingDamage").value,
+      openingNotes: row.querySelector(".openingNotes").value
+    };
+
+    if(!data.vehicleId || !data.driverId || !data.openingKm){
+      showMessage("Please complete Vehicle, Driver and Opening KM in all rows.","error");
+      return;
+    }
+
+    const res = await fetch("/api/fleet/daily-trips",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify(data)
+    });
+
+    const result = await res.json();
+
+    if(result.success) successCount++;
+  }
+
+  showMessage(`${successCount} daily trip(s) submitted successfully.`,"success");
+
+  tripRows.innerHTML = "";
+  addTripRow();
+  loadTrips();
 }
 
 async function loadTrips(){
+  const res = await fetch("/api/fleet/daily-trips");
+  const data = await res.json();
 
-  const res=await fetch("/api/fleet/daily-trips");
-  const data=await res.json();
-
-  tripsList.innerHTML="";
+  tripsList.innerHTML = "";
 
   if(!data.success){
-
-    tripsList.innerHTML=
-      "Unable to load trips.";
-
+    tripsList.innerHTML = `<tr><td colspan="11">Unable to load trips.</td></tr>`;
     return;
   }
 
@@ -501,129 +621,49 @@ async function loadTrips(){
   updateSummary(trips);
 
   if(!trips.length){
-
-    tripsList.innerHTML=`
-      <div class="trip-card">
-        No daily trips started yet.
-      </div>
-    `;
-
+    tripsList.innerHTML = `<tr><td colspan="11">No daily trips started yet.</td></tr>`;
     return;
   }
 
   trips.forEach(t=>{
-
     tripsList.innerHTML += `
-      <div class="trip-card">
-
-        <h3>${t.vehicleNumber || "-"}</h3>
-
-        <p>
-          <strong>Driver:</strong>
-          ${t.driverName || "-"}
-        </p>
-
-        <p>
-          <strong>Shift:</strong>
-          ${t.shift || "-"}
-        </p>
-
-        <p>
-          <strong>Trip Date:</strong>
-          ${t.tripDate || "-"}
-        </p>
-
-        <p>
-          <strong>Opening KM:</strong>
-          ${t.openingKm || "-"}
-        </p>
-
-        <p>
-          <strong>Opening Fuel:</strong>
-          ${t.openingFuel || "-"}
-        </p>
-
-        <p>
-          <strong>Opening Tyre:</strong>
-          ${t.openingTyre || "-"}
-        </p>
-
-        <p>
-          <strong>Opening Lights:</strong>
-          ${t.openingLights || "-"}
-        </p>
-
-        <p>
-          <strong>Opening Damage:</strong>
-          ${t.openingDamage || "-"}
-        </p>
-
-        <p>
-          <strong>Opening Notes:</strong>
-          ${t.openingNotes || "-"}
-        </p>
-
-        <span class="badge ${t.status === "closed" ? "closed" : "active"}">
-          ${t.status || "active"}
-        </span>
-
-        ${
-          t.status !== "closed"
-          ? `
-            <br><br>
-
-            <button
-              class="close-btn"
-              onclick="closeTrip('${t.id}')">
-
-              Close Trip
-
-            </button>
-          `
-          : `
-            <p>
-              <strong>Closing KM:</strong>
-              ${t.closingKm || "-"}
-            </p>
-
-            <p>
-              <strong>Closing Fuel:</strong>
-              ${t.closingFuel || "-"}
-            </p>
-
-            <p>
-              <strong>Closing Notes:</strong>
-              ${t.closingNotes || "-"}
-            </p>
-          `
-        }
-
-      </div>
+      <tr>
+        <td>${t.vehicleNumber || "-"}</td>
+        <td>${t.driverName || "-"}</td>
+        <td>${t.shift || "-"}</td>
+        <td>${t.tripDate || "-"}</td>
+        <td>${t.openingKm || "-"}</td>
+        <td>${t.openingFuel || "-"}</td>
+        <td>${t.openingTyre || "-"}</td>
+        <td>${t.openingLights || "-"}</td>
+        <td>${t.openingDamage || "-"}</td>
+        <td>
+          <span class="badge ${t.status === "closed" ? "closed" : "active"}">
+            ${t.status || "active"}
+          </span>
+        </td>
+        <td>
+          ${
+            t.status !== "closed"
+            ? `<button class="close-btn" onclick="closeTrip('${t.id}')">Close</button>`
+            : `Closed`
+          }
+        </td>
+      </tr>
     `;
   });
 }
 
 async function closeTrip(tripId){
-
-  const closingKm =
-    prompt("Enter closing KM:");
-
+  const closingKm = prompt("Enter closing KM:");
   if(!closingKm) return;
 
-  const closingFuel =
-    prompt("Enter closing fuel level: Full / 3/4 / 1/2 / 1/4 / Low") || "";
-
-  const closingNotes =
-    prompt("Closing notes / inspection remarks:") || "";
+  const closingFuel = prompt("Enter closing fuel level: Full / 3/4 / 1/2 / 1/4 / Low") || "";
+  const closingNotes = prompt("Closing notes / inspection remarks:") || "";
 
   const res = await fetch(`/api/fleet/daily-trips/${tripId}/close`,{
-
     method:"POST",
-
-    headers:{
-      "Content-Type":"application/json"
-    },
-
+    headers:{"Content-Type":"application/json"},
     body:JSON.stringify({
       closingKm,
       closingFuel,
@@ -633,58 +673,29 @@ async function closeTrip(tripId){
 
   const data = await res.json();
 
-  showMessage(
-    data.message,
-    data.success ? "success" : "error"
-  );
+  showMessage(data.message, data.success ? "success" : "error");
 
   loadTrips();
 }
 
-form.addEventListener("submit", async e=>{
+async function init(){
+  const today = new Date().toISOString().split("T")[0];
+  document.getElementById("commonTripDate").value = today;
 
-  e.preventDefault();
+  const now = new Date();
+  document.getElementById("commonTripTime").value =
+    String(now.getHours()).padStart(2,"0") + ":" +
+    String(now.getMinutes()).padStart(2,"0");
 
-  const data =
-    Object.fromEntries(new FormData(form).entries());
+  await loadVehicles();
+  await loadDrivers();
 
-  const res = await fetch("/api/fleet/daily-trips",{
+  addTripRow();
+  loadTrips();
+}
 
-    method:"POST",
-
-    headers:{
-      "Content-Type":"application/json"
-    },
-
-    body:JSON.stringify(data)
-  });
-
-  const result = await res.json();
-
-  if(result.success){
-
-    showMessage(result.message,"success");
-
-    form.reset();
-
-    loadTrips();
-
-  }else{
-
-    showMessage(
-      result.message || "Unable to start trip",
-      "error"
-    );
-  }
-});
-
-loadVehicles();
-loadDrivers();
-loadTrips();
+init();
 </script>
-
-</main>
-</div>
 
 </body>
 </html>

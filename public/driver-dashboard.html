@@ -6,20 +6,259 @@
 <title>Vehicall Driver Dashboard</title>
 
 <style>
-body{margin:0;font-family:Arial,sans-serif;background:#07111f;color:#fff}
-.header{padding:18px;background:#0b1b2d;border-bottom:1px solid #1d3553;display:flex;justify-content:space-between;align-items:center}
-.brand{display:flex;align-items:center;gap:12px}.brand img{height:42px}.brand h2{margin:0}.brand p{margin:2px 0 0;color:#9fb0c5;font-size:13px}
-.container{max-width:760px;margin:24px auto;padding:0 16px}
-.card{background:#0f1f33;border:1px solid #20344d;border-radius:20px;padding:22px;margin-bottom:18px}
-.card h2{margin-top:0;color:#6ecbff}
-.kpi{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-.box{background:#081827;border:1px solid #223854;border-radius:14px;padding:15px}
-.box span{color:#9fb0c5;font-size:13px}.box h3{margin:8px 0 0}
-button{width:100%;padding:14px;margin-top:12px;border:none;border-radius:14px;background:linear-gradient(135deg,#00c2ff,#0066ff);color:#fff;font-weight:bold;cursor:pointer}
-.logout{background:#8a1f1f}
-#message{display:none;padding:12px;border-radius:12px;margin-bottom:15px}.success{display:block!important;background:rgba(0,180,120,.15);color:#70ffc8}.error{display:block!important;background:rgba(255,70,70,.15);color:#ff9c9c}
-p{color:#d6e2f0;line-height:1.5}
-strong{color:#8fb3d9}
+*{box-sizing:border-box}
+
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:#07111f;
+  color:#fff;
+}
+
+body::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  background:url('/logo.png') center 58% no-repeat;
+  background-size:300px;
+  opacity:.035;
+  pointer-events:none;
+}
+
+.header{
+  position:sticky;
+  top:0;
+  z-index:100;
+  padding:18px 16px;
+  background:rgba(8,24,39,.96);
+  border-bottom:1px solid #1d3553;
+  backdrop-filter:blur(12px);
+}
+
+.brand{
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+
+.brand img{
+  height:46px;
+  width:46px;
+  object-fit:contain;
+  border-radius:12px;
+  background:#fff;
+  padding:4px;
+}
+
+.brand h2{
+  margin:0;
+  color:#6ecbff;
+  font-size:22px;
+}
+
+.brand p{
+  margin:3px 0 0;
+  color:#9fb0c5;
+  font-size:13px;
+}
+
+.container{
+  max-width:820px;
+  margin:22px auto;
+  padding:0 16px 24px;
+  position:relative;
+  z-index:1;
+}
+
+.hero{
+  background:
+    linear-gradient(135deg,rgba(0,194,255,.14),rgba(0,102,255,.08)),
+    #0f1f33;
+  border:1px solid #20344d;
+  border-radius:26px;
+  padding:24px;
+  margin-bottom:18px;
+  box-shadow:0 18px 45px rgba(0,0,0,.35);
+  overflow:hidden;
+  position:relative;
+}
+
+.hero::after{
+  content:"DRIVER";
+  position:absolute;
+  right:-10px;
+  bottom:-24px;
+  font-size:58px;
+  font-weight:900;
+  letter-spacing:4px;
+  color:rgba(255,255,255,.035);
+}
+
+.hero h1{
+  margin:0;
+  font-size:28px;
+  color:#fff;
+}
+
+.hero p{
+  margin:8px 0 0;
+  color:#b7c4d4;
+  line-height:1.5;
+}
+
+.card{
+  background:#0f1f33;
+  border:1px solid #20344d;
+  border-radius:22px;
+  padding:22px;
+  margin-bottom:18px;
+  box-shadow:0 14px 35px rgba(0,0,0,.22);
+}
+
+.card h2{
+  margin:0 0 16px;
+  color:#6ecbff;
+  font-size:21px;
+}
+
+.vehicle-card{
+  border-color:rgba(0,194,255,.35);
+}
+
+.info-line{
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+  padding:11px 0;
+  border-bottom:1px solid #1d3248;
+}
+
+.info-line:last-child{
+  border-bottom:none;
+}
+
+.info-line span:first-child{
+  color:#8fb3d9;
+}
+
+.info-line span:last-child{
+  color:#fff;
+  font-weight:bold;
+  text-align:right;
+}
+
+.kpi{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+}
+
+.box{
+  background:#081827;
+  border:1px solid #223854;
+  border-radius:18px;
+  padding:18px;
+}
+
+.box span{
+  color:#9fb0c5;
+  font-size:13px;
+}
+
+.box h3{
+  margin:8px 0 0;
+  font-size:30px;
+  color:#fff;
+}
+
+.actions{
+  display:grid;
+  grid-template-columns:1fr;
+  gap:12px;
+}
+
+.action-btn{
+  width:100%;
+  padding:17px;
+  border:none;
+  border-radius:18px;
+  background:linear-gradient(135deg,#00c2ff,#0066ff);
+  color:#fff;
+  font-weight:bold;
+  cursor:pointer;
+  text-align:left;
+  box-shadow:0 12px 28px rgba(0,102,255,.18);
+}
+
+.action-btn small{
+  display:block;
+  margin-top:5px;
+  color:rgba(255,255,255,.75);
+  font-weight:normal;
+}
+
+.secondary{
+  background:#334155;
+}
+
+.logout{
+  background:linear-gradient(135deg,#8a1f1f,#b91c1c);
+}
+
+#message{
+  display:none;
+  padding:12px;
+  border-radius:12px;
+  margin-bottom:15px;
+}
+
+.success{
+  display:block!important;
+  background:rgba(0,180,120,.15);
+  color:#70ffc8;
+}
+
+.error{
+  display:block!important;
+  background:rgba(255,70,70,.15);
+  color:#ff9c9c;
+}
+
+.footer-note{
+  text-align:center;
+  color:#6f8aa6;
+  font-size:12px;
+  margin-top:20px;
+}
+
+@media(max-width:520px){
+  .container{
+    margin:16px auto;
+    padding:0 12px 20px;
+  }
+
+  .hero{
+    padding:20px;
+    border-radius:22px;
+  }
+
+  .hero h1{
+    font-size:24px;
+  }
+
+  .kpi{
+    grid-template-columns:1fr 1fr;
+  }
+
+  .card{
+    padding:18px;
+    border-radius:20px;
+  }
+
+  .brand h2{
+    font-size:20px;
+  }
+}
 </style>
 </head>
 
@@ -27,31 +266,51 @@ strong{color:#8fb3d9}
 
 <div class="header">
   <div class="brand">
-    <img src="/logo.png">
+    <img src="/logo.png" alt="Vehicall Logo">
     <div>
-      <h2>Driver Portal</h2>
-      <p id="driverName">Loading...</p>
+      <h2>Vehicall Driver</h2>
+      <p id="driverName">Loading driver...</p>
     </div>
   </div>
 </div>
 
 <div class="container">
+
   <div id="message"></div>
 
-  <div class="card">
+  <div class="hero">
+    <h1>Driver Portal</h1>
+    <p>Manage your assigned vehicle trip, fuel entry and incident reporting from one mobile-friendly dashboard.</p>
+  </div>
+
+  <div class="card vehicle-card">
     <h2>My Assigned Vehicle</h2>
-    <p><strong>Vehicle:</strong> <span id="vehicleNumber">-</span></p>
-    <p><strong>Company:</strong> <span id="companyName">-</span></p>
-    <p><strong>Current Assignment:</strong> <span id="assignmentStatus">-</span></p>
+
+    <div class="info-line">
+      <span>Vehicle</span>
+      <span id="vehicleNumber">-</span>
+    </div>
+
+    <div class="info-line">
+      <span>Company</span>
+      <span id="companyName">-</span>
+    </div>
+
+    <div class="info-line">
+      <span>Current Assignment</span>
+      <span id="assignmentStatus">-</span>
+    </div>
   </div>
 
   <div class="card">
     <h2>Today</h2>
+
     <div class="kpi">
       <div class="box">
         <span>Open Trips</span>
         <h3 id="openTrips">0</h3>
       </div>
+
       <div class="box">
         <span>Open Incidents</span>
         <h3 id="openIncidents">0</h3>
@@ -61,15 +320,40 @@ strong{color:#8fb3d9}
 
   <div class="card">
     <h2>Driver Actions</h2>
-    <button onclick="goTo('/driver-trip')">Start / Close My Trip</button>
-    <button onclick="goTo('/driver-fuel')">Add Fuel for My Vehicle</button>
-    <button onclick="goTo('/driver-incident')">Report Incident</button>
-    <button class="logout" onclick="goTo('/api/driver/logout')">Logout</button>
+
+    <div class="actions">
+      <button class="action-btn" onclick="goTo('/driver-trip')">
+        Start / Close My Trip
+        <small>Open and close today’s assigned trip</small>
+      </button>
+
+      <button class="action-btn" onclick="goTo('/driver-fuel')">
+        Add Fuel for My Vehicle
+        <small>Submit fuel, oil, AdBlue or card usage</small>
+      </button>
+
+      <button class="action-btn secondary" onclick="goTo('/driver-incident')">
+        Report Incident
+        <small>Report vehicle damage, issue or emergency</small>
+      </button>
+
+      <button class="action-btn logout" onclick="goTo('/api/driver/logout')">
+        Logout
+        <small>Exit driver portal securely</small>
+      </button>
+    </div>
   </div>
+
+  <div class="footer-note">
+    Powered by Vehicall Fleet Management
+  </div>
+
 </div>
 
 <script>
-function goTo(url){ window.location.href=url; }
+function goTo(url){
+  window.location.href=url;
+}
 
 function showMessage(text,type){
   const box=document.getElementById("message");
@@ -88,12 +372,27 @@ async function loadDriverDashboard(){
       return;
     }
 
-    document.getElementById("driverName").textContent=data.driver.name || "Driver";
-    document.getElementById("companyName").textContent=data.company.companyName || "-";
-    document.getElementById("vehicleNumber").textContent=data.assignedVehicle.vehicleNumber || "Not assigned";
-    document.getElementById("assignmentStatus").textContent=data.assignedVehicle.status || "-";
-    document.getElementById("openTrips").textContent=data.stats.openTrips || 0;
-    document.getElementById("openIncidents").textContent=data.stats.openIncidents || 0;
+    document.getElementById("driverName").textContent =
+      data.driver?.name || "Driver";
+
+    document.getElementById("companyName").textContent =
+      data.company?.companyName || "-";
+
+    document.getElementById("vehicleNumber").textContent =
+      data.workingVehicle?.vehicleNumber ||
+      data.assignedVehicle?.vehicleNumber ||
+      "Not assigned";
+
+    document.getElementById("assignmentStatus").textContent =
+      data.workingVehicle?.status ||
+      data.assignedVehicle?.status ||
+      "-";
+
+    document.getElementById("openTrips").textContent =
+      data.stats?.openTrips || 0;
+
+    document.getElementById("openIncidents").textContent =
+      data.stats?.openIncidents || 0;
 
   }catch(err){
     console.error(err);

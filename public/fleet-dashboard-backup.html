@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vehicall Fleet Dashboard</title>
+<link rel="stylesheet" href="/fleet-ui.css">
+
+<style>
+body{margin:0;font-family:Arial,sans-serif;background:#07111f;color:#fff}
+.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}
+.header h1{margin:0;color:#6ecbff}
+.header p{margin:4px 0 0;color:#9fb0c5}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+.card{background:#0f1f33;border:1px solid #20344d;border-radius:18px;padding:20px}
+.card h3{margin:0 0 8px;color:#9fb0c5;font-size:14px}
+.card p{margin:0;font-size:28px;font-weight:bold}
+.quick-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px}
+.quick-btn{background:#0f1f33;border:1px solid #20344d;border-radius:16px;padding:18px;color:#fff;cursor:pointer;text-align:left}
+.quick-btn:hover{background:#10243b}
+.quick-btn strong{color:#6ecbff}
+.section-title{margin:28px 0 14px;color:#fff}
+.activity-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+.activity-box{background:#0f1f33;border:1px solid #20344d;border-radius:18px;padding:18px;min-height:120px}
+.activity-box h3{margin-top:0;color:#6ecbff}
+.small{color:#9fb0c5;font-size:13px}
+@media(max-width:900px){.grid,.quick-grid,.activity-grid{grid-template-columns:1fr}.main-content{padding:16px}}
+</style>
+</head>
+
+<body>
+
+<div class="app-layout">
+
+  <div class="sidebar">
+    <h2>Vehicall Fleet</h2>
+
+    <a href="/fleet-dashboard">Dashboard</a>
+
+    <div class="menu-group">
+      <h3>Operations</h3>
+      <a href="/fleet-checklist">Daily Checklist</a>
+      <a href="/fleet-daily-trips">Trips</a>
+      <a href="/fleet-replacements">Temporary Replacement</a>
+      <a href="/fleet-fines">Traffic Fines</a>
+    </div>
+
+    <div class="menu-group">
+      <h3>Fleet Assets</h3>
+      <a href="/fleet-vehicles">Vehicles</a>
+      <a href="/fleet-fuel-cards">Fuel Cards</a>
+    </div>
+
+    <div class="menu-group">
+      <h3>Fuel Management</h3>
+      <a href="/fleet-fuel">Fuel Entries</a>
+      <a href="/fleet-fuel-statements">Supplier Statements</a>
+    </div>
+
+    <div class="menu-group">
+      <h3>People</h3>
+      <a href="/fleet-drivers">Drivers</a>
+      <a href="/fleet-users">Users</a>
+      <a href="/fleet-assignments">Assignments</a>
+    </div>
+
+    <div class="menu-group">
+      <h3>Reports</h3>
+      <a href="/fleet-reports">Reports</a>
+    </div>
+
+    <div class="menu-group">
+      <h3>QR Fleet Alerts</h3>
+      <a href="/fleet-vehicles">Fleet QR</a>
+    </div>
+
+    <a href="/api/fleet/logout">Logout</a>
+  </div>
+
+  <main class="main-content">
+
+    <div class="header">
+      <div>
+        <h1>Fleet Dashboard</h1>
+        <p id="companyName">Loading company...</p>
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <h3>Vehicles Active</h3>
+        <p id="totalVehicles">0</p>
+      </div>
+
+      <div class="card">
+        <h3>Drivers Active</h3>
+        <p id="activeDrivers">0</p>
+      </div>
+
+      <div class="card">
+        <h3>Open Exceptions</h3>
+        <p id="openExceptions">0</p>
+      </div>
+
+      <div class="card">
+        <h3>Replacement Active</h3>
+        <p id="replacementActive">0</p>
+      </div>
+
+      <div class="card">
+        <h3>Pending Checklist</h3>
+        <p id="pendingChecklist">0</p>
+      </div>
+
+      <div class="card">
+        <h3>Pending Fuel Review</h3>
+        <p id="pendingFuel">0</p>
+      </div>
+
+      <div class="card">
+        <h3>Traffic Fines Pending</h3>
+        <p id="pendingFines">0</p>
+      </div>
+
+      <div class="card">
+        <h3>Fleet Alerts</h3>
+        <p id="fleetAlerts">0</p>
+      </div>
+    </div>
+
+    <h2 class="section-title">Quick Actions</h2>
+
+    <div class="quick-grid">
+      <button class="quick-btn" onclick="goTo('/fleet-vehicles')"><strong>+ Add Vehicle</strong><br><span class="small">Manage fleet assets</span></button>
+      <button class="quick-btn" onclick="goTo('/fleet-drivers')"><strong>+ Add Driver</strong><br><span class="small">Create driver profile</span></button>
+      <button class="quick-btn" onclick="goTo('/fleet-fuel')"><strong>+ Fuel Entry</strong><br><span class="small">Fuel and oil records</span></button>
+      <button class="quick-btn" onclick="goTo('/fleet-checklist')"><strong>+ Daily Checklist</strong><br><span class="small">Vehicle inspection</span></button>
+      <button class="quick-btn" onclick="goTo('/fleet-fines')"><strong>+ Traffic Fine</strong><br><span class="small">Fine attribution</span></button>
+    </div>
+
+    <h2 class="section-title">Recent Activity</h2>
+
+    <div class="activity-grid">
+      <div class="activity-box">
+        <h3>Recent Fuel Entries</h3>
+        <div id="recentFuel">Loading...</div>
+      </div>
+
+      <div class="activity-box">
+        <h3>Recent Checklist</h3>
+        <div id="recentChecklist">Loading...</div>
+      </div>
+
+      <div class="activity-box">
+        <h3>Recent Fines</h3>
+        <div id="recentFines">Loading...</div>
+      </div>
+
+      <div class="activity-box">
+        <h3>Recent Temporary Replacement</h3>
+        <div id="recentReplacement">Loading...</div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+function goTo(url){
+  window.location.href=url;
+}
+
+async function fetchJson(url){
+  try{
+    const res = await fetch(url);
+    return await res.json();
+  }catch(e){
+    return {success:false};
+  }
+}
+
+function row(text){
+  return `<p class="small">${text}</p>`;
+}
+
+async function loadDashboard(){
+  const data = await fetchJson("/api/fleet/dashboard-data");
+
+  if(!data.success){
+    window.location.href="/fleet-login";
+    return;
+  }
+
+  document.getElementById("companyName").textContent =
+    data.company?.companyName || "Fleet Company";
+
+  document.getElementById("totalVehicles").textContent = data.stats?.totalVehicles || 0;
+  document.getElementById("activeDrivers").textContent = data.stats?.activeDrivers || 0;
+}
+
+async function loadExtraStats(){
+  const fuel = await fetchJson("/api/fleet/fuel");
+  const checklists = await fetchJson("/api/fleet/checklists");
+  const fines = await fetchJson("/api/fleet/reports/fines");
+  const replacements = await fetchJson("/api/fleet/replacements");
+
+  let pendingFuel = 0;
+  let recentFuel = "";
+
+  if(fuel.success){
+    pendingFuel = fuel.records.filter(x => 
+      x.approvalStatus === "pending" || x.status === "pending_approval"
+    ).length;
+
+    recentFuel = fuel.records.slice(0,4).map(x =>
+      row(`${x.vehicleNumber || "-"} | ${x.amount || 0} OMR | ${x.paymentMethod || "-"}`)
+    ).join("");
+  }
+
+  let pendingFines = 0;
+  let recentFines = "";
+
+  if(fines.success){
+    pendingFines = fines.rows.filter(x => x.status === "pending").length;
+    recentFines = fines.rows.slice(0,4).map(x =>
+      row(`${x.vehicleNumber || "-"} | ${x.fineType || "-"} | ${x.fineAmount || 0} OMR`)
+    ).join("");
+  }
+
+  let activeReplacement = 0;
+  let recentReplacement = "";
+
+  if(replacements.success){
+    activeReplacement = replacements.records.filter(x => x.status === "active").length;
+    recentReplacement = replacements.records.slice(0,4).map(x =>
+      row(`${x.originalVehicleNumber || "-"} → ${x.replacementVehicleNumber || "-"} | ${x.status || "-"}`)
+    ).join("");
+  }
+
+  let recentChecklist = "";
+
+  if(checklists.success){
+    recentChecklist = checklists.checklists.slice(0,4).map(x =>
+      row(`${x.vehicleNumber || "-"} | ${x.checklistDate || "-"} | Closing KM: ${x.closingKm || "-"}`)
+    ).join("");
+  }
+
+  const exceptions = pendingFuel + pendingFines + activeReplacement;
+
+  document.getElementById("pendingFuel").textContent = pendingFuel;
+  document.getElementById("pendingFines").textContent = pendingFines;
+  document.getElementById("replacementActive").textContent = activeReplacement;
+  document.getElementById("openExceptions").textContent = exceptions;
+  document.getElementById("pendingChecklist").textContent = 0;
+  document.getElementById("fleetAlerts").textContent = 0;
+
+  document.getElementById("recentFuel").innerHTML = recentFuel || row("No recent fuel entries");
+  document.getElementById("recentFines").innerHTML = recentFines || row("No recent fines");
+  document.getElementById("recentReplacement").innerHTML = recentReplacement || row("No recent replacement activity");
+  document.getElementById("recentChecklist").innerHTML = recentChecklist || row("No recent checklist");
+}
+
+loadDashboard();
+loadExtraStats();
+</script>
+
+</body>
+</html>

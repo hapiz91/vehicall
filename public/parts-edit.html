@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Edit Part | Vehicall Parts</title>
+
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
+    body{background:#07111f;color:#fff;min-height:100vh}
+    .sidebar{width:270px;background:#0b1728;border-right:1px solid rgba(255,255,255,.08);position:fixed;left:0;top:0;bottom:0;padding:22px;overflow-y:auto;z-index:1000}
+    .brand{display:flex;align-items:center;gap:12px;margin-bottom:34px;color:#f59e0b;font-size:22px;font-weight:900}
+    .brand img{width:52px;height:52px;object-fit:contain;background:#fff;border-radius:14px;padding:6px}
+    .sidebar a{display:block;text-decoration:none;color:#cbd5e1;padding:14px;border-radius:14px;margin-bottom:8px;font-weight:700;font-size:14px}
+    .sidebar a:hover,.sidebar a.active{background:rgba(245,158,11,.15);color:#facc15}
+    .main{margin-left:270px;min-height:100vh;padding:24px}
+    .topbar{position:sticky;top:0;z-index:999;background:rgba(7,17,31,.96);backdrop-filter:blur(12px);border-bottom:1px solid rgba(255,255,255,.06);padding:16px 0;margin-bottom:24px;display:flex;justify-content:space-between;align-items:center;gap:16px}
+    h1{font-size:30px;margin-bottom:6px}.muted{color:#94a3b8;font-size:14px}
+    .panel{background:#0f1f33;border:1px solid #20344d;border-radius:24px;padding:26px;max-width:1100px}
+    .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+    label{display:block;margin-bottom:8px;color:#dbeafe;font-weight:800;font-size:13px}
+    input,select,textarea{width:100%;padding:14px;border-radius:14px;border:1px solid #29496d;background:#081827;color:#fff;outline:none;font-size:14px}
+    textarea{min-height:110px;resize:vertical}
+    .full{grid-column:1/-1}
+    .actions{margin-top:22px;display:flex;gap:12px;flex-wrap:wrap}
+    button,.btn{border:none;border-radius:14px;padding:13px 18px;font-weight:900;cursor:pointer;text-decoration:none;display:inline-block}
+    .primary{background:linear-gradient(135deg,#00c2ff,#0066ff);color:#fff}
+    .orange{background:linear-gradient(135deg,#f59e0b,#fb923c);color:#111827}
+    .msg{margin-top:18px;padding:14px;border-radius:14px;display:none;font-weight:700}
+    .success{display:block;background:rgba(34,197,94,.15);color:#bbf7d0;border:1px solid rgba(34,197,94,.25)}
+    .error{display:block;background:rgba(239,68,68,.15);color:#fecaca;border:1px solid rgba(239,68,68,.25)}
+    .preview-img{width:220px;height:220px;object-fit:cover;border-radius:18px;border:1px solid #29496d;background:#081827}
+    @media(max-width:900px){.sidebar{position:relative;width:100%;height:auto}.main{margin-left:0}.form-grid{grid-template-columns:1fr}.topbar{flex-direction:column;align-items:flex-start}}
+  </style>
+</head>
+
+<body>
+
+<aside class="sidebar">
+  <div class="brand">
+    <img src="/images/vehicall-logo.png" onerror="this.src='/logo.png'" alt="Vehicall Logo">
+    <span>Vehicall Parts</span>
+  </div>
+
+  <a href="/parts-shop-dashboard.html">Dashboard</a>
+  <a href="/parts-add.html">Add Parts</a>
+  <a href="/parts-excel-upload.html">Excel Upload</a>
+  <a href="/parts-listings.html" class="active">My Listings</a>
+  <a href="/parts-inquiries.html">Customer Inquiries</a>
+  <a href="/parts-marketplace.html">View Public Parts Page</a>
+  <a href="/api/parts/shop-logout">Logout</a>
+</aside>
+
+<main class="main">
+
+  <div class="topbar">
+    <div>
+      <h1>Edit Spare Part</h1>
+      <p class="muted">Update your spare part details, price, stock, availability and image.</p>
+    </div>
+
+    <a href="/parts-listings.html" class="btn orange">Back to Listings</a>
+  </div>
+
+  <section class="panel">
+
+    <form id="editForm">
+
+      <div class="form-grid">
+
+        <div>
+          <label>Part Name *</label>
+          <input type="text" id="partName" required>
+        </div>
+
+        <div>
+          <label>Category *</label>
+          <select id="category" required>
+            <option value="">Select Category</option>
+            <option>Engine Parts</option>
+            <option>Body Parts</option>
+            <option>Electrical Parts</option>
+            <option>Suspension</option>
+            <option>Brake System</option>
+            <option>Lights</option>
+            <option>Interior</option>
+            <option>Transmission</option>
+            <option>Tires & Wheels</option>
+            <option>Battery</option>
+            <option>Oil & Filters</option>
+            <option>Accessories</option>
+            <option>Other</option>
+          </select>
+        </div>
+
+        <div>
+          <label>Vehicle Brand *</label>
+          <input type="text" id="brand" required>
+        </div>
+
+        <div>
+          <label>Vehicle Model</label>
+          <input type="text" id="model">
+        </div>
+
+        <div>
+          <label>Year From</label>
+          <input type="number" id="yearFrom">
+        </div>
+
+        <div>
+          <label>Year To</label>
+          <input type="number" id="yearTo">
+        </div>
+
+        <div>
+          <label>Condition *</label>
+          <select id="condition" required>
+            <option value="">Select Condition</option>
+            <option>New</option>
+            <option>Used</option>
+            <option>Refurbished</option>
+          </select>
+        </div>
+
+        <div>
+          <label>Availability *</label>
+          <select id="availability" required>
+            <option>Available</option>
+            <option>Limited Stock</option>
+            <option>Order Only</option>
+            <option>Out of Stock</option>
+          </select>
+        </div>
+
+        <div>
+          <label>Quantity</label>
+          <input type="number" id="quantity">
+        </div>
+
+        <div>
+          <label>Price OMR</label>
+          <input type="number" step="0.001" id="price">
+        </div>
+
+        <div>
+          <label>Part Number / OEM</label>
+          <input type="text" id="partNumber">
+        </div>
+
+        <div>
+          <label>WhatsApp Number</label>
+          <input type="text" id="whatsapp">
+        </div>
+
+        <div class="full">
+          <label>Current / New Image</label>
+          <img id="imagePreview" class="preview-img" src="/logo.png" onerror="this.src='/logo.png'">
+          <br><br>
+          <input type="file" id="partImage" accept="image/*" onchange="previewImage(event)">
+          <p class="muted" style="margin-top:8px;">Upload a new image only if you want to replace existing image.</p>
+        </div>
+
+        <div class="full">
+          <label>Description</label>
+          <textarea id="description"></textarea>
+        </div>
+
+      </div>
+
+      <div class="actions">
+        <button type="submit" class="primary" id="saveBtn">Update Listing</button>
+        <a href="/parts-listings.html" class="btn orange">Cancel</a>
+      </div>
+
+      <div id="message" class="msg"></div>
+
+    </form>
+
+  </section>
+
+</main>
+
+<script>
+const params = new URLSearchParams(window.location.search);
+const listingId = params.get('id');
+
+const form = document.getElementById('editForm');
+const message = document.getElementById('message');
+const saveBtn = document.getElementById('saveBtn');
+
+if(!listingId){
+  alert('Listing ID missing');
+  window.location.href = '/parts-listings.html';
+}
+
+function setValue(id, value){
+  document.getElementById(id).value = value || '';
+}
+
+function previewImage(event){
+  const file = event.target.files[0];
+  if(!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(e){
+    document.getElementById('imagePreview').src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+async function loadListing(){
+  try{
+    const res = await fetch(`/api/parts/listing/${listingId}`);
+    const data = await res.json();
+
+    if(!data.success){
+      throw new Error(data.message || 'Unable to load listing');
+    }
+
+    const item = data.listing;
+
+    setValue('partName', item.partName);
+    setValue('category', item.category);
+    setValue('brand', item.brand);
+    setValue('model', item.model);
+    setValue('yearFrom', item.yearFrom);
+    setValue('yearTo', item.yearTo);
+    setValue('condition', item.condition);
+    setValue('availability', item.availability);
+    setValue('quantity', item.quantity);
+    setValue('price', item.price);
+    setValue('partNumber', item.partNumber);
+    setValue('whatsapp', item.shopWhatsapp);
+    setValue('description', item.description);
+
+    document.getElementById('imagePreview').src = item.imageUrl || '/logo.png';
+
+  }catch(err){
+    alert(err.message);
+    window.location.href = '/parts-listings.html';
+  }
+}
+
+form.addEventListener('submit', async (e)=>{
+  e.preventDefault();
+
+  message.className = 'msg';
+  message.textContent = '';
+
+  const formData = new FormData();
+
+  formData.append('listingId', listingId);
+  formData.append('partName', document.getElementById('partName').value.trim());
+  formData.append('category', document.getElementById('category').value);
+  formData.append('brand', document.getElementById('brand').value.trim());
+  formData.append('model', document.getElementById('model').value.trim());
+  formData.append('yearFrom', document.getElementById('yearFrom').value);
+  formData.append('yearTo', document.getElementById('yearTo').value);
+  formData.append('condition', document.getElementById('condition').value);
+  formData.append('availability', document.getElementById('availability').value);
+  formData.append('quantity', document.getElementById('quantity').value);
+  formData.append('price', document.getElementById('price').value);
+  formData.append('partNumber', document.getElementById('partNumber').value.trim());
+  formData.append('whatsapp', document.getElementById('whatsapp').value.trim());
+  formData.append('description', document.getElementById('description').value.trim());
+
+  const imageFile = document.getElementById('partImage').files[0];
+  if(imageFile){
+    formData.append('partImage', imageFile);
+  }
+
+  saveBtn.disabled = true;
+  saveBtn.textContent = 'Updating...';
+
+  try{
+    const res = await fetch('/api/parts/update-listing',{
+      method:'POST',
+      body:formData
+    });
+
+    const data = await res.json();
+
+    if(!res.ok || !data.success){
+      throw new Error(data.message || 'Update failed');
+    }
+
+    message.className = 'msg success';
+    message.textContent = data.message;
+
+    setTimeout(()=>{
+      window.location.href = '/parts-listings.html';
+    },1000);
+
+  }catch(err){
+    message.className = 'msg error';
+    message.textContent = err.message;
+  }finally{
+    saveBtn.disabled = false;
+    saveBtn.textContent = 'Update Listing';
+  }
+});
+
+loadListing();
+</script>
+
+</body>
+</html>

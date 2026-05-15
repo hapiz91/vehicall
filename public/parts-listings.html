@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>My Listings | Vehicall Parts</title>
+
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
+    body{background:#07111f;color:#fff;min-height:100vh}
+
+    .sidebar{
+      width:270px;background:#0b1728;border-right:1px solid rgba(255,255,255,.08);
+      position:fixed;left:0;top:0;bottom:0;padding:22px;overflow-y:auto;z-index:1000;
+    }
+    .brand{display:flex;align-items:center;gap:12px;margin-bottom:34px;color:#f59e0b;font-size:22px;font-weight:900}
+    .brand img{width:52px;height:52px;object-fit:contain;background:#fff;border-radius:14px;padding:6px}
+    .sidebar a{display:block;text-decoration:none;color:#cbd5e1;padding:14px;border-radius:14px;margin-bottom:8px;font-weight:700;font-size:14px}
+    .sidebar a:hover,.sidebar a.active{background:rgba(245,158,11,.15);color:#facc15}
+
+    .main{margin-left:270px;min-height:100vh;padding:24px}
+    .topbar{
+      position:sticky;top:0;z-index:999;background:rgba(7,17,31,.96);
+      backdrop-filter:blur(12px);border-bottom:1px solid rgba(255,255,255,.06);
+      padding:16px 0;margin-bottom:24px;display:flex;justify-content:space-between;align-items:center;gap:16px;
+    }
+    h1{font-size:30px;margin-bottom:6px}
+    .muted{color:#94a3b8;font-size:14px}
+
+    .btn{
+      border:none;border-radius:14px;padding:11px 15px;font-weight:900;cursor:pointer;text-decoration:none;
+      display:inline-block;color:#fff;background:linear-gradient(135deg,#00c2ff,#0066ff);font-size:13px;
+    }
+    .orange{background:linear-gradient(135deg,#f59e0b,#fb923c);color:#111827}
+    .danger{background:#ef4444;color:#fff}
+    .grey{background:#64748b;color:#fff}
+
+    .panel{background:#0f1f33;border:1px solid #20344d;border-radius:22px;padding:22px}
+    .filters{display:grid;grid-template-columns:1fr 220px 180px;gap:12px;margin-bottom:18px}
+    input,select{
+      width:100%;padding:13px;border-radius:14px;border:1px solid #29496d;background:#081827;color:#fff;outline:none;
+    }
+
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:14px;text-align:left;border-bottom:1px solid rgba(255,255,255,.08);font-size:13px;vertical-align:top}
+    th{color:#facc15}
+    .actions{display:flex;gap:8px;flex-wrap:wrap}
+    .badge{display:inline-block;padding:6px 10px;border-radius:999px;font-size:12px;font-weight:900}
+    .active-badge{background:rgba(34,197,94,.15);color:#bbf7d0}
+    .inactive-badge{background:rgba(148,163,184,.15);color:#cbd5e1}
+    .empty{color:#94a3b8;text-align:center;padding:22px}
+
+    @media(max-width:1000px){
+      .sidebar{position:relative;width:100%;height:auto}
+      .main{margin-left:0}
+      .topbar{flex-direction:column;align-items:flex-start}
+      .filters{grid-template-columns:1fr}
+      table{display:block;overflow-x:auto;white-space:nowrap}
+    }
+  </style>
+</head>
+
+<body>
+
+<aside class="sidebar">
+  <div class="brand">
+    <img src="/images/vehicall-logo.png" onerror="this.src='/logo.png'" alt="Vehicall Logo">
+    <span>Vehicall Parts</span>
+  </div>
+
+  <a href="/parts-shop-dashboard.html">Dashboard</a>
+  <a href="/parts-add.html">Add Parts</a>
+  <a href="/parts-excel-upload.html">Excel Upload</a>
+  <a href="/parts-listings.html" class="active">My Listings</a>
+  <a href="/parts-inquiries.html">Customer Inquiries</a>
+  <a href="/parts">View Public Parts Page</a>
+  <a href="/api/parts/shop-logout">Logout</a>
+</aside>
+
+<main class="main">
+
+  <div class="topbar">
+    <div>
+      <h1>My Parts Listings</h1>
+      <p class="muted">View, pause, activate, and manage your listed spare parts.</p>
+    </div>
+
+    <a href="/parts-add.html" class="btn orange">+ Add New Part</a>
+  </div>
+
+  <section class="panel">
+    <div class="filters">
+      <input type="text" id="searchInput" placeholder="Search part, brand, model, part number..." oninput="renderListings()">
+
+      <select id="statusFilter" onchange="renderListings()">
+        <option value="">All Status</option>
+        <option value="active">Active</option>
+        <option value="inactive">Inactive</option>
+      </select>
+
+      <select id="categoryFilter" onchange="renderListings()">
+        <option value="">All Categories</option>
+        <option>Engine Parts</option>
+        <option>Body Parts</option>
+        <option>Electrical Parts</option>
+        <option>Suspension</option>
+        <option>Brake System</option>
+        <option>Lights</option>
+        <option>Interior</option>
+        <option>Transmission</option>
+        <option>Tires & Wheels</option>
+        <option>Battery</option>
+        <option>Oil & Filters</option>
+        <option>Accessories</option>
+        <option>Other</option>
+      </select>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Image</th>
+          <th>Part</th>
+          <th>Vehicle</th>
+          <th>Category</th>
+          <th>Price</th>
+          <th>Stock</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+
+      <tbody id="listingsTable">
+        <tr>
+          <td colspan="8" class="empty">Loading listings...</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+</main>
+
+<script>
+let allListings = [];
+
+function statusBadge(status){
+  const s = status || 'active';
+  const cls = s === 'active' ? 'active-badge' : 'inactive-badge';
+  return `<span class="badge ${cls}">${s.toUpperCase()}</span>`;
+}
+
+async function loadListings(){
+  try{
+    const res = await fetch('/api/parts/my-listings');
+    const data = await res.json();
+
+    if(!data.success){
+      window.location.href = '/parts-shop-login.html';
+      return;
+    }
+
+    allListings = data.listings || [];
+    renderListings();
+
+  }catch(err){
+    console.error(err);
+    document.getElementById('listingsTable').innerHTML =
+      `<tr><td colspan="8" class="empty">Failed to load listings</td></tr>`;
+  }
+}
+
+function renderListings(){
+  const tbody = document.getElementById('listingsTable');
+  const search = document.getElementById('searchInput').value.toLowerCase().trim();
+  const status = document.getElementById('statusFilter').value;
+  const category = document.getElementById('categoryFilter').value;
+
+  let rows = allListings.filter(item => {
+    const text = [
+      item.partName, item.brand, item.model, item.partNumber, item.category, item.condition
+    ].join(' ').toLowerCase();
+
+    return (!search || text.includes(search)) &&
+           (!status || item.status === status) &&
+           (!category || item.category === category);
+  });
+
+  if(!rows.length){
+    tbody.innerHTML = `<tr><td colspan="8" class="empty">No listings found.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = rows.map(item => `
+    <tr>
+      <td>
+        <img
+          src="${item.imageUrl || '/logo.png'}"
+          style="
+            width:70px;
+            height:70px;
+            object-fit:cover;
+            border-radius:12px;
+            background:#081827;
+            border:1px solid #29496d;
+            padding:${item.imageUrl ? '0' : '8px'};
+          "
+          onerror="this.src='/logo.png'"
+        >
+      </td>
+
+      <td>
+        <strong>${item.partName || '-'}</strong><br>
+        <span class="muted">${item.partNumber || ''}</span>
+      </td>
+
+      <td>
+        ${item.brand || '-'} ${item.model || ''}<br>
+        <span class="muted">${item.yearFrom || ''}${item.yearTo ? ' - ' + item.yearTo : ''}</span>
+      </td>
+
+      <td>${item.category || '-'}</td>
+
+      <td>${Number(item.price || 0).toFixed(3)} OMR</td>
+
+      <td>
+        ${item.availability || '-'}<br>
+        <span class="muted">Qty: ${item.quantity || 0}</span>
+      </td>
+
+      <td>${statusBadge(item.status)}</td>
+
+      <td>
+        <div class="actions">
+          <button class="btn" onclick="window.location.href='/parts-edit.html?id=${item.id}'">
+  Edit
+</button>
+          ${
+            item.status === 'active'
+              ? `<button class="btn grey" onclick="updateListingStatus('${item.id}','inactive')">Pause</button>`
+              : `<button class="btn orange" onclick="updateListingStatus('${item.id}','active')">Activate</button>`
+          }
+          <button class="btn danger" onclick="deleteListing('${item.id}')">Delete</button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+async function updateListingStatus(listingId, status){
+  if(!confirm(`Change listing status to ${status}?`)) return;
+
+  try{
+    const res = await fetch('/api/parts/listing-status',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ listingId, status })
+    });
+
+    const data = await res.json();
+    alert(data.message || 'Updated');
+    loadListings();
+
+  }catch(err){
+    alert('Failed to update listing');
+  }
+}
+
+async function deleteListing(listingId){
+  if(!confirm('Delete this listing? This action cannot be undone.')) return;
+
+  try{
+    const res = await fetch('/api/parts/delete-listing',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({ listingId })
+    });
+
+    const data = await res.json();
+    alert(data.message || 'Deleted');
+    loadListings();
+
+  }catch(err){
+    alert('Failed to delete listing');
+  }
+}
+
+loadListings();
+</script>
+
+</body>
+</html>

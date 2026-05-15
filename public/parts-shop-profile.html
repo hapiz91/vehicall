@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Shop Profile | Vehicall Parts</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
+    body{background:#06101d;color:#fff;min-height:100vh}
+    .nav{position:sticky;top:0;z-index:999;background:rgba(5,13,24,.96);backdrop-filter:blur(12px);border-bottom:1px solid rgba(255,255,255,.08);padding:14px 5%;display:flex;justify-content:space-between;align-items:center}
+    .brand{display:flex;align-items:center;gap:12px;color:#f59e0b;text-decoration:none;font-weight:900;font-size:22px}
+    .brand img{width:52px;height:52px;object-fit:contain;background:#fff;border-radius:14px;padding:6px}
+    .nav a,.lang-btn{color:#dbeafe;text-decoration:none;background:#0f1f33;border:1px solid #29496d;padding:10px 14px;border-radius:12px;font-weight:800;cursor:pointer}
+    .hero{padding:50px 5%;background:linear-gradient(135deg,#10243d,#06101d);border-bottom:1px solid rgba(255,255,255,.08)}
+    .shop-card{background:#0f1f33;border:1px solid #20344d;border-radius:26px;padding:30px;display:grid;grid-template-columns:120px 1fr auto;gap:22px;align-items:center}
+    .shop-logo{width:110px;height:110px;border-radius:24px;background:#fff;padding:12px;object-fit:contain}
+    h1{font-size:38px;margin-bottom:10px}
+    .muted{color:#94a3b8;line-height:1.6}
+    .badge{display:inline-block;margin-top:12px;background:rgba(34,197,94,.15);color:#bbf7d0;border-radius:999px;padding:8px 12px;font-weight:900;font-size:12px}
+    .btn{display:inline-block;text-decoration:none;border:none;border-radius:14px;padding:13px 18px;font-weight:900;cursor:pointer;text-align:center}
+    .whatsapp{background:#22c55e;color:#052e16}
+    .orange{background:linear-gradient(135deg,#f59e0b,#fb923c);color:#111827}
+    .section{padding:30px 5%}
+    .section-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;gap:12px;flex-wrap:wrap}
+    .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+    .part-card{background:#0f1f33;border:1px solid #20344d;border-radius:22px;overflow:hidden;transition:.25s}
+    .part-card:hover{transform:translateY(-4px);border-color:#00aaff}
+    .part-img{height:160px;background:#081827;display:grid;place-items:center;font-size:46px;border-bottom:1px solid rgba(255,255,255,.08)}
+    .part-img img{width:100%;height:100%;object-fit:cover}
+    .part-body{padding:18px}
+    .part-body h3{font-size:18px;margin-bottom:8px}
+    .meta{color:#b7c4d4;font-size:13px;line-height:1.6}
+    .price{color:#f59e0b;font-size:21px;font-weight:900;margin:12px 0}
+    .actions{display:flex;gap:8px;margin-top:14px}
+    .empty{background:#0f1f33;border:1px solid #20344d;border-radius:22px;padding:30px;color:#94a3b8;text-align:center;grid-column:1/-1}
+    [dir="rtl"] body,[dir="rtl"] .meta{text-align:right}
+    [dir="rtl"] .nav,[dir="rtl"] .actions{direction:rtl}
+    @media(max-width:1000px){.grid{grid-template-columns:repeat(2,1fr)}.shop-card{grid-template-columns:1fr;text-align:center}.shop-logo{margin:auto}}
+    @media(max-width:650px){.grid{grid-template-columns:1fr}.nav{flex-direction:column;align-items:flex-start;gap:12px}h1{font-size:30px}}
+  </style>
+</head>
+
+<body>
+
+<nav class="nav">
+  <a href="/parts-marketplace.html" class="brand">
+    <img src="/images/vehicall-logo.png" onerror="this.src='/logo.png'" alt="Vehicall Logo">
+    <span>Vehicall Parts</span>
+  </a>
+
+  <div style="display:flex;gap:10px;flex-wrap:wrap;">
+    <a href="/parts-marketplace.html" data-en="Marketplace" data-ar="السوق">Marketplace</a>
+    <button class="lang-btn" onclick="toggleLang()" id="langBtn">العربية</button>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="shop-card">
+    <img class="shop-logo" src="/logo.png" alt="Shop Logo">
+
+    <div>
+      <h1 id="shopName">Loading Shop...</h1>
+      <p class="muted" id="shopInfo">Fetching shop profile.</p>
+      <span class="badge" data-en="Verified Vehicall Parts Shop" data-ar="محل موثق في فيهيكل">Verified Vehicall Parts Shop</span>
+    </div>
+
+    <div>
+      <a id="shopWhatsapp" class="btn whatsapp" href="#" target="_blank" data-en="WhatsApp Shop" data-ar="تواصل واتساب">WhatsApp Shop</a>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-head">
+    <h2 data-en="Shop Listings" data-ar="قطع الغيار المتوفرة">Shop Listings</h2>
+    <a href="/parts-marketplace.html" class="btn orange" data-en="Back to Marketplace" data-ar="الرجوع للسوق">Back to Marketplace</a>
+  </div>
+
+  <div class="grid" id="partsGrid">
+    <div class="empty">Loading listings...</div>
+  </div>
+</section>
+
+<script>
+let currentLang = localStorage.getItem('vehicall_parts_lang') || 'en';
+let shop = {};
+let listings = [];
+
+const params = new URLSearchParams(window.location.search);
+const shopId = params.get('id');
+
+const icons = {
+  'Engine Parts':'⚙️','Body Parts':'🚘','Electrical Parts':'🔌','Suspension':'🔩',
+  'Brake System':'🛑','Lights':'💡','Interior':'💺','Transmission':'⚙️',
+  'Tires & Wheels':'🛞','Battery':'🔋','Oil & Filters':'🛢️','Accessories':'✨','Other':'🔧'
+};
+
+if(!shopId){
+  alert('Shop ID missing');
+  window.location.href = '/parts-marketplace.html';
+}
+
+async function loadShopProfile(){
+  try{
+    const res = await fetch(`/api/parts/public-shop/${shopId}`);
+    const data = await res.json();
+
+    if(!data.success){
+      throw new Error(data.message || 'Unable to load shop');
+    }
+
+    shop = data.shop || {};
+    listings = data.listings || [];
+
+    document.getElementById('shopName').textContent = shop.shopName || 'Vehicall Parts Shop';
+    document.getElementById('shopInfo').textContent =
+      `${shop.location || '-'} | ${shop.governorate || '-'} | ${shop.shopType || '-'}`;
+
+    const cleanWa = String(shop.whatsapp || '').replace(/^968/, '');
+    document.getElementById('shopWhatsapp').href = cleanWa ? `https://wa.me/968${cleanWa}` : '#';
+
+    renderListings();
+    applyLanguage();
+
+  }catch(err){
+    console.error(err);
+    document.getElementById('partsGrid').innerHTML =
+      `<div class="empty">Unable to load shop profile.</div>`;
+  }
+}
+
+function renderListings(){
+  const grid = document.getElementById('partsGrid');
+
+  if(!listings.length){
+    grid.innerHTML = `<div class="empty">${currentLang === 'ar' ? 'لا توجد قطع متوفرة حالياً.' : 'No active listings from this shop yet.'}</div>`;
+    return;
+  }
+
+  grid.innerHTML = listings.map(item => {
+    const price = Number(item.price || 0);
+    const whatsapp = item.shopWhatsapp || shop.whatsapp || '';
+    const cleanWa = String(whatsapp).replace(/^968/, '');
+    const msg = encodeURIComponent(`Hello, I found this part on Vehicall Parts:\n\nPart: ${item.partName || '-'}\nBrand: ${item.brand || '-'}\nModel: ${item.model || '-'}\nPrice: ${price.toFixed(3)} OMR\n\nIs it available?`);
+    const waLink = cleanWa ? `https://wa.me/968${cleanWa}?text=${msg}` : '#';
+
+    return `
+      <div class="part-card">
+        <div class="part-img">
+          ${item.imageUrl ? `<img src="${item.imageUrl}" onerror="this.parentElement.innerHTML='${icons[item.category] || '🔧'}'">` : icons[item.category] || '🔧'}
+        </div>
+        <div class="part-body">
+          <h3>${item.partName || '-'}</h3>
+          <div class="meta">
+            ${item.brand || '-'} ${item.model || ''}<br>
+            ${item.category || '-'} | ${item.condition || '-'}<br>
+            ${item.availability || 'Available'}
+          </div>
+          <div class="price">${price ? price.toFixed(3) + ' OMR' : (currentLang === 'ar' ? 'السعر عند الطلب' : 'Price on request')}</div>
+          <div class="actions">
+            <a class="btn whatsapp" href="${waLink}" target="_blank">${currentLang === 'ar' ? 'واتساب' : 'WhatsApp'}</a>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+function toggleLang(){
+  currentLang = currentLang === 'en' ? 'ar' : 'en';
+  localStorage.setItem('vehicall_parts_lang', currentLang);
+  applyLanguage();
+  renderListings();
+}
+
+function applyLanguage(){
+  document.documentElement.lang = currentLang;
+  document.documentElement.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
+
+  document.querySelectorAll('[data-en]').forEach(el => {
+    el.textContent = el.getAttribute(`data-${currentLang}`);
+  });
+
+  document.getElementById('langBtn').textContent =
+    currentLang === 'en' ? 'العربية' : 'English';
+}
+
+loadShopProfile();
+</script>
+
+</body>
+</html>

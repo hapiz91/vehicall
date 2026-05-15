@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Excel Upload | Vehicall Parts</title>
+
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
+    body{background:#07111f;color:#fff;min-height:100vh}
+
+    .sidebar{
+      width:270px;background:#0b1728;border-right:1px solid rgba(255,255,255,.08);
+      position:fixed;left:0;top:0;bottom:0;padding:22px;overflow-y:auto;z-index:1000;
+    }
+
+    .brand{display:flex;align-items:center;gap:12px;margin-bottom:34px;color:#f59e0b;font-size:22px;font-weight:900}
+    .brand img{width:52px;height:52px;object-fit:contain;background:#fff;border-radius:14px;padding:6px}
+
+    .sidebar a{display:block;text-decoration:none;color:#cbd5e1;padding:14px;border-radius:14px;margin-bottom:8px;font-weight:700;font-size:14px}
+    .sidebar a:hover,.sidebar a.active{background:rgba(245,158,11,.15);color:#facc15}
+
+    .main{margin-left:270px;min-height:100vh;padding:24px}
+
+    .topbar{
+      position:sticky;top:0;z-index:999;background:rgba(7,17,31,.96);
+      backdrop-filter:blur(12px);border-bottom:1px solid rgba(255,255,255,.06);
+      padding:16px 0;margin-bottom:24px;display:flex;justify-content:space-between;align-items:center;gap:16px;
+    }
+
+    h1{font-size:30px;margin-bottom:6px}
+    .muted{color:#94a3b8;font-size:14px}
+
+    .panel{
+      background:#0f1f33;
+      border:1px solid #20344d;
+      border-radius:24px;
+      padding:26px;
+      max-width:1050px;
+      margin-bottom:22px;
+    }
+
+    .steps{
+      display:grid;
+      grid-template-columns:repeat(3,1fr);
+      gap:16px;
+      margin-bottom:22px;
+    }
+
+    .step{
+      background:#081827;
+      border:1px solid #223854;
+      border-radius:18px;
+      padding:18px;
+    }
+
+    .step strong{
+      color:#f59e0b;
+      display:block;
+      margin-bottom:8px;
+    }
+
+    .step p{
+      color:#b7c4d4;
+      line-height:1.5;
+      font-size:14px;
+    }
+
+    .upload-box{
+      border:2px dashed #29496d;
+      border-radius:22px;
+      padding:34px;
+      text-align:center;
+      background:#081827;
+    }
+
+    input[type="file"]{
+      margin-top:18px;
+      padding:14px;
+      border:1px solid #29496d;
+      border-radius:14px;
+      width:100%;
+      max-width:520px;
+      background:#07111f;
+      color:#fff;
+    }
+
+    .actions{
+      margin-top:22px;
+      display:flex;
+      gap:12px;
+      justify-content:center;
+      flex-wrap:wrap;
+    }
+
+    .btn,button{
+      border:none;
+      border-radius:14px;
+      padding:13px 18px;
+      font-weight:900;
+      cursor:pointer;
+      text-decoration:none;
+      display:inline-block;
+    }
+
+    .primary{background:linear-gradient(135deg,#00c2ff,#0066ff);color:#fff}
+    .orange{background:linear-gradient(135deg,#f59e0b,#fb923c);color:#111827}
+    .grey{background:#64748b;color:#fff}
+
+    .msg{
+      margin-top:18px;
+      padding:14px;
+      border-radius:14px;
+      display:none;
+      font-weight:700;
+      line-height:1.5;
+    }
+
+    .success{
+      display:block;
+      background:rgba(34,197,94,.15);
+      color:#bbf7d0;
+      border:1px solid rgba(34,197,94,.25);
+    }
+
+    .error{
+      display:block;
+      background:rgba(239,68,68,.15);
+      color:#fecaca;
+      border:1px solid rgba(239,68,68,.25);
+    }
+
+    table{width:100%;border-collapse:collapse;margin-top:16px}
+    th,td{padding:12px;border-bottom:1px solid rgba(255,255,255,.08);text-align:left;font-size:13px}
+    th{color:#facc15}
+
+    @media(max-width:900px){
+      .sidebar{position:relative;width:100%;height:auto}
+      .main{margin-left:0}
+      .topbar{flex-direction:column;align-items:flex-start}
+      .steps{grid-template-columns:1fr}
+    }
+  </style>
+</head>
+
+<body>
+
+<aside class="sidebar">
+  <div class="brand">
+    <img src="/images/vehicall-logo.png" onerror="this.src='/logo.png'" alt="Vehicall Logo">
+    <span>Vehicall Parts</span>
+  </div>
+
+  <a href="/parts-shop-dashboard.html">Dashboard</a>
+  <a href="/parts-add.html">Add Parts</a>
+  <a href="/parts-excel-upload.html" class="active">Excel Upload</a>
+  <a href="/parts-listings.html">My Listings</a>
+  <a href="/parts-inquiries.html">Customer Inquiries</a>
+  <a href="/parts">View Public Parts Page</a>
+  <a href="/api/parts/shop-logout">Logout</a>
+</aside>
+
+<main class="main">
+
+  <div class="topbar">
+    <div>
+      <h1>Excel Upload</h1>
+      <p class="muted">Upload spare parts in bulk using the Vehicall Excel format.</p>
+    </div>
+
+    <a href="/parts-shop-dashboard.html" class="btn orange">Back to Dashboard</a>
+  </div>
+
+  <section class="panel">
+    <div class="steps">
+      <div class="step">
+        <strong>1. Download Format</strong>
+        <p>Use the official Vehicall template so your parts are imported correctly.</p>
+      </div>
+
+      <div class="step">
+        <strong>2. Fill Stock Details</strong>
+        <p>Add part name, brand, model, condition, price, quantity and description.</p>
+      </div>
+
+      <div class="step">
+        <strong>3. Upload File</strong>
+        <p>Vehicall will create your listings automatically under your shop.</p>
+      </div>
+    </div>
+
+    <div class="upload-box">
+      <h2>Upload Parts Excel File</h2>
+      <p class="muted">Accepted file: .xlsx only</p>
+
+      <input type="file" id="excelFile" accept=".xlsx" />
+
+      <div class="actions">
+        <a href="/parts-excel-template.xlsx" class="btn orange">Download Excel Format</a>
+        <button class="primary" id="uploadBtn" onclick="uploadExcel()">Upload Excel</button>
+      </div>
+
+      <div id="message" class="msg"></div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>Required Columns</h2>
+    <p class="muted">Please keep column names exactly as per the template.</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Column</th>
+          <th>Required</th>
+          <th>Example</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr><td>Part Name</td><td>Yes</td><td>Brake Pad</td></tr>
+        <tr><td>Category</td><td>Yes</td><td>Brake System</td></tr>
+        <tr><td>Brand</td><td>Yes</td><td>Toyota</td></tr>
+        <tr><td>Model</td><td>No</td><td>Camry</td></tr>
+        <tr><td>Year From</td><td>No</td><td>2015</td></tr>
+        <tr><td>Year To</td><td>No</td><td>2024</td></tr>
+        <tr><td>Condition</td><td>Yes</td><td>New</td></tr>
+        <tr><td>Availability</td><td>No</td><td>Available</td></tr>
+        <tr><td>Quantity</td><td>No</td><td>10</td></tr>
+        <tr><td>Price OMR</td><td>No</td><td>25.000</td></tr>
+        <tr><td>Part Number</td><td>No</td><td>OEM-12345</td></tr>
+        <tr><td>Description</td><td>No</td><td>Compatible with 2015-2024 Camry</td></tr>
+      </tbody>
+    </table>
+  </section>
+
+</main>
+
+<script>
+
+async function uploadExcel(){
+  const fileInput = document.getElementById('excelFile');
+  const message = document.getElementById('message');
+  const uploadBtn = document.getElementById('uploadBtn');
+
+  message.className = 'msg';
+  message.textContent = '';
+
+  if(!fileInput.files.length){
+    message.className = 'msg error';
+    message.textContent = 'Please choose an Excel file first.';
+    return;
+  }
+
+  const file = fileInput.files[0];
+
+  if(!file.name.toLowerCase().endsWith('.xlsx')){
+    message.className = 'msg error';
+    message.textContent = 'Only .xlsx files are allowed.';
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append('excelFile', file);
+
+  uploadBtn.disabled = true;
+  uploadBtn.textContent = 'Uploading...';
+
+  try{
+    const res = await fetch('/api/parts/upload-excel', {
+      method: 'POST',
+      body: formData
+    });
+
+    const data = await res.json();
+
+    if(!res.ok || !data.success){
+      throw new Error(data.message || 'Excel upload failed.');
+    }
+
+    message.className = 'msg success';
+    message.innerHTML = `
+      Excel uploaded successfully.<br>
+      Imported: <strong>${data.imported}</strong><br>
+      Skipped: <strong>${data.skipped}</strong>
+    `;
+
+    fileInput.value = '';
+
+    setTimeout(()=>{
+      window.location.href = '/parts-listings.html';
+    },1500);
+
+  }catch(err){
+    message.className = 'msg error';
+    message.textContent = err.message;
+  }finally{
+    uploadBtn.disabled = false;
+    uploadBtn.textContent = 'Upload Excel';
+  }
+}
+</script>
+
+</body>
+</html>

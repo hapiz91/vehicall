@@ -3,9 +3,18 @@ const path = require('path');
 const QRCode = require('qrcode');
 const bcrypt = require('bcrypt');
 const session = require('express-session');
+const multer = require('multer');
+const XLSX = require('xlsx');
 const { db } = require('./firebase');
 
 const app = express();
+
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: {
+    fileSize: 5 * 1024 * 1024
+  }
+});
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -26,6 +35,26 @@ app.get('/', (req, res) => {
 
 app.get("/parts", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "parts.html"));
+});
+
+app.get("/parts-shop-register.html", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "parts-shop-register.html"));
+});
+
+app.get("/parts-shop-register", (req, res) => {
+  res.sendFile(path.join(__dirname, "public", "parts-shop-register.html"));
+});
+
+app.get('/parts-shop-login.html', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'parts-shop-login.html'));
+});
+
+app.get('/parts-shop-login', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'parts-shop-login.html'));
+});
+
+app.get('/parts-shop-dashboard.html', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'parts-shop-dashboard.html'));
 });
 
 app.get("/garage.html", (req, res) => {
@@ -55,6 +84,17 @@ function requireFleet(req, res, next) {
   return res.status(401).json({
     success: false,
     message: 'Fleet login required'
+  });
+}
+
+function requirePartsShop(req, res, next) {
+  if (req.session && req.session.partsShopLoggedIn && req.session.partsShopId) {
+    return next();
+  }
+
+  return res.status(401).json({
+    success: false,
+    message: 'Parts shop login required'
   });
 }
 
@@ -825,6 +865,133 @@ app.post('/reset-password', async (req, res) => {
     console.error('Password reset error:', err);
     res.status(500).json({
       message: 'Password reset error'
+    });
+  }
+});
+
+/* =========================================================
+   VEHICALL PARTS - SHOP REGISTRATION
+========================================================= */
+
+app.post("/api/parts/register-shop", async (req, res) => {
+  try {
+    const {
+      shopName,
+      ownerName,
+      mobile,
+      whatsapp,
+      email,
+      password,
+      confirmPassword,
+      location,
+      governorate,
+      shopType,
+      brands,
+      preferredPlan,
+      notes
+    } = req.body;
+
+    if (!shopName || !ownerName || !mobile || !whatsapp || !email || !password || !confirmPassword || !location || !governorate || !shopType) {
+      return res.status(400).json({
+        success: false,
+        message: "Missing required shop registration fields."
+      });
+    }
+
+    if (password.length < 6) {
+      return res.status(400).json({
+        success: false,
+        message: "Password must be at least 6 characters."
+      });
+    }
+
+    if (password !== confirmPassword) {
+      return res.status(400).json({
+        success: false,
+        message: "Password and confirm password do not match."
+      });
+    }
+
+    const cleanEmail = String(email).trim().toLowerCase();
+
+    const existingShop = await db.collection("partsShops")
+      .where("email", "==", cleanEmail)
+      .limit(1)
+      .get();
+
+    if (!existingShop.empty) {
+      return res.status(400).json({
+        success: false,
+        message: "A shop is already registered with this email."
+      });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const now = new Date().toISOString();
+
+    const shopData = {
+      shopName: String(shopName).trim(),
+      ownerName: String(ownerName).trim(),
+      mobile: cleanMobile(mobile),
+      whatsapp: cleanMobile(whatsapp),
+      email: cleanEmail,
+      password: hashedPassword,
+
+      location: String(location).trim(),
+      governorate: String(governorate).trim(),
+      shopType: String(shopType).trim(),
+      brands: brands ? String(brands).trim() : "",
+      preferredPlan: preferredPlan || "Trial",
+      notes: notes ? String(notes).trim() : "",
+
+      status: "pending",
+      approvalStatus: "pending",
+
+      planStatus: "trial",
+      planName: preferredPlan || "Trial",
+
+      totalListings: 0,
+      activeListings: 0,
+      pendingListings: 0,
+      totalInquiries: 0,
+
+      canUploadExcel: false,
+      isFeatured: false,
+      isActive: false,
+
+      loginEnabled: false,
+
+      createdAt: now,
+      updatedAt: now,
+      approvedAt: "",
+      rejectedAt: "",
+      approvedBy: "",
+      rejectedBy: ""
+    };
+
+    const docRef = await db.collection("partsShops").add(shopData);
+
+    await db.collection("adminLogs").add({
+      module: "Vehicall Parts",
+      action: "SHOP_REGISTERED",
+      shopId: docRef.id,
+      shopName: shopData.shopName,
+      status: "pending",
+      createdAt: now
+    });
+
+    res.status(201).json({
+      success: true,
+      message: "Shop registration submitted successfully.",
+      shopId: docRef.id
+    });
+
+  } catch (error) {
+    console.error("Parts shop registration error:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Server error while registering shop."
     });
   }
 });
@@ -6073,6 +6240,1064 @@ app.get('/admin/fleet-incidents-data', requireAdmin, async (req, res) => {
     console.error('Admin fleet incidents error:', err);
     res.status(500).json([]);
   }
+});
+
+/* =========================================================
+   ADMIN - FEATURE / UNFEATURE PARTS SHOP
+========================================================= */
+
+app.post('/admin/parts/toggle-featured-shop', async (req, res) => {
+  try {
+    const { shopId, isFeatured } = req.body;
+
+    if (!shopId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Shop ID is required'
+      });
+    }
+
+    const shopRef = db.collection('partsShops').doc(shopId);
+    const shopDoc = await shopRef.get();
+
+    if (!shopDoc.exists) {
+      return res.status(404).json({
+        success: false,
+        message: 'Shop not found'
+      });
+    }
+
+    const now = new Date().toISOString();
+
+    await shopRef.update({
+      isFeatured: Boolean(isFeatured),
+      featuredAt: Boolean(isFeatured) ? now : '',
+      updatedAt: now
+    });
+
+    res.json({
+      success: true,
+      message: Boolean(isFeatured)
+        ? 'Shop marked as featured'
+        : 'Shop removed from featured'
+    });
+
+  } catch (err) {
+    console.error('Featured shop update error:', err);
+
+    res.status(500).json({
+      success: false,
+      message: 'Unable to update featured shop'
+    });
+  }
+});
+
+/* =========================================================
+   ADMIN - VEHICALL PARTS
+========================================================= */
+
+app.get('/admin/parts-shops-data', async (req, res) => {
+  try {
+    const snapshot = await db.collection('partsShops').get();
+
+    const shops = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
+    shops.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+
+    res.json(shops);
+
+  } catch (err) {
+    console.error('Admin parts shops data error:', err);
+
+    res.status(500).json({
+      success: false,
+      message: 'Unable to fetch parts shops'
+    });
+  }
+});
+
+app.get('/admin-parts-dashboard.html', requireAdmin, (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'admin-parts-dashboard.html'));
+});
+
+app.post('/admin/parts/update-shop-status', requireAdmin, async (req, res) => {
+  try {
+    const { shopId, status } = req.body;
+
+    if (!shopId || !status) {
+      return res.status(400).json({
+        success: false,
+        message: 'Shop ID and status are required'
+      });
+    }
+
+    if (!['pending', 'active', 'rejected', 'suspended'].includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid shop status'
+      });
+    }
+
+    const shopRef = db.collection('partsShops').doc(shopId);
+    const shopDoc = await shopRef.get();
+
+    if (!shopDoc.exists) {
+      return res.status(404).json({
+        success: false,
+        message: 'Shop not found'
+      });
+    }
+
+    const now = new Date().toISOString();
+
+    const updateData = {
+      status,
+      approvalStatus: status,
+      isActive: status === 'active',
+      canUploadExcel: status === 'active',
+      updatedAt: now,
+      lastAdminAction: `Parts shop status changed to ${status}`
+    };
+
+    if (status === 'active') {
+      updateData.approvedAt = now;
+      updateData.rejectedAt = '';
+    }
+
+    if (status === 'rejected') {
+      updateData.rejectedAt = now;
+      updateData.approvedAt = '';
+    }
+
+    if (status === 'suspended') {
+      updateData.suspendedAt = now;
+    }
+
+    await shopRef.update(updateData);
+
+    await db.collection('adminLogs').add({
+      module: 'Vehicall Parts',
+      action: 'SHOP_STATUS_UPDATED',
+      shopId,
+      status,
+      createdAt: now
+    });
+
+    res.json({
+      success: true,
+      message: `Shop status updated to ${status}`
+    });
+
+  } catch (err) {
+    console.error('Admin parts shop status error:', err);
+    res.status(500).json({
+      success: false,
+      message: 'Unable to update shop status'
+    });
+  }
+});
+
+/* =========================================================
+   VEHICALL PARTS - SHOP LOGIN SYSTEM
+========================================================= */
+
+app.post('/api/parts/shop-login', async (req, res) => {
+  try {
+    let { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: 'Email and password are required'
+      });
+    }
+
+    email = String(email).toLowerCase().trim();
+
+    const snapshot = await db.collection('partsShops')
+      .where('email', '==', email)
+      .limit(1)
+      .get();
+
+    if (snapshot.empty) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid shop login'
+      });
+    }
+
+    const shopDoc = snapshot.docs[0];
+    const shopId = shopDoc.id;
+    const shop = shopDoc.data();
+
+    const validPassword = await bcrypt.compare(password, shop.password || '');
+
+    if (!validPassword) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid shop login'
+      });
+    }
+
+    if (shop.status !== 'active') {
+      return res.status(403).json({
+        success: false,
+        message: 'Your shop is not active yet. Please wait for Vehicall admin approval.'
+      });
+    }
+
+    req.session.partsShopLoggedIn = true;
+    req.session.partsShopId = shopId;
+    req.session.partsShopEmail = email;
+
+    res.json({
+      success: true,
+      message: 'Shop login successful',
+      shopId
+    });
+
+  } catch (err) {
+    console.error('Parts shop login error:', err);
+
+    res.status(500).json({
+      success: false,
+      message: 'Shop login error'
+    });
+  }
+});
+
+/* =========================================================
+   VEHICALL PARTS - MY LISTINGS
+========================================================= */
+
+app.get('/api/parts/my-listings', requirePartsShop, async (req, res) => {
+  try {
+    const shopId = req.session.partsShopId;
+
+    const snapshot = await db.collection('partsListings')
+      .where('shopId', '==', shopId)
+      .get();
+
+    const listings = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
+    listings.sort((a, b) =>
+      new Date(b.createdAt || 0) -
+      new Date(a.createdAt || 0)
+    );
+
+    res.json({
+      success: true,
+      listings
+    });
+
+  } catch (err) {
+    console.error('My listings error:', err);
+
+    res.status(500).json({
+      success: false,
+      message: 'Unable to load listings'
+    });
+  }
+});
+
+app.post('/api/parts/listing-status', requirePartsShop, async (req, res) => {
+  try {
+    const shopId = req.session.partsShopId;
+    const { listingId, status } = req.body;
+
+    if (!listingId || !status) {
+      return res.status(400).json({
+        success: false,
+        message: 'Listing ID and status are required'
+      });
+    }
+
+    const allowed = ['active', 'inactive'];
+
+    if (!allowed.includes(status)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid status'
+      });
+    }
+
+    const listingRef = db.collection('partsListings').doc(listingId);
+    const listingDoc = await listingRef.get();
+
+    if (!listingDoc.exists) {
+      return res.status(404).json({
+        success: false,
+        message: 'Listing not found'
+      });
+    }
+
+    const listing = listingDoc.data();
+
+    if (listing.shopId !== shopId) {
+      return res.status(403).json({
+        success: false,
+        message: 'Unauthorized listing access'
+      });
+    }
+
+    await listingRef.update({
+      status,
+      updatedAt: new Date().toISOString()
+    });
+
+    res.json({
+      success: true,
+      message: `Listing status updated to ${status}`
+    });
+
+  } catch (err) {
+    console.error('Listing status update error:', err);
+
+    res.status(500).json({
+      success: false,
+      message: 'Unable to update listing'
+    });
+  }
+});
+
+app.post('/api/parts/delete-listing', requirePartsShop, async (req, res) => {
+  try {
+    const shopId = req.session.partsShopId;
+    const { listingId } = req.body;
+
+    if (!listingId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Listing ID required'
+      });
+    }
+
+    const listingRef = db.collection('partsListings').doc(listingId);
+    const listingDoc = await listingRef.get();
+
+    if (!listingDoc.exists) {
+      return res.status(404).json({
+        success: false,
+        message: 'Listing not found'
+      });
+    }
+
+    const listing = listingDoc.data();
+
+    if (listing.shopId !== shopId) {
+      return res.status(403).json({
+        success: false,
+        message: 'Unauthorized listing access'
+      });
+    }
+
+    await listingRef.delete();
+
+    res.json({
+      success: true,
+      message: 'Listing deleted successfully'
+    });
+
+  } catch (err) {
+    console.error('Delete listing error:', err);
+
+    res.status(500).json({
+      success: false,
+      message: 'Unable to delete listing'
+    });
+  }
+});
+
+app.get('/api/parts/featured-shops', async (req, res) => {
+  try {
+    const snapshot = await db.collection('partsShops')
+      .where('status', '==', 'active')
+      .where('isFeatured', '==', true)
+      .get();
+
+    const shops = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
+    shops.sort((a, b) =>
+      new Date(b.featuredAt || b.createdAt || 0) -
+      new Date(a.featuredAt || a.createdAt || 0)
+    );
+
+    const safeShops = shops.map(shop => {
+      delete shop.password;
+      return shop;
+    });
+
+    res.json({
+      success: true,
+      shops: safeShops
+    });
+
+  } catch (err) {
+    console.error('Featured shops error:', err);
+
+    res.status(500).json({
+      success: false,
+      message: 'Unable to load featured shops'
+    });
+  }
+});
+
+app.get('/api/parts/shop-dashboard-data', requirePartsShop, async (req, res) => {
+  try {
+    const shopId = req.session.partsShopId;
+
+    const shopDoc = await db.collection('partsShops').doc(shopId).get();
+
+    if (!shopDoc.exists) {
+      return res.status(404).json({
+        success: false,
+        message: 'Shop not found'
+      });
+    }
+
+    const shop = shopDoc.data();
+    delete shop.password;
+
+    const listingsSnapshot = await db.collection('partsListings')
+      .where('shopId', '==', shopId)
+      .get();
+
+    const listings = listingsSnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
+    res.json({
+      success: true,
+      shop: {
+        id: shopId,
+        ...shop
+      },
+      stats: {
+        totalListings: listings.length,
+        activeListings: listings.filter(x => x.status === 'active').length,
+        pendingListings: listings.filter(x => x.status === 'pending_review').length,
+        customerRequests: 0
+      },
+      recentListings: listings
+        .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))
+        .slice(0, 10)
+    });
+
+  } catch (err) {
+    console.error('Parts shop dashboard error:', err);
+
+    res.status(500).json({
+      success: false,
+      message: 'Shop dashboard data error'
+    });
+  }
+});
+
+app.post('/api/parts/add-listing', requirePartsShop, upload.single('partImage'), async (req, res) => {
+  try {
+    const shopId = req.session.partsShopId;
+
+    const shopDoc = await db.collection('partsShops').doc(shopId).get();
+
+    if (!shopDoc.exists) {
+      return res.status(404).json({
+        success: false,
+        message: 'Shop not found'
+      });
+    }
+
+    const shop = shopDoc.data();
+
+    if (shop.status !== 'active') {
+      return res.status(403).json({
+        success: false,
+        message: 'Shop is not active'
+      });
+    }
+
+    const {
+      partName,
+      category,
+      brand,
+      model,
+      yearFrom,
+      yearTo,
+      condition,
+      availability,
+      quantity,
+      price,
+      partNumber,
+      whatsapp,
+      description
+    } = req.body;
+
+    if (!partName || !category || !brand || !condition) {
+      return res.status(400).json({
+        success: false,
+        message: 'Part name, category, brand and condition are required'
+      });
+    }
+
+    const now = new Date().toISOString();
+
+let imageUrl = '';
+
+if (req.file) {
+  const ext = path.extname(req.file.originalname) || '.jpg';
+  const fileName = `part-${Date.now()}-${Math.round(Math.random() * 1E9)}${ext}`;
+  const uploadPath = path.join(__dirname, 'public', 'uploads', 'parts', fileName);
+
+  require('fs').writeFileSync(uploadPath, req.file.buffer);
+
+  imageUrl = `/uploads/parts/${fileName}`;
+}
+
+    const listingData = {
+      shopId,
+      shopName: shop.shopName || '',
+      imageUrl,
+      shopLocation: shop.location || '',
+      governorate: shop.governorate || '',
+      shopWhatsapp: whatsapp ? cleanMobile(whatsapp) : cleanMobile(shop.whatsapp || ''),
+
+      partName: String(partName).trim(),
+      category: String(category).trim(),
+      brand: String(brand).trim(),
+      model: model ? String(model).trim() : '',
+      yearFrom: yearFrom ? Number(yearFrom) : '',
+      yearTo: yearTo ? Number(yearTo) : '',
+      condition: String(condition).trim(),
+      availability: availability || 'Available',
+      quantity: Number(quantity || 0),
+      price: Number(price || 0),
+      partNumber: partNumber ? String(partNumber).trim() : '',
+      description: description ? String(description).trim() : '',
+
+      status: 'active',
+      visibility: 'public',
+      source: 'manual',
+      views: 0,
+      inquiries: 0,
+
+      createdAt: now,
+      updatedAt: now
+    };
+
+    const listingRef = await db.collection('partsListings').add(listingData);
+
+    await db.collection('partsShops').doc(shopId).update({
+      totalListings: (shop.totalListings || 0) + 1,
+      activeListings: (shop.activeListings || 0) + 1,
+      lastListingAt: now,
+      updatedAt: now
+    });
+
+    res.status(201).json({
+      success: true,
+      message: 'Part listing saved successfully',
+      listingId: listingRef.id
+    });
+
+  } catch (err) {
+    console.error('Add parts listing error:', err);
+
+    res.status(500).json({
+      success: false,
+      message: 'Unable to save part listing'
+    });
+  }
+});
+
+app.post('/api/parts/upload-excel', requirePartsShop, upload.single('excelFile'), async (req, res) => {
+  try {
+    const shopId = req.session.partsShopId;
+
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        message: 'Excel file is required'
+      });
+    }
+
+    const shopDoc = await db.collection('partsShops').doc(shopId).get();
+
+    if (!shopDoc.exists || shopDoc.data().status !== 'active') {
+      return res.status(403).json({
+        success: false,
+        message: 'Shop is not active'
+      });
+    }
+
+    const shop = shopDoc.data();
+    const workbook = XLSX.read(req.file.buffer, { type: 'buffer' });
+    const sheet = workbook.Sheets[workbook.SheetNames[0]];
+    const rows = XLSX.utils.sheet_to_json(sheet);
+
+    let imported = 0;
+    let skipped = 0;
+    const now = new Date().toISOString();
+
+    for (const row of rows) {
+      const partName = row['Part Name'];
+      const category = row['Category'];
+      const brand = row['Brand'];
+      const condition = row['Condition'];
+
+      if (!partName || !category || !brand || !condition) {
+        skipped++;
+        continue;
+      }
+
+      await db.collection('partsListings').add({
+        shopId,
+        shopName: shop.shopName || '',
+        shopLocation: shop.location || '',
+        governorate: shop.governorate || '',
+        shopWhatsapp: cleanMobile(shop.whatsapp || ''),
+
+        partName: String(partName).trim(),
+        category: String(category).trim(),
+        brand: String(brand).trim(),
+        model: row['Model'] ? String(row['Model']).trim() : '',
+        yearFrom: row['Year From'] ? Number(row['Year From']) : '',
+        yearTo: row['Year To'] ? Number(row['Year To']) : '',
+        condition: String(condition).trim(),
+        availability: row['Availability'] || 'Available',
+        quantity: Number(row['Quantity'] || 0),
+        price: Number(row['Price OMR'] || 0),
+        partNumber: row['Part Number'] ? String(row['Part Number']).trim() : '',
+        description: row['Description'] ? String(row['Description']).trim() : '',
+
+        status: 'active',
+        visibility: 'public',
+        source: 'excel',
+        views: 0,
+        inquiries: 0,
+
+        createdAt: now,
+        updatedAt: now
+      });
+
+      imported++;
+    }
+
+    await db.collection('partsShops').doc(shopId).update({
+      totalListings: (shop.totalListings || 0) + imported,
+      activeListings: (shop.activeListings || 0) + imported,
+      lastExcelUploadAt: now,
+      updatedAt: now
+    });
+
+    res.json({
+      success: true,
+      message: 'Excel uploaded successfully',
+      imported,
+      skipped
+    });
+
+  } catch (err) {
+    console.error('Parts Excel upload error:', err);
+
+    res.status(500).json({
+      success: false,
+      message: 'Unable to upload Excel file'
+    });
+  }
+});
+
+app.get('/api/parts/shop-logout', (req, res) => {
+  req.session.partsShopLoggedIn = false;
+  req.session.partsShopId = null;
+  req.session.partsShopEmail = null;
+
+  res.redirect('/parts-shop-login.html');
+});
+
+/* =========================================================
+   VEHICALL PARTS - CUSTOMER INQUIRIES
+========================================================= */
+
+app.post('/api/parts/create-inquiry', async (req, res) => {
+  try {
+
+    const {
+      listingId,
+      partName,
+      shopId,
+      shopName,
+      vehicleBrand,
+      vehicleModel,
+      listingPrice
+    } = req.body;
+
+    const now = new Date().toISOString();
+
+    await db.collection('partsInquiries').add({
+      listingId: listingId || '',
+      partName: partName || '',
+      shopId: shopId || '',
+      shopName: shopName || '',
+      customerSource: 'marketplace',
+      inquiryType: 'whatsapp',
+      vehicleBrand: vehicleBrand || '',
+      vehicleModel: vehicleModel || '',
+      listingPrice: Number(listingPrice || 0),
+      createdAt: now
+    });
+
+    if (listingId) {
+
+      const listingRef = db.collection('partsListings').doc(listingId);
+      const listingDoc = await listingRef.get();
+
+      if (listingDoc.exists) {
+
+        const current = Number(listingDoc.data().inquiries || 0);
+
+        await listingRef.update({
+          inquiries: current + 1,
+          updatedAt: now
+        });
+      }
+    }
+
+    if (shopId) {
+
+      const shopRef = db.collection('partsShops').doc(shopId);
+      const shopDoc = await shopRef.get();
+
+      if (shopDoc.exists) {
+
+        const current = Number(shopDoc.data().totalInquiries || 0);
+
+        await shopRef.update({
+          totalInquiries: current + 1,
+          updatedAt: now
+        });
+      }
+    }
+
+    res.json({
+      success: true
+    });
+
+  } catch (err) {
+
+    console.error('Create inquiry error:', err);
+
+    res.status(500).json({
+      success: false,
+      message: 'Unable to create inquiry'
+    });
+  }
+});
+
+app.get('/api/parts/my-inquiries', requirePartsShop, async (req, res) => {
+  try {
+
+    const shopId = req.session.partsShopId;
+
+    const snapshot = await db.collection('partsInquiries')
+      .where('shopId', '==', shopId)
+      .get();
+
+    const inquiries = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
+    inquiries.sort((a, b) =>
+      new Date(b.createdAt || 0) -
+      new Date(a.createdAt || 0)
+    );
+
+    res.json({
+      success: true,
+      inquiries
+    });
+
+  } catch (err) {
+
+    console.error('My inquiries error:', err);
+
+    res.status(500).json({
+      success: false,
+      message: 'Unable to load inquiries'
+    });
+  }
+});
+
+/* =========================================================
+   VEHICALL PARTS - EDIT LISTING
+========================================================= */
+
+app.get('/api/parts/listing/:listingId', requirePartsShop, async (req, res) => {
+  try {
+
+    const { listingId } = req.params;
+    const shopId = req.session.partsShopId;
+
+    const doc = await db.collection('partsListings').doc(listingId).get();
+
+    if (!doc.exists) {
+      return res.status(404).json({
+        success: false,
+        message: 'Listing not found'
+      });
+    }
+
+    const listing = {
+      id: doc.id,
+      ...doc.data()
+    };
+
+    if (listing.shopId !== shopId) {
+      return res.status(403).json({
+        success: false,
+        message: 'Unauthorized access'
+      });
+    }
+
+    res.json({
+      success: true,
+      listing
+    });
+
+  } catch (err) {
+
+    console.error('Get listing error:', err);
+
+    res.status(500).json({
+      success: false,
+      message: 'Unable to load listing'
+    });
+  }
+});
+
+app.post('/api/parts/update-listing', requirePartsShop, upload.single('partImage'), async (req, res) => {
+  try {
+
+    const shopId = req.session.partsShopId;
+
+    const {
+      listingId,
+      partName,
+      category,
+      brand,
+      model,
+      yearFrom,
+      yearTo,
+      condition,
+      availability,
+      quantity,
+      price,
+      partNumber,
+      whatsapp,
+      description
+    } = req.body;
+
+    if (!listingId) {
+      return res.status(400).json({
+        success: false,
+        message: 'Listing ID missing'
+      });
+    }
+
+    const listingRef = db.collection('partsListings').doc(listingId);
+    const listingDoc = await listingRef.get();
+
+    if (!listingDoc.exists) {
+      return res.status(404).json({
+        success: false,
+        message: 'Listing not found'
+      });
+    }
+
+    const existing = listingDoc.data();
+
+    if (existing.shopId !== shopId) {
+      return res.status(403).json({
+        success: false,
+        message: 'Unauthorized'
+      });
+    }
+
+    let imageUrl = existing.imageUrl || '';
+
+    if (req.file) {
+
+      const ext = path.extname(req.file.originalname) || '.jpg';
+
+      const fileName = `part-${Date.now()}-${Math.round(Math.random() * 1E9)}${ext}`;
+
+      const uploadPath = path.join(
+        __dirname,
+        'public',
+        'uploads',
+        'parts',
+        fileName
+      );
+
+      require('fs').writeFileSync(uploadPath, req.file.buffer);
+
+      imageUrl = `/uploads/parts/${fileName}`;
+    }
+
+    const updateData = {
+      partName: partName || '',
+      category: category || '',
+      brand: brand || '',
+      model: model || '',
+      yearFrom: yearFrom || '',
+      yearTo: yearTo || '',
+      condition: condition || '',
+      availability: availability || '',
+      quantity: Number(quantity || 0),
+      price: Number(price || 0),
+      partNumber: partNumber || '',
+      shopWhatsapp: whatsapp || '',
+      description: description || '',
+      imageUrl,
+      updatedAt: new Date().toISOString()
+    };
+
+    await listingRef.update(updateData);
+
+    res.json({
+      success: true,
+      message: 'Listing updated successfully'
+    });
+
+  } catch (err) {
+
+    console.error('Update listing error:', err);
+
+    res.status(500).json({
+      success: false,
+      message: 'Unable to update listing'
+    });
+  }
+});
+
+/* =========================================================
+   VEHICALL PARTS - PUBLIC SHOP PROFILE
+========================================================= */
+
+app.get('/api/parts/public-shop/:shopId', async (req, res) => {
+  try {
+    const { shopId } = req.params;
+
+    const shopDoc = await db.collection('partsShops').doc(shopId).get();
+
+    if (!shopDoc.exists) {
+      return res.status(404).json({
+        success: false,
+        message: 'Shop not found'
+      });
+    }
+
+    const shop = shopDoc.data();
+
+    if (shop.status !== 'active') {
+      return res.status(403).json({
+        success: false,
+        message: 'Shop is not active'
+      });
+    }
+
+    delete shop.password;
+
+    const listingsSnapshot = await db.collection('partsListings')
+      .where('shopId', '==', shopId)
+      .where('status', '==', 'active')
+      .where('visibility', '==', 'public')
+      .get();
+
+    const listings = listingsSnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
+    listings.sort((a, b) =>
+      new Date(b.createdAt || 0) -
+      new Date(a.createdAt || 0)
+    );
+
+    res.json({
+      success: true,
+      shop: {
+        id: shopId,
+        ...shop
+      },
+      listings
+    });
+
+  } catch (err) {
+    console.error('Public shop profile error:', err);
+
+    res.status(500).json({
+      success: false,
+      message: 'Unable to load shop profile'
+    });
+  }
+});
+
+app.get('/parts-shop-profile.html', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'parts-shop-profile.html'));
+});
+
+/* =========================================================
+   VEHICALL PARTS - PUBLIC MARKETPLACE
+========================================================= */
+
+app.get('/api/parts/public-listings', async (req, res) => {
+  try {
+    const snapshot = await db.collection('partsListings')
+      .where('status', '==', 'active')
+      .where('visibility', '==', 'public')
+      .get();
+
+    const listings = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
+    listings.sort((a, b) =>
+      new Date(b.createdAt || 0) -
+      new Date(a.createdAt || 0)
+    );
+
+    res.json({
+      success: true,
+      listings
+    });
+
+  } catch (err) {
+    console.error('Public parts listings error:', err);
+
+    res.status(500).json({
+      success: false,
+      message: 'Unable to load public parts listings'
+    });
+  }
+});
+
+app.get('/parts-marketplace.html', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'parts-marketplace.html'));
+});
+
+app.get('/parts-marketplace', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'parts-marketplace.html'));
 });
 
 /* SERVER START */

@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Vehicall Parts Shop Login</title>
+
+  <style>
+    *{
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
+      font-family:Arial,sans-serif;
+    }
+
+    body{
+      min-height:100vh;
+      background:#07111f;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      padding:20px;
+      color:#fff;
+    }
+
+    .card{
+      width:100%;
+      max-width:420px;
+      background:#0f1f33;
+      border:1px solid #20344d;
+      border-radius:24px;
+      padding:35px;
+    }
+
+    .logo{
+      text-align:center;
+      margin-bottom:25px;
+    }
+
+    .logo img{
+      width:80px;
+      background:#fff;
+      border-radius:18px;
+      padding:8px;
+    }
+
+    h1{
+      text-align:center;
+      margin-bottom:10px;
+    }
+
+    .subtitle{
+      text-align:center;
+      color:#9fb0c5;
+      margin-bottom:28px;
+      line-height:1.5;
+    }
+
+    label{
+      display:block;
+      margin-bottom:8px;
+      margin-top:18px;
+      font-weight:700;
+    }
+
+    input{
+      width:100%;
+      padding:14px;
+      border:none;
+      border-radius:12px;
+      background:#081827;
+      color:#fff;
+      border:1px solid #29496d;
+    }
+
+    button{
+      width:100%;
+      margin-top:24px;
+      padding:15px;
+      border:none;
+      border-radius:14px;
+      background:linear-gradient(135deg,#00c2ff,#0066ff);
+      color:#fff;
+      font-size:16px;
+      font-weight:700;
+      cursor:pointer;
+    }
+
+    .msg{
+      margin-top:18px;
+      padding:12px;
+      border-radius:10px;
+      display:none;
+    }
+
+    .success{
+      background:rgba(34,197,94,0.15);
+      color:#bbf7d0;
+    }
+
+    .error{
+      background:rgba(239,68,68,0.15);
+      color:#fecaca;
+    }
+
+    .register-link{
+      text-align:center;
+      margin-top:22px;
+      color:#9fb0c5;
+    }
+
+    .register-link a{
+      color:#00c2ff;
+      text-decoration:none;
+      font-weight:700;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="card">
+
+  <div class="logo">
+    <img src="/images/vehicall-logo.png"
+         onerror="this.src='/logo.png'">
+  </div>
+
+  <h1>Shop Login</h1>
+
+  <div class="subtitle">
+    Vehicall Parts Marketplace Partner Portal
+  </div>
+
+  <form id="loginForm">
+
+    <label>Email</label>
+    <input type="email" id="email" required />
+
+    <label>Password</label>
+    <input type="password" id="password" required />
+
+    <button type="submit">
+      Login
+    </button>
+
+    <div id="message" class="msg"></div>
+
+  </form>
+
+  <div class="register-link">
+    New Shop?
+    <a href="/parts-shop-register.html">
+      Register Here
+    </a>
+  </div>
+
+</div>
+
+<script>
+
+const form = document.getElementById('loginForm');
+const message = document.getElementById('message');
+
+form.addEventListener('submit', async (e)=>{
+
+  e.preventDefault();
+
+  message.style.display='none';
+
+  try{
+
+    const payload = {
+      email: document.getElementById('email').value.trim(),
+      password: document.getElementById('password').value
+    };
+
+    const res = await fetch('/api/parts/shop-login',{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json'
+      },
+      body:JSON.stringify(payload)
+    });
+
+    const data = await res.json();
+
+    message.style.display='block';
+
+    if(data.success){
+
+      message.className='msg success';
+      message.textContent=data.message;
+
+      setTimeout(()=>{
+        window.location.href='/parts-shop-dashboard.html';
+      },1200);
+
+    }else{
+
+      message.className='msg error';
+      message.textContent=data.message;
+    }
+
+  }catch(err){
+
+    console.error(err);
+
+    message.style.display='block';
+    message.className='msg error';
+    message.textContent='Login failed';
+  }
+
+});
+
+</script>
+
+</body>
+</html>

@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>My Favorites | Vehicall Parts</title>
+
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
+    body{background:#06101d;color:#fff;min-height:100vh}
+    .nav{position:sticky;top:0;z-index:999;background:rgba(5,13,24,.96);backdrop-filter:blur(12px);border-bottom:1px solid rgba(255,255,255,.08);padding:14px 5%;display:flex;justify-content:space-between;align-items:center;gap:12px}
+    .brand{display:flex;align-items:center;gap:12px;color:#f59e0b;text-decoration:none;font-weight:900;font-size:22px}
+    .brand img{width:52px;height:52px;object-fit:contain;background:#fff;border-radius:14px;padding:6px}
+    .nav a{color:#dbeafe;text-decoration:none;background:#0f1f33;border:1px solid #29496d;padding:10px 14px;border-radius:12px;font-weight:800}
+    .container{padding:35px 5%}
+    .hero{background:linear-gradient(135deg,#10243d,#06101d);border:1px solid #20344d;border-radius:26px;padding:30px;margin-bottom:24px}
+    h1{font-size:36px;margin-bottom:10px}
+    .muted{color:#94a3b8;line-height:1.6}
+    .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+    .card{background:#0f1f33;border:1px solid #20344d;border-radius:22px;overflow:hidden}
+    .img{height:160px;background:#081827;display:grid;place-items:center;font-size:46px}
+    .img img{width:100%;height:100%;object-fit:cover}
+    .body{padding:18px}
+    .body h3{font-size:18px;margin-bottom:8px}
+    .meta{color:#b7c4d4;font-size:13px;line-height:1.6}
+    .price{color:#f59e0b;font-size:21px;font-weight:900;margin:12px 0}
+    .actions{display:flex;gap:8px;margin-top:14px}
+    .btn{border:none;border-radius:13px;padding:11px 12px;font-weight:900;cursor:pointer;text-align:center;text-decoration:none;font-size:13px}
+    .whatsapp{background:#22c55e;color:#052e16;flex:1}
+    .remove{background:#ef4444;color:#fff}
+    .empty{background:#0f1f33;border:1px solid #20344d;border-radius:22px;padding:30px;color:#94a3b8;text-align:center}
+    @media(max-width:1100px){.grid{grid-template-columns:repeat(2,1fr)}}
+    @media(max-width:650px){.grid{grid-template-columns:1fr}.nav{flex-direction:column;align-items:flex-start}}
+  </style>
+</head>
+
+<body>
+
+<nav class="nav">
+  <a href="/parts-marketplace.html" class="brand">
+    <img src="/images/vehicall-logo.png" onerror="this.src='/logo.png'">
+    <span>Vehicall Favorites</span>
+  </a>
+
+  <a href="/parts-marketplace.html">Back to Marketplace</a>
+</nav>
+
+<div class="container">
+  <section class="hero">
+    <h1>My Favorite Parts</h1>
+    <p class="muted">Parts saved on this browser. Later we can connect this to customer login accounts.</p>
+  </section>
+
+  <div class="grid" id="favoritesGrid">
+    <div class="empty">Loading favorites...</div>
+  </div>
+</div>
+
+<script>
+let allListings = [];
+const icons = {
+  'Engine Parts':'⚙️','Body Parts':'🚘','Electrical Parts':'🔌','Suspension':'🔩',
+  'Brake System':'🛑','Lights':'💡','Interior':'💺','Transmission':'⚙️',
+  'Tires & Wheels':'🛞','Battery':'🔋','Oil & Filters':'🛢️','Accessories':'✨','Other':'🔧'
+};
+
+function getFavorites(){
+  return JSON.parse(localStorage.getItem('vehicall_favorites') || '[]');
+}
+
+function removeFavorite(id){
+  const favs = getFavorites().filter(x => x !== id);
+  localStorage.setItem('vehicall_favorites', JSON.stringify(favs));
+  renderFavorites();
+}
+
+async function loadFavorites(){
+  try{
+    const res = await fetch('/api/parts/public-listings');
+    const data = await res.json();
+
+    if(!data.success) throw new Error('Failed to load parts');
+
+    allListings = data.listings || [];
+    renderFavorites();
+
+  }catch(err){
+    document.getElementById('favoritesGrid').innerHTML =
+      `<div class="empty">Unable to load favorites.</div>`;
+  }
+}
+
+function renderFavorites(){
+  const grid = document.getElementById('favoritesGrid');
+  const favIds = getFavorites();
+
+  const rows = allListings.filter(item => favIds.includes(item.id));
+
+  if(!rows.length){
+    grid.innerHTML = `
+      <div class="empty">
+        No favorite parts yet.<br><br>
+        Go to marketplace and tap ❤ on parts you want to save.
+      </div>
+    `;
+    return;
+  }
+
+  grid.innerHTML = rows.map(item => {
+    const price = Number(item.price || 0);
+    const cleanWa = String(item.shopWhatsapp || '').replace(/^968/, '');
+    const msg = encodeURIComponent(
+      `Hello, I saved this part on Vehicall Parts:\n\nPart: ${item.partName || '-'}\nBrand: ${item.brand || '-'}\nModel: ${item.model || '-'}\nPrice: ${price ? price.toFixed(3) + ' OMR' : 'Price on request'}\n\nIs it available?`
+    );
+    const waLink = cleanWa ? `https://wa.me/968${cleanWa}?text=${msg}` : '#';
+
+    return `
+      <div class="card">
+        <div class="img">
+          ${item.imageUrl ? `<img src="${item.imageUrl}" onerror="this.parentElement.innerHTML='${icons[item.category] || '🔧'}'">` : icons[item.category] || '🔧'}
+        </div>
+
+        <div class="body">
+          <h3>${item.partName || '-'}</h3>
+
+          <div class="meta">
+            ${item.brand || '-'} ${item.model || ''}<br>
+            ${item.category || '-'} | ${item.condition || '-'}<br>
+            ${item.shopName || '-'}
+          </div>
+
+          <div class="price">
+            ${price ? price.toFixed(3) + ' OMR' : 'Price on request'}
+          </div>
+
+          <div class="actions">
+            <a class="btn whatsapp" href="${waLink}" target="_blank">WhatsApp</a>
+            <button class="btn remove" onclick="removeFavorite('${item.id}')">Remove</button>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+loadFavorites();
+</script>
+
+</body>
+</html>

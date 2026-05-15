@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Register Shop | Vehicall Parts</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+  min-height: 100vh;
+  padding-top: 95px;
+      background:
+        radial-gradient(circle at top left, rgba(245, 158, 11, 0.25), transparent 32%),
+        linear-gradient(180deg, #06101f, #050b14);
+      color: #fff;
+    }
+
+    .nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 9999;
+
+  padding: 18px 7%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  background: rgba(5, 11, 20, 0.92);
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+
+  backdrop-filter: blur(12px);
+}
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 24px;
+      font-weight: 900;
+      color: #f59e0b;
+      text-decoration: none;
+    }
+
+    .brand img {
+  width: 58px;
+  height: 58px;
+  object-fit: contain;
+  background: #ffffff;
+  border-radius: 16px;
+  padding: 7px;
+  box-shadow: 0 6px 20px rgba(0,0,0,0.35);
+}
+
+    .nav a {
+      color: #cbd5e1;
+      text-decoration: none;
+      margin-left: 16px;
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    .wrapper {
+      width: min(1100px, calc(100% - 32px));
+      margin: 45px auto;
+      display: grid;
+      grid-template-columns: 0.9fr 1.1fr;
+      gap: 30px;
+      align-items: stretch;
+    }
+
+    .info, .form-card {
+      background: rgba(255,255,255,0.075);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 28px;
+      padding: 32px;
+      box-shadow: 0 24px 70px rgba(0,0,0,0.28);
+    }
+
+    .info h1 {
+      font-size: 44px;
+      line-height: 1.05;
+      margin-bottom: 18px;
+    }
+
+    .info p {
+      color: #aab7c8;
+      line-height: 1.7;
+      margin-bottom: 24px;
+      font-size: 16px;
+    }
+
+    .benefits {
+      display: grid;
+      gap: 14px;
+      margin-top: 24px;
+    }
+
+    .benefit {
+      padding: 16px;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.07);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: #dbeafe;
+      line-height: 1.5;
+    }
+
+    .benefit strong {
+      color: #facc15;
+    }
+
+    .form-card h2 {
+      font-size: 30px;
+      margin-bottom: 10px;
+    }
+
+    .form-card .sub {
+      color: #94a3b8;
+      margin-bottom: 25px;
+      line-height: 1.6;
+    }
+
+    form {
+      display: grid;
+      gap: 16px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+    }
+
+    label {
+      display: block;
+      color: #dbeafe;
+      font-size: 13px;
+      font-weight: 800;
+      margin-bottom: 7px;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      padding: 14px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,0.14);
+      background: rgba(2, 6, 23, 0.62);
+      color: #fff;
+      outline: none;
+      font-size: 14px;
+    }
+
+    textarea {
+      min-height: 95px;
+      resize: vertical;
+    }
+
+    input::placeholder, textarea::placeholder {
+      color: #64748b;
+    }
+
+    button {
+      margin-top: 8px;
+      padding: 15px 18px;
+      border-radius: 16px;
+      border: none;
+      background: linear-gradient(135deg, #f59e0b, #fb923c);
+      color: #101000;
+      font-size: 16px;
+      font-weight: 900;
+      cursor: pointer;
+      transition: 0.25s ease;
+    }
+
+    button:hover {
+      transform: translateY(-2px);
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .msg {
+      display: none;
+      padding: 14px;
+      border-radius: 14px;
+      margin-top: 14px;
+      line-height: 1.5;
+      font-weight: 700;
+    }
+
+    .success {
+      display: block;
+      background: rgba(34,197,94,0.13);
+      border: 1px solid rgba(34,197,94,0.35);
+      color: #bbf7d0;
+    }
+
+    .error {
+      display: block;
+      background: rgba(239,68,68,0.13);
+      border: 1px solid rgba(239,68,68,0.35);
+      color: #fecaca;
+    }
+
+    .note {
+      color: #94a3b8;
+      font-size: 13px;
+      line-height: 1.6;
+      margin-top: 15px;
+    }
+
+    @media(max-width: 900px) {
+      .wrapper {
+        grid-template-columns: 1fr;
+      }
+
+      .grid {
+        grid-template-columns: 1fr;
+      }
+
+      .nav {
+        flex-direction: column;
+        gap: 14px;
+        align-items: flex-start;
+      }
+
+      .nav div {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      .nav a {
+        margin-left: 0;
+      }
+
+      .info h1 {
+        font-size: 34px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="nav">
+    <a href="/parts" class="brand">
+      <img src="/images/vehicall-logo.png" alt="Vehicall Logo" onerror="this.src='/images/Vehicall Logo.png'" />
+      <span>Vehicall Parts</span>
+    </a>
+
+    <div>
+      <a href="/">Home</a>
+      <a href="/parts">Parts</a>
+      <a href="/fleet-management.html">Fleet</a>
+      <a href="/garage.html">Garage</a>
+    </div>
+  </div>
+
+  <main class="wrapper">
+
+    <section class="info">
+      <h1>Register Your Spare Parts Shop</h1>
+      <p>
+        Join Vehicall Parts and prepare your shop for Oman’s smart spare parts marketplace.
+        Shops can later upload inventory by Excel, receive customer inquiries, and connect with fleet companies.
+      </p>
+
+      <div class="benefits">
+        <div class="benefit"><strong>✓ Easy registration</strong><br>No complicated ecommerce setup.</div>
+        <div class="benefit"><strong>✓ Excel upload planned</strong><br>Upload your parts list in simple format.</div>
+        <div class="benefit"><strong>✓ WhatsApp-first inquiries</strong><br>Customers can contact your shop directly.</div>
+        <div class="benefit"><strong>✓ Admin approval</strong><br>Vehicall will review and activate approved shops.</div>
+      </div>
+    </section>
+
+    <section class="form-card">
+      <h2>Shop Registration</h2>
+      <p class="sub">
+        Submit your shop details. Your shop will be saved as pending until Vehicall admin approval.
+      </p>
+
+      <form id="shopForm">
+        <div class="grid">
+          <div>
+            <label>Shop Name *</label>
+            <input type="text" id="shopName" placeholder="Example: Muscat Auto Parts" required />
+          </div>
+
+          <div>
+            <label>Owner / Contact Person *</label>
+            <input type="text" id="ownerName" placeholder="Owner name" required />
+          </div>
+        </div>
+
+        <div class="grid">
+          <div>
+            <label>Mobile Number *</label>
+            <input type="tel" id="mobile" placeholder="968XXXXXXXX" required />
+          </div>
+
+          <div>
+            <label>WhatsApp Number *</label>
+            <input type="tel" id="whatsapp" placeholder="968XXXXXXXX" required />
+          </div>
+        </div>
+
+        <div class="grid">
+          <div>
+         <label>Login Email *</label>
+        <input type="email" id="email" placeholder="shop@email.com" required />
+          </div>
+
+          <div>
+            <label>Location / Area *</label>
+            <input type="text" id="location" placeholder="Mabela, Ghala, Ruwi..." required />
+          </div>
+        </div>
+
+        <div class="grid">
+          <div>
+            <label>Governorate *</label>
+            <select id="governorate" required>
+              <option value="">Select Governorate</option>
+              <option>Muscat</option>
+              <option>Dhofar</option>
+              <option>Musandam</option>
+              <option>Al Buraimi</option>
+              <option>Al Dakhiliyah</option>
+              <option>Al Dhahirah</option>
+              <option>North Al Batinah</option>
+              <option>South Al Batinah</option>
+              <option>North Al Sharqiyah</option>
+              <option>South Al Sharqiyah</option>
+              <option>Al Wusta</option>
+            </select>
+          </div>
+
+          <div>
+            <label>Shop Type *</label>
+            <select id="shopType" required>
+              <option value="">Select Type</option>
+              <option>New Spare Parts</option>
+              <option>Used Spare Parts</option>
+              <option>New & Used Spare Parts</option>
+              <option>Tires & Batteries</option>
+              <option>Accessories</option>
+              <option>Oils & Filters</option>
+              <option>Garage with Parts</option>
+            </select>
+          </div>
+        </div>
+
+<div class="grid">
+  <div>
+    <label>Password *</label>
+    <input type="password" id="password" placeholder="Minimum 6 characters" required />
+  </div>
+
+  <div>
+    <label>Confirm Password *</label>
+    <input type="password" id="confirmPassword" placeholder="Repeat password" required />
+  </div>
+</div>
+
+        <div class="grid">
+          <div>
+            <label>Specialized Brands</label>
+            <input type="text" id="brands" placeholder="Toyota, Nissan, Hyundai..." />
+          </div>
+
+          <div>
+            <label>Preferred Plan</label>
+            <select id="preferredPlan">
+              <option>Trial</option>
+              <option>Basic</option>
+              <option>Plus</option>
+              <option>Premium</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label>Shop Address / Notes</label>
+          <textarea id="notes" placeholder="Add full address, landmark, business timing, or any remarks"></textarea>
+        </div>
+
+        <button type="submit" id="submitBtn">Submit Shop Registration</button>
+
+        <div id="message" class="msg"></div>
+
+        <p class="note">
+          By submitting this form, your shop details will be sent to Vehicall admin for review.
+        </p>
+      </form>
+    </section>
+
+  </main>
+
+  <script>
+    const form = document.getElementById("shopForm");
+    const btn = document.getElementById("submitBtn");
+    const message = document.getElementById("message");
+
+    function cleanPhone(value) {
+      return String(value || "").replace(/\s+/g, "").replace("+", "");
+    }
+
+    form.addEventListener("submit", async function (e) {
+      e.preventDefault();
+
+      message.className = "msg";
+      message.textContent = "";
+
+      const payload = {
+        shopName: document.getElementById("shopName").value.trim(),
+        ownerName: document.getElementById("ownerName").value.trim(),
+        mobile: cleanPhone(document.getElementById("mobile").value),
+        whatsapp: cleanPhone(document.getElementById("whatsapp").value),
+        email: document.getElementById("email").value.trim(),
+        password: document.getElementById("password").value,
+        confirmPassword: document.getElementById("confirmPassword").value,
+        location: document.getElementById("location").value.trim(),
+        governorate: document.getElementById("governorate").value,
+        shopType: document.getElementById("shopType").value,
+        brands: document.getElementById("brands").value.trim(),
+        preferredPlan: document.getElementById("preferredPlan").value,
+        notes: document.getElementById("notes").value.trim()
+      };
+
+      if (!payload.shopName || !payload.ownerName || !payload.mobile || !payload.whatsapp || !payload.email || !payload.password || !payload.confirmPassword || !payload.location || !payload.governorate || !payload.shopType) {
+if (payload.password.length < 6) {
+  message.className = "msg error";
+  message.textContent = "Password must be at least 6 characters.";
+  return;
+}
+
+if (payload.password !== payload.confirmPassword) {
+  message.className = "msg error";
+  message.textContent = "Password and confirm password do not match.";
+  return;
+}
+        message.className = "msg error";
+        message.textContent = "Please fill all required fields.";
+        return;
+      }
+
+      btn.disabled = true;
+      btn.textContent = "Submitting...";
+
+      try {
+        const res = await fetch("/api/parts/register-shop", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+
+        if (!res.ok || !data.success) {
+          throw new Error(data.message || "Registration failed.");
+        }
+
+        message.className = "msg success";
+        message.innerHTML = `
+          Shop registration submitted successfully.<br>
+          Your Shop ID: <strong>${data.shopId}</strong><br>
+          Status: Pending Vehicall Admin Approval.
+        `;
+
+        form.reset();
+
+      } catch (err) {
+        message.className = "msg error";
+        message.textContent = err.message || "Something went wrong. Please try again.";
+      } finally {
+        btn.disabled = false;
+        btn.textContent = "Submit Shop Registration";
+      }
+    });
+  </script>
+
+</body>
+</html>

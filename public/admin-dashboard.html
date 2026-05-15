@@ -34,6 +34,9 @@
     .brand img {
       height: 48px;
       width: auto;
+      background: #fff;
+      border-radius: 10px;
+      padding: 4px;
     }
 
     .brand-text h2 {
@@ -126,7 +129,7 @@
 
     .workspace-grid {
       display: grid;
-      grid-template-columns: repeat(2, 1fr);
+      grid-template-columns: repeat(3, 1fr);
       gap: 22px;
       margin-bottom: 28px;
     }
@@ -137,9 +140,9 @@
       border-radius: 22px;
       padding: 28px;
       transition: 0.25s ease;
-      cursor: pointer;
       position: relative;
       overflow: hidden;
+      min-height: 360px;
     }
 
     .workspace-card:hover {
@@ -226,10 +229,13 @@
       color: #8fa8c2;
     }
 
-    @media (max-width: 900px) {
-      .workspace-grid,
-      .stats {
+    @media (max-width: 1100px) {
+      .workspace-grid {
         grid-template-columns: 1fr;
+      }
+
+      .stats {
+        grid-template-columns: repeat(2, 1fr);
       }
     }
 
@@ -238,6 +244,10 @@
         flex-direction: column;
         align-items: flex-start;
         gap: 14px;
+      }
+
+      .stats {
+        grid-template-columns: 1fr;
       }
 
       .hero h1 {
@@ -255,7 +265,7 @@
 
   <div class="header">
     <div class="brand">
-      <img src="/logo.png" alt="Vehicall Logo">
+      <img src="/images/vehicall-logo.png" onerror="this.src='/logo.png'" alt="Vehicall Logo">
 
       <div class="brand-text">
         <h2>Vehicall Admin</h2>
@@ -273,8 +283,8 @@
 
       <p>
         Manage Smart Alert users, Fleet B2B customers, QR systems,
-        fleet operations, incidents, subscriptions, and operational analytics
-        from one centralized Vehicall ecosystem.
+        fleet operations, spare parts marketplace, subscriptions,
+        and operational analytics from one centralized Vehicall ecosystem.
       </p>
     </div>
 
@@ -344,6 +354,28 @@
         </button>
       </div>
 
+      <div class="workspace-card">
+        <h2>Vehicall Parts Marketplace</h2>
+
+        <p>
+          Manage spare parts shops, approvals, listings,
+          marketplace operations, featured shops, and Vehicall Parts analytics.
+        </p>
+
+        <ul>
+          <li>Shop approval management</li>
+          <li>Marketplace listing control</li>
+          <li>Excel upload monitoring</li>
+          <li>Featured shops management</li>
+          <li>Inquiry tracking</li>
+          <li>Marketplace analytics</li>
+        </ul>
+
+        <button onclick="window.location.href='/admin-parts-dashboard.html'">
+          Open Parts Marketplace Admin
+        </button>
+      </div>
+
     </div>
 
     <div class="recent-section">
@@ -391,27 +423,17 @@
           container.innerHTML += `
             <div class="recent-item">
               <strong>${company.companyName || ''}</strong>
-
-              Package:
-              ${company.packageLabel || company.packageType || '-'}
-
+              Package: ${company.packageLabel || company.packageType || '-'}
               <br><br>
-
-              Status:
-              ${company.status || 'pending'}
-
+              Status: ${company.status || 'pending'}
               <br><br>
-
-              <small>
-                Contact:
-                ${company.contactPerson || '-'}
-              </small>
+              <small>Contact: ${company.contactPerson || '-'}</small>
             </div>
           `;
         });
 
       } catch (error) {
-        console.error(error);
+        console.error('Admin dashboard loading error:', error);
       }
     }
 

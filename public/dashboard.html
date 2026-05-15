@@ -150,6 +150,7 @@
         <button onclick="goUpgrade()" data-key="upgradePlan">Upgrade Plan</button>
         <button onclick="manageContacts()" data-key="manageContacts">Manage Contacts</button>
         <button onclick="goAlertHistory()" data-key="alertHistory">Alert History</button>
+        <button onclick="goPartsAdmin()">Vehicall Parts Admin</button>
       </div>
 
       <div class="notice-box">
@@ -555,6 +556,10 @@ function manageContacts() {
 
 function goAlertHistory() {
   window.location.href = '/alert-history.html';
+}
+
+function goPartsAdmin() {
+  window.location.href = '/admin-parts-dashboard.html';
 }
 
 function logout() {

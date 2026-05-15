@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Vehicall Fleet Drivers</title>
+<link rel="stylesheet" href="/fleet-ui.css">
+
+<style>
+body{margin:0;font-family:Arial,sans-serif;background:#07111f;color:#fff}
+.container{max-width:1250px;margin:0 auto;padding:0 20px}
+.hero,.card{background:#0f1f33;border:1px solid #20344d;border-radius:20px;padding:24px;margin-bottom:24px}
+.hero h1{margin:0 0 8px}
+.hero p{margin:0;color:#b7c4d4;line-height:1.5}
+.form-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+label{display:block;margin-bottom:8px;color:#9fb0c5;font-size:14px}
+input,select{width:100%;padding:13px;border-radius:10px;border:1px solid #29496d;background:#081827;color:#fff;box-sizing:border-box}
+button{padding:13px 18px;border:none;border-radius:12px;background:linear-gradient(135deg,#00c2ff,#0066ff);color:#fff;font-weight:bold;cursor:pointer}
+#message{display:none;margin-bottom:18px;padding:13px;border-radius:12px}
+.success{display:block!important;background:rgba(0,180,120,.15);color:#70ffc8;border:1px solid rgba(0,180,120,.35)}
+.error{display:block!important;background:rgba(255,70,70,.15);color:#ff9c9c;border:1px solid rgba(255,70,70,.35)}
+.driver-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+.driver-card{background:#081827;border:1px solid #223854;border-radius:16px;padding:18px}
+.driver-card h3{margin:0 0 10px;color:#6ecbff}
+.driver-card p{margin:7px 0;color:#d6e2f0;font-size:14px}
+.driver-card strong{color:#8fb3d9}
+.status-badge{display:inline-block;margin-top:10px;padding:6px 12px;border-radius:999px;font-size:12px;font-weight:bold;text-transform:uppercase}
+.active{background:rgba(0,180,120,.15);color:#70ffc8;border:1px solid rgba(0,180,120,.35)}
+.inactive{background:rgba(255,70,70,.15);color:#ff9c9c;border:1px solid rgba(255,70,70,.35)}
+.onleave{background:rgba(255,193,7,.15);color:#ffd86b;border:1px solid rgba(255,193,7,.35)}
+.login-section{grid-column:span 3;background:#081827;border:1px solid #223854;border-radius:16px;padding:18px;display:none}
+.checkbox-row{grid-column:span 3;display:flex;align-items:center;gap:10px;background:#081827;border:1px solid #223854;border-radius:14px;padding:14px}
+.checkbox-row input{width:auto}
+input[type="date"]{color-scheme:dark}
+input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(1);cursor:pointer}
+@media(max-width:900px){.form-grid,.driver-grid{grid-template-columns:1fr}.login-section,.checkbox-row{grid-column:span 1}}
+</style>
+</head>
+
+<body>
+
+<div class="app-layout">
+
+<div class="sidebar">
+  <h2>Vehicall Fleet</h2>
+  <a href="/fleet-dashboard">Dashboard</a>
+
+  <div class="menu-group">
+    <h3>Operations</h3>
+    <a href="/fleet-checklist">Daily Checklist</a>
+    <a href="/fleet-daily-trips">Trips</a>
+    <a href="/fleet-replacements">Temporary Replacement</a>
+    <a href="/fleet-fines">Traffic Fines</a>
+  </div>
+
+  <div class="menu-group">
+    <h3>Fleet Assets</h3>
+    <a href="/fleet-vehicles">Vehicles</a>
+    <a href="/fleet-fuel-cards">Fuel Cards</a>
+  </div>
+
+  <div class="menu-group">
+    <h3>Fuel Management</h3>
+    <a href="/fleet-fuel">Fuel Entries</a>
+    <a href="/fleet-fuel-statements">Supplier Statements</a>
+  </div>
+
+  <div class="menu-group">
+    <h3>People</h3>
+    <a href="/fleet-drivers">Drivers</a>
+    <a href="/fleet-users">Users</a>
+    <a href="/fleet-assignments">Assignments</a>
+  </div>
+
+  <div class="menu-group">
+    <h3>Reports</h3>
+    <a href="/fleet-reports">Reports</a>
+  </div>
+
+  <div class="menu-group">
+    <h3>QR Fleet Alerts</h3>
+    <a href="/fleet-vehicles">Fleet QR</a>
+  </div>
+
+  <a href="/api/fleet/logout">Logout</a>
+</div>
+
+<main class="main-content">
+
+<div class="container">
+
+  <div class="hero">
+    <h1>Driver Management</h1>
+    <p>Add and manage fleet drivers, login access, license details, driver status and assigned vehicle visibility.</p>
+  </div>
+
+  <div id="message"></div>
+
+  <div class="card">
+    <h2>Add New Driver</h2>
+
+    <form id="driverForm">
+      <div class="form-grid">
+
+        <div>
+          <label>Driver Full Name</label>
+          <input type="text" name="driverName" placeholder="Enter Driver Full Name" required>
+        </div>
+
+        <div>
+          <label>Employee ID</label>
+          <input type="text" name="employeeId" placeholder="Enter Employee ID">
+        </div>
+
+        <div>
+          <label>Mobile Number</label>
+          <input type="tel" name="mobile" placeholder="Enter Driver Mobile Number" required>
+        </div>
+
+        <div>
+          <label>Driving License Number</label>
+          <input type="text" name="licenseNumber" placeholder="Enter License Number">
+        </div>
+
+        <div>
+          <label>Driving License Expiry Date</label>
+          <input type="date" name="licenseExpiry">
+        </div>
+
+        <div>
+          <label>Driver Status</label>
+          <select name="status">
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+            <option value="onleave">On Leave</option>
+          </select>
+        </div>
+
+        <div class="checkbox-row">
+          <input type="checkbox" id="createLogin" name="createLogin" value="yes">
+          <label for="createLogin" style="margin:0;">Create login access for this driver now</label>
+        </div>
+
+        <div class="login-section" id="loginSection">
+          <div class="form-grid">
+            <div>
+              <label>Login Email</label>
+              <input type="email" name="loginEmail" placeholder="driver@company.com">
+            </div>
+
+            <div>
+              <label>Login Password</label>
+              <input type="password" name="loginPassword" placeholder="Minimum 6 characters">
+            </div>
+
+            <div>
+              <label>Confirm Password</label>
+              <input type="password" name="confirmPassword" placeholder="Re-enter password">
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex;align-items:end;">
+          <button type="submit" style="width:100%;">Add Driver</button>
+        </div>
+
+      </div>
+    </form>
+  </div>
+
+  <div class="card">
+    <h2>Fleet Drivers</h2>
+    <div id="driversList" class="driver-grid">Loading...</div>
+  </div>
+
+</div>
+
+</main>
+</div>
+
+<script>
+const form = document.getElementById("driverForm");
+const messageBox = document.getElementById("message");
+const driversList = document.getElementById("driversList");
+const createLogin = document.getElementById("createLogin");
+const loginSection = document.getElementById("loginSection");
+
+createLogin.addEventListener("change", function(){
+  loginSection.style.display = this.checked ? "block" : "none";
+});
+
+function showMessage(text,type){
+  messageBox.className = type;
+  messageBox.textContent = text;
+  messageBox.style.display = "block";
+
+  setTimeout(()=>{
+    messageBox.className = "";
+    messageBox.style.display = "none";
+  },4000);
+}
+
+function getStatusClass(status){
+  if(status === "active") return "active";
+  if(status === "inactive") return "inactive";
+  if(status === "onleave") return "onleave";
+  return "active";
+}
+
+function formatStatus(status){
+  if(status === "onleave") return "On Leave";
+  return status || "active";
+}
+
+async function loadDrivers(){
+  try{
+    const res = await fetch("/api/fleet/drivers");
+    const data = await res.json();
+
+    if(!data.success){
+      driversList.innerHTML = "Please login to Fleet Dashboard.";
+      return;
+    }
+
+    driversList.innerHTML = "";
+
+    if(!data.drivers.length){
+      driversList.innerHTML = `<div class="driver-card">No drivers added yet.</div>`;
+      return;
+    }
+
+    data.drivers.forEach(driver=>{
+      const statusClass = getStatusClass(driver.status);
+
+      driversList.innerHTML += `
+        <div class="driver-card">
+          <h3>${driver.driverName || "-"}</h3>
+          <p><strong>Employee ID:</strong> ${driver.employeeId || "-"}</p>
+          <p><strong>Mobile:</strong> ${driver.mobile || "-"}</p>
+          <p><strong>License Number:</strong> ${driver.licenseNumber || "-"}</p>
+          <p><strong>License Expiry:</strong> ${driver.licenseExpiry || "-"}</p>
+          <p><strong>Assigned Vehicle:</strong> ${driver.assignedVehicleNumber || "Not Assigned"}</p>
+          <p><strong>Login Access:</strong> ${driver.loginEnabled ? "Enabled" : "Not Enabled"}</p>
+          <span class="status-badge ${statusClass}">${formatStatus(driver.status)}</span>
+        </div>
+      `;
+    });
+
+  }catch(error){
+    console.error(error);
+    driversList.innerHTML = "Unable to load drivers.";
+  }
+}
+
+form.addEventListener("submit", async function(e){
+  e.preventDefault();
+
+  const formData = new FormData(form);
+  const data = Object.fromEntries(formData.entries());
+
+  if(data.createLogin === "yes"){
+    if(!data.loginEmail || !data.loginPassword || !data.confirmPassword){
+      showMessage("Login email, password and confirm password are required.","error");
+      return;
+    }
+
+    if(data.loginPassword !== data.confirmPassword){
+      showMessage("Login password and confirm password do not match.","error");
+      return;
+    }
+
+    if(data.loginPassword.length < 6){
+      showMessage("Login password must be at least 6 characters.","error");
+      return;
+    }
+  }
+
+  try{
+    const res = await fetch("/api/fleet/drivers",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify(data)
+    });
+
+    const result = await res.json();
+
+    if(result.success){
+      showMessage(result.message,"success");
+      form.reset();
+      loginSection.style.display = "none";
+      loadDrivers();
+    }else{
+      showMessage(result.message || "Unable to add driver","error");
+    }
+
+  }catch(error){
+    console.error(error);
+    showMessage("Server error while adding driver.","error");
+  }
+});
+
+loadDrivers();
+</script>
+
+</body>
+</html>

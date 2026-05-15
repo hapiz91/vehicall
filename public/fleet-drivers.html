@@ -4,36 +4,292 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>Vehicall Fleet Drivers</title>
+
 <link rel="stylesheet" href="/fleet-ui.css">
 
 <style>
-body{margin:0;font-family:Arial,sans-serif;background:#07111f;color:#fff}
-.container{max-width:1250px;margin:0 auto;padding:0 20px}
-.hero,.card{background:#0f1f33;border:1px solid #20344d;border-radius:20px;padding:24px;margin-bottom:24px}
-.hero h1{margin:0 0 8px}
-.hero p{margin:0;color:#b7c4d4;line-height:1.5}
-.form-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
-label{display:block;margin-bottom:8px;color:#9fb0c5;font-size:14px}
-input,select{width:100%;padding:13px;border-radius:10px;border:1px solid #29496d;background:#081827;color:#fff;box-sizing:border-box}
-button{padding:13px 18px;border:none;border-radius:12px;background:linear-gradient(135deg,#00c2ff,#0066ff);color:#fff;font-weight:bold;cursor:pointer}
-#message{display:none;margin-bottom:18px;padding:13px;border-radius:12px}
-.success{display:block!important;background:rgba(0,180,120,.15);color:#70ffc8;border:1px solid rgba(0,180,120,.35)}
-.error{display:block!important;background:rgba(255,70,70,.15);color:#ff9c9c;border:1px solid rgba(255,70,70,.35)}
-.driver-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
-.driver-card{background:#081827;border:1px solid #223854;border-radius:16px;padding:18px}
-.driver-card h3{margin:0 0 10px;color:#6ecbff}
-.driver-card p{margin:7px 0;color:#d6e2f0;font-size:14px}
-.driver-card strong{color:#8fb3d9}
-.status-badge{display:inline-block;margin-top:10px;padding:6px 12px;border-radius:999px;font-size:12px;font-weight:bold;text-transform:uppercase}
-.active{background:rgba(0,180,120,.15);color:#70ffc8;border:1px solid rgba(0,180,120,.35)}
-.inactive{background:rgba(255,70,70,.15);color:#ff9c9c;border:1px solid rgba(255,70,70,.35)}
-.onleave{background:rgba(255,193,7,.15);color:#ffd86b;border:1px solid rgba(255,193,7,.35)}
-.login-section{grid-column:span 3;background:#081827;border:1px solid #223854;border-radius:16px;padding:18px;display:none}
-.checkbox-row{grid-column:span 3;display:flex;align-items:center;gap:10px;background:#081827;border:1px solid #223854;border-radius:14px;padding:14px}
-.checkbox-row input{width:auto}
-input[type="date"]{color-scheme:dark}
-input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(1);cursor:pointer}
-@media(max-width:900px){.form-grid,.driver-grid{grid-template-columns:1fr}.login-section,.checkbox-row{grid-column:span 1}}
+
+*{
+  box-sizing:border-box;
+}
+
+body{
+  margin:0;
+  font-family:Arial,sans-serif;
+  background:#07111f;
+  color:#fff;
+}
+
+body::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  background:url('/logo.png') center center no-repeat;
+  background-size:380px;
+  opacity:.03;
+  pointer-events:none;
+}
+
+.container{
+  max-width:1400px;
+  margin:0 auto;
+  padding:0 20px 30px;
+}
+
+.hero,
+.card{
+  background:#0f1f33;
+  border:1px solid #20344d;
+  border-radius:24px;
+  padding:24px;
+  margin-bottom:24px;
+  box-shadow:0 18px 40px rgba(0,0,0,.25);
+}
+
+.hero{
+  position:sticky;
+  top:0;
+  z-index:50;
+  background:#0f1f33ee;
+  backdrop-filter:blur(12px);
+}
+
+.hero-top{
+  display:flex;
+  align-items:center;
+  gap:16px;
+}
+
+.hero-top img{
+  height:60px;
+  width:60px;
+  object-fit:contain;
+  background:#fff;
+  border-radius:16px;
+  padding:6px;
+}
+
+.hero h1{
+  margin:0 0 6px;
+  color:#6ecbff;
+}
+
+.hero p{
+  margin:0;
+  color:#b7c4d4;
+  line-height:1.6;
+}
+
+.form-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:14px;
+}
+
+label{
+  display:block;
+  margin-bottom:8px;
+  color:#9fb0c5;
+  font-size:14px;
+}
+
+input,
+select{
+  width:100%;
+  padding:14px;
+  border-radius:12px;
+  border:1px solid #29496d;
+  background:#081827;
+  color:#fff;
+}
+
+button{
+  padding:14px 18px;
+  border:none;
+  border-radius:14px;
+  background:linear-gradient(135deg,#00c2ff,#0066ff);
+  color:#fff;
+  font-weight:bold;
+  cursor:pointer;
+}
+
+button:hover{
+  opacity:.95;
+}
+
+.secondary-btn{
+  background:#334155;
+}
+
+.edit-btn{
+  padding:8px 14px;
+  border:none;
+  border-radius:10px;
+  background:linear-gradient(135deg,#00c2ff,#0066ff);
+  color:#fff;
+  cursor:pointer;
+  font-size:12px;
+  font-weight:bold;
+}
+
+#message{
+  display:none;
+  margin-bottom:18px;
+  padding:14px;
+  border-radius:14px;
+}
+
+.success{
+  display:block!important;
+  background:rgba(0,180,120,.15);
+  color:#70ffc8;
+  border:1px solid rgba(0,180,120,.35);
+}
+
+.error{
+  display:block!important;
+  background:rgba(255,70,70,.15);
+  color:#ff9c9c;
+  border:1px solid rgba(255,70,70,.35);
+}
+
+.checkbox-row{
+  grid-column:span 3;
+  display:flex;
+  align-items:center;
+  gap:10px;
+  background:#081827;
+  border:1px solid #223854;
+  border-radius:14px;
+  padding:14px;
+}
+
+.checkbox-row input{
+  width:auto;
+}
+
+.login-section{
+  grid-column:span 3;
+  background:#081827;
+  border:1px solid #223854;
+  border-radius:16px;
+  padding:18px;
+  display:none;
+}
+
+input[type="date"]{
+  color-scheme:dark;
+}
+
+.table-wrap{
+  overflow:auto;
+  border-radius:18px;
+}
+
+table{
+  width:100%;
+  min-width:1200px;
+  border-collapse:collapse;
+}
+
+thead{
+  position:sticky;
+  top:0;
+  z-index:5;
+  background:#10243a;
+}
+
+th{
+  padding:15px;
+  text-align:left;
+  border-bottom:1px solid #29496d;
+  color:#6ecbff;
+  font-size:14px;
+  white-space:nowrap;
+}
+
+td{
+  padding:15px;
+  border-bottom:1px solid #1d3248;
+  color:#d6e2f0;
+  font-size:14px;
+  white-space:nowrap;
+}
+
+tbody tr:hover{
+  background:#10243a;
+}
+
+.status-badge{
+  display:inline-block;
+  padding:6px 12px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:bold;
+  text-transform:uppercase;
+}
+
+.active{
+  background:rgba(0,180,120,.15);
+  color:#70ffc8;
+  border:1px solid rgba(0,180,120,.35);
+}
+
+.inactive{
+  background:rgba(255,70,70,.15);
+  color:#ff9c9c;
+  border:1px solid rgba(255,70,70,.35);
+}
+
+.onleave{
+  background:rgba(255,193,7,.15);
+  color:#ffd86b;
+  border:1px solid rgba(255,193,7,.35);
+}
+
+.top-row{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:14px;
+  margin-bottom:18px;
+  flex-wrap:wrap;
+}
+
+.search-box{
+  max-width:280px;
+  width:100%;
+}
+
+@media(max-width:950px){
+
+  .form-grid{
+    grid-template-columns:1fr;
+  }
+
+  .checkbox-row,
+  .login-section{
+    grid-column:span 1;
+  }
+
+  .container{
+    padding:0 14px 25px;
+  }
+
+  .hero{
+    position:relative;
+  }
+
+  .hero-top{
+    align-items:flex-start;
+  }
+
+  .hero-top img{
+    height:50px;
+    width:50px;
+  }
+}
+
 </style>
 </head>
 
@@ -42,7 +298,9 @@ input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(1);cursor:po
 <div class="app-layout">
 
 <div class="sidebar">
+
   <h2>Vehicall Fleet</h2>
+
   <a href="/fleet-dashboard">Dashboard</a>
 
   <div class="menu-group">
@@ -67,7 +325,7 @@ input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(1);cursor:po
 
   <div class="menu-group">
     <h3>People</h3>
-    <a href="/fleet-drivers">Drivers</a>
+    <a class="active" href="/fleet-drivers">Drivers</a>
     <a href="/fleet-users">Users</a>
     <a href="/fleet-assignments">Assignments</a>
   </div>
@@ -83,6 +341,7 @@ input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(1);cursor:po
   </div>
 
   <a href="/api/fleet/logout">Logout</a>
+
 </div>
 
 <main class="main-content">
@@ -90,46 +349,72 @@ input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(1);cursor:po
 <div class="container">
 
   <div class="hero">
-    <h1>Driver Management</h1>
-    <p>Add and manage fleet drivers, login access, license details, driver status and assigned vehicle visibility.</p>
+
+    <div class="hero-top">
+
+      <img src="/logo.png">
+
+      <div>
+        <h1>Driver Management</h1>
+        <p>
+          Manage fleet drivers, operational status, login access,
+          license validity, assigned vehicles and driver alert routing.
+        </p>
+      </div>
+
+    </div>
+
   </div>
 
   <div id="message"></div>
 
   <div class="card">
-    <h2>Add New Driver</h2>
+
+    <div class="top-row">
+      <h2 id="formTitle">Add New Driver</h2>
+
+      <button
+        type="button"
+        class="secondary-btn"
+        onclick="resetForm()">
+        Reset Form
+      </button>
+    </div>
 
     <form id="driverForm">
+
+      <input type="hidden" id="editingDriverId">
+
       <div class="form-grid">
 
         <div>
           <label>Driver Full Name</label>
-          <input type="text" name="driverName" placeholder="Enter Driver Full Name" required>
+          <input type="text" name="driverName" id="driverName" required>
         </div>
 
         <div>
           <label>Employee ID</label>
-          <input type="text" name="employeeId" placeholder="Enter Employee ID">
+          <input type="text" name="employeeId" id="employeeId">
         </div>
 
         <div>
           <label>Mobile Number</label>
-          <input type="tel" name="mobile" placeholder="Enter Driver Mobile Number" required>
+          <input type="tel" name="mobile" id="mobile" required>
         </div>
 
         <div>
           <label>Driving License Number</label>
-          <input type="text" name="licenseNumber" placeholder="Enter License Number">
+          <input type="text" name="licenseNumber" id="licenseNumber">
         </div>
 
         <div>
-          <label>Driving License Expiry Date</label>
-          <input type="date" name="licenseExpiry">
+          <label>Driving License Expiry</label>
+          <input type="date" name="licenseExpiry" id="licenseExpiry">
         </div>
 
         <div>
-          <label>Driver Status</label>
-          <select name="status">
+          <label>Status</label>
+          <select name="status" id="status">
             <option value="active">Active</option>
             <option value="inactive">Inactive</option>
             <option value="onleave">On Leave</option>
@@ -137,40 +422,114 @@ input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(1);cursor:po
         </div>
 
         <div class="checkbox-row">
-          <input type="checkbox" id="createLogin" name="createLogin" value="yes">
-          <label for="createLogin" style="margin:0;">Create login access for this driver now</label>
+
+          <input
+            type="checkbox"
+            id="createLogin"
+            name="createLogin"
+            value="yes">
+
+          <label for="createLogin" style="margin:0;">
+            Create driver login access now
+          </label>
+
         </div>
 
         <div class="login-section" id="loginSection">
+
           <div class="form-grid">
+
             <div>
               <label>Login Email</label>
-              <input type="email" name="loginEmail" placeholder="driver@company.com">
+              <input type="email" name="loginEmail" id="loginEmail">
             </div>
 
             <div>
               <label>Login Password</label>
-              <input type="password" name="loginPassword" placeholder="Minimum 6 characters">
+              <input type="password" name="loginPassword" id="loginPassword">
             </div>
 
             <div>
               <label>Confirm Password</label>
-              <input type="password" name="confirmPassword" placeholder="Re-enter password">
+              <input type="password" name="confirmPassword" id="confirmPassword">
             </div>
+
           </div>
+
         </div>
 
         <div style="display:flex;align-items:end;">
-          <button type="submit" style="width:100%;">Add Driver</button>
+          <button type="submit" style="width:100%;" id="submitBtn">
+            Add Driver
+          </button>
         </div>
 
       </div>
+
     </form>
+
   </div>
 
   <div class="card">
-    <h2>Fleet Drivers</h2>
-    <div id="driversList" class="driver-grid">Loading...</div>
+
+    <div class="top-row">
+
+      <div style="display:flex;align-items:center;gap:12px;">
+
+        <img src="/logo.png"
+             style="height:44px;width:44px;background:#fff;padding:4px;border-radius:12px;">
+
+        <div>
+          <h2 style="margin:0;">Fleet Drivers</h2>
+          <div style="color:#8fb3d9;font-size:13px;">
+            Vehicall Driver Operations
+          </div>
+        </div>
+
+      </div>
+
+      <input
+        type="text"
+        id="driverSearch"
+        class="search-box"
+        placeholder="Search driver...">
+
+    </div>
+
+    <div class="table-wrap">
+
+      <table>
+
+        <thead>
+
+          <tr>
+
+            <th>Driver</th>
+            <th>Employee ID</th>
+            <th>Mobile</th>
+            <th>License</th>
+            <th>Expiry</th>
+            <th>Assigned Vehicle</th>
+            <th>Login</th>
+            <th>Status</th>
+            <th>Actions</th>
+
+          </tr>
+
+        </thead>
+
+        <tbody id="driversList">
+
+          <tr>
+            <td colspan="9">Loading...</td>
+          </tr>
+
+        </tbody>
+
+      </table>
+
+    </div>
+
   </div>
 
 </div>
@@ -179,17 +538,22 @@ input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(1);cursor:po
 </div>
 
 <script>
+
 const form = document.getElementById("driverForm");
 const messageBox = document.getElementById("message");
 const driversList = document.getElementById("driversList");
 const createLogin = document.getElementById("createLogin");
 const loginSection = document.getElementById("loginSection");
+const searchBox = document.getElementById("driverSearch");
+
+let allDrivers = [];
 
 createLogin.addEventListener("change", function(){
   loginSection.style.display = this.checked ? "block" : "none";
 });
 
 function showMessage(text,type){
+
   messageBox.className = type;
   messageBox.textContent = text;
   messageBox.style.display = "block";
@@ -201,105 +565,271 @@ function showMessage(text,type){
 }
 
 function getStatusClass(status){
-  if(status === "active") return "active";
+
   if(status === "inactive") return "inactive";
   if(status === "onleave") return "onleave";
+
   return "active";
 }
 
 function formatStatus(status){
+
   if(status === "onleave") return "On Leave";
+
   return status || "active";
 }
 
+function resetForm(){
+
+  form.reset();
+
+  document.getElementById("editingDriverId").value = "";
+
+  document.getElementById("formTitle").textContent =
+    "Add New Driver";
+
+  document.getElementById("submitBtn").textContent =
+    "Add Driver";
+
+  loginSection.style.display = "none";
+}
+
+function editDriver(driver){
+
+  document.getElementById("editingDriverId").value = driver.id || "";
+
+  document.getElementById("driverName").value =
+    driver.driverName || "";
+
+  document.getElementById("employeeId").value =
+    driver.employeeId || "";
+
+  document.getElementById("mobile").value =
+    driver.mobile || "";
+
+  document.getElementById("licenseNumber").value =
+    driver.licenseNumber || "";
+
+  document.getElementById("licenseExpiry").value =
+    driver.licenseExpiry || "";
+
+  document.getElementById("status").value =
+    driver.status || "active";
+
+  document.getElementById("formTitle").textContent =
+    "Edit Driver";
+
+  document.getElementById("submitBtn").textContent =
+    "Update Driver";
+
+  window.scrollTo({
+    top:0,
+    behavior:"smooth"
+  });
+}
+
+function renderDrivers(drivers){
+
+  driversList.innerHTML = "";
+
+  if(!drivers.length){
+
+    driversList.innerHTML = `
+      <tr>
+        <td colspan="9">No drivers found.</td>
+      </tr>
+    `;
+
+    return;
+  }
+
+  drivers.forEach(driver=>{
+
+    const statusClass = getStatusClass(driver.status);
+
+    driversList.innerHTML += `
+      <tr>
+
+        <td>${driver.driverName || "-"}</td>
+
+        <td>${driver.employeeId || "-"}</td>
+
+        <td>${driver.mobile || "-"}</td>
+
+        <td>${driver.licenseNumber || "-"}</td>
+
+        <td>${driver.licenseExpiry || "-"}</td>
+
+        <td>${driver.assignedVehicleNumber || "Not Assigned"}</td>
+
+        <td>
+          ${driver.loginEnabled ? "Enabled" : "Not Enabled"}
+        </td>
+
+        <td>
+          <span class="status-badge ${statusClass}">
+            ${formatStatus(driver.status)}
+          </span>
+        </td>
+
+        <td>
+          <button
+            class="edit-btn"
+            onclick='editDriver(${JSON.stringify(driver)})'>
+            Edit
+          </button>
+        </td>
+
+      </tr>
+    `;
+  });
+}
+
 async function loadDrivers(){
+
   try{
+
     const res = await fetch("/api/fleet/drivers");
     const data = await res.json();
 
     if(!data.success){
-      driversList.innerHTML = "Please login to Fleet Dashboard.";
-      return;
-    }
 
-    driversList.innerHTML = "";
-
-    if(!data.drivers.length){
-      driversList.innerHTML = `<div class="driver-card">No drivers added yet.</div>`;
-      return;
-    }
-
-    data.drivers.forEach(driver=>{
-      const statusClass = getStatusClass(driver.status);
-
-      driversList.innerHTML += `
-        <div class="driver-card">
-          <h3>${driver.driverName || "-"}</h3>
-          <p><strong>Employee ID:</strong> ${driver.employeeId || "-"}</p>
-          <p><strong>Mobile:</strong> ${driver.mobile || "-"}</p>
-          <p><strong>License Number:</strong> ${driver.licenseNumber || "-"}</p>
-          <p><strong>License Expiry:</strong> ${driver.licenseExpiry || "-"}</p>
-          <p><strong>Assigned Vehicle:</strong> ${driver.assignedVehicleNumber || "Not Assigned"}</p>
-          <p><strong>Login Access:</strong> ${driver.loginEnabled ? "Enabled" : "Not Enabled"}</p>
-          <span class="status-badge ${statusClass}">${formatStatus(driver.status)}</span>
-        </div>
+      driversList.innerHTML = `
+        <tr>
+          <td colspan="9">Please login again.</td>
+        </tr>
       `;
-    });
+
+      return;
+    }
+
+    allDrivers = data.drivers || [];
+
+    renderDrivers(allDrivers);
 
   }catch(error){
+
     console.error(error);
-    driversList.innerHTML = "Unable to load drivers.";
+
+    driversList.innerHTML = `
+      <tr>
+        <td colspan="9">Unable to load drivers.</td>
+      </tr>
+    `;
   }
 }
 
+searchBox.addEventListener("input", function(){
+
+  const q = this.value.toLowerCase();
+
+  const filtered = allDrivers.filter(driver =>
+    (driver.driverName || "").toLowerCase().includes(q) ||
+    (driver.mobile || "").toLowerCase().includes(q) ||
+    (driver.employeeId || "").toLowerCase().includes(q)
+  );
+
+  renderDrivers(filtered);
+});
+
 form.addEventListener("submit", async function(e){
+
   e.preventDefault();
 
   const formData = new FormData(form);
+
   const data = Object.fromEntries(formData.entries());
 
+  const editingDriverId =
+    document.getElementById("editingDriverId").value;
+
   if(data.createLogin === "yes"){
-    if(!data.loginEmail || !data.loginPassword || !data.confirmPassword){
-      showMessage("Login email, password and confirm password are required.","error");
+
+    if(
+      !data.loginEmail ||
+      !data.loginPassword ||
+      !data.confirmPassword
+    ){
+      showMessage(
+        "Login email and password are required.",
+        "error"
+      );
       return;
     }
 
     if(data.loginPassword !== data.confirmPassword){
-      showMessage("Login password and confirm password do not match.","error");
+
+      showMessage(
+        "Passwords do not match.",
+        "error"
+      );
+
       return;
     }
 
     if(data.loginPassword.length < 6){
-      showMessage("Login password must be at least 6 characters.","error");
+
+      showMessage(
+        "Password must be minimum 6 characters.",
+        "error"
+      );
+
       return;
     }
   }
 
   try{
-    const res = await fetch("/api/fleet/drivers",{
-      method:"POST",
-      headers:{"Content-Type":"application/json"},
+
+    const url = editingDriverId
+      ? `/api/fleet/drivers/${editingDriverId}`
+      : "/api/fleet/drivers";
+
+    const method = editingDriverId
+      ? "PUT"
+      : "POST";
+
+    const res = await fetch(url,{
+      method,
+      headers:{
+        "Content-Type":"application/json"
+      },
       body:JSON.stringify(data)
     });
 
     const result = await res.json();
 
     if(result.success){
-      showMessage(result.message,"success");
-      form.reset();
-      loginSection.style.display = "none";
+
+      showMessage(
+        result.message || "Driver saved successfully",
+        "success"
+      );
+
+      resetForm();
+
       loadDrivers();
+
     }else{
-      showMessage(result.message || "Unable to add driver","error");
+
+      showMessage(
+        result.message || "Unable to save driver",
+        "error"
+      );
     }
 
   }catch(error){
+
     console.error(error);
-    showMessage("Server error while adding driver.","error");
+
+    showMessage(
+      "Server error while saving driver.",
+      "error"
+    );
   }
 });
 
 loadDrivers();
+
 </script>
 
 </body>

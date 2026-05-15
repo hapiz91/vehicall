@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Vehicall Fleet Vehicles</title>
+<link rel="stylesheet" href="/fleet-ui.css">
+
+<style>
+body{margin:0;font-family:Arial,sans-serif;background:#07111f;color:#fff}
+.container{max-width:1250px;margin:0 auto;padding:0 20px}
+.hero,.card{background:#0f1f33;border:1px solid #20344d;border-radius:20px;padding:24px;margin-bottom:24px}
+.hero h1{margin:0 0 8px}
+.hero p{margin:0;color:#b7c4d4;line-height:1.5}
+.form-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+label{display:block;margin-bottom:8px;color:#9fb0c5;font-size:14px}
+input,select{width:100%;padding:13px;border-radius:10px;border:1px solid #29496d;background:#081827;color:#fff;box-sizing:border-box}
+button{padding:13px 18px;border:none;border-radius:12px;background:linear-gradient(135deg,#00c2ff,#0066ff);color:#fff;font-weight:bold;cursor:pointer}
+#message{display:none;margin-bottom:18px;padding:13px;border-radius:12px}
+.success{display:block!important;background:rgba(0,180,120,.15);color:#70ffc8;border:1px solid rgba(0,180,120,.35)}
+.error{display:block!important;background:rgba(255,70,70,.15);color:#ff9c9c;border:1px solid rgba(255,70,70,.35)}
+.vehicle-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}
+.vehicle-card{background:#081827;border:1px solid #223854;border-radius:16px;padding:18px}
+.vehicle-card h3{margin:0 0 10px;color:#6ecbff}
+.vehicle-card p{margin:7px 0;color:#d6e2f0;font-size:14px}
+.vehicle-card strong{color:#8fb3d9}
+.qr-box{margin-top:12px;padding:12px;background:#0f1f33;border-radius:12px;border:1px dashed #29496d;word-break:break-all;font-size:13px;color:#b7c4d4}
+.qr-img{margin-top:12px;max-width:180px;background:#fff;padding:10px;border-radius:12px;display:none}
+.qr-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+.qr-actions button{font-size:13px;padding:10px 12px}
+.rental-fields{display:none}
+
+input[type="date"],
+input[type="datetime-local"],
+input[type="month"]{
+  color-scheme: dark;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="datetime-local"]::-webkit-calendar-picker-indicator,
+input[type="month"]::-webkit-calendar-picker-indicator{
+  filter: invert(1);
+  cursor: pointer;
+}
+
+@media(max-width:900px){
+.form-grid,.vehicle-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+
+<body>
+
+<div class="app-layout">
+
+<div class="sidebar">
+
+  <h2>Vehicall Fleet</h2>
+
+  <a href="/fleet-dashboard">Dashboard</a>
+
+  <div class="menu-group">
+    <h3>Operations</h3>
+
+    <a href="/fleet-checklist">Daily Checklist</a>
+    <a href="/fleet-daily-trips">Trips</a>
+    <a href="/fleet-replacements">Temporary Replacement</a>
+    <a href="/fleet-fines">Traffic Fines</a>
+  </div>
+
+  <div class="menu-group">
+    <h3>Fleet Assets</h3>
+
+    <a href="/fleet-vehicles">Vehicles</a>
+    <a href="/fleet-fuel-cards">Fuel Cards</a>
+  </div>
+
+  <div class="menu-group">
+    <h3>Fuel Management</h3>
+
+    <a href="/fleet-fuel">Fuel Entries</a>
+    <a href="/fleet-fuel-statements">Supplier Statements</a>
+  </div>
+
+  <div class="menu-group">
+    <h3>People</h3>
+
+    <a href="/fleet-drivers">Drivers</a>
+    <a href="/fleet-users">Users</a>
+    <a href="/fleet-assignments">Assignments</a>
+  </div>
+
+  <div class="menu-group">
+    <h3>Reports</h3>
+
+    <a href="/fleet-reports">Reports</a>
+  </div>
+
+  <div class="menu-group">
+    <h3>QR Fleet Alerts</h3>
+
+    <a href="/fleet-vehicles">Fleet QR</a>
+  </div>
+
+  <a href="/api/fleet/logout">Logout</a>
+
+</div>
+
+<main class="main-content">
+
+<div class="container">
+
+  <div class="hero">
+    <h1>Vehicle Management</h1>
+    <p>
+      Add and manage fleet vehicles using Oman standard plate format:
+      Plate Code + Plate Number. Example: BB-12345.
+    </p>
+  </div>
+
+  <div id="message"></div>
+
+  <div class="card">
+    <h2>Add New Vehicle</h2>
+
+    <form id="vehicleForm">
+      <div class="form-grid">
+
+        <div>
+          <label>Vehicle Category</label>
+          <select name="vehicleCategory" id="vehicleCategory" onchange="handleVehicleCategoryChange()">
+            <option value="normal">Normal Fleet Vehicle</option>
+            <option value="replacement">Replacement Vehicle</option>
+          </select>
+        </div>
+
+        <div>
+          <label>Ownership Type</label>
+          <select name="ownershipType" id="ownershipType" onchange="toggleRentalFields()">
+            <option value="Company Owned">Company Owned</option>
+            <option value="Rented">Rented</option>
+          </select>
+        </div>
+
+        <div class="rental-fields">
+          <label>Rental Company Name</label>
+          <input type="text" name="rentalCompanyName" placeholder="Rental company name">
+        </div>
+
+        <div class="rental-fields">
+          <label>Rental Agreement No</label>
+          <input type="text" name="rentalAgreementNo" placeholder="Agreement / Contract Number">
+        </div>
+
+        <div class="rental-fields">
+          <label>Rental Start Date</label>
+          <input type="date" name="rentalStartDate">
+        </div>
+
+        <div class="rental-fields">
+          <label>Rental Expiry Date</label>
+          <input type="date" name="rentalExpiryDate">
+        </div>
+
+        <div>
+          <label>Plate Code</label>
+          <input type="text" name="plateCode" placeholder="Example: BB" required>
+        </div>
+
+        <div>
+          <label>Plate Number</label>
+          <input type="number" name="plateNumber" placeholder="12345" required>
+        </div>
+
+        <div>
+          <label>Vehicle Type</label>
+          <input type="text" name="vehicleType" placeholder="Van, Truck, Bus, Pickup">
+        </div>
+
+        <div>
+          <label>Vehicle Brand</label>
+          <input type="text" name="brand" placeholder="Toyota, Nissan, Hyundai">
+        </div>
+
+        <div>
+          <label>Vehicle Model</label>
+          <input type="text" name="model" placeholder="Hiace, Patrol, Actros">
+        </div>
+
+        <div>
+          <label>Manufacturing Year</label>
+          <input type="number" name="year" placeholder="2026">
+        </div>
+
+        <div>
+          <label>Vehicle Status</label>
+          <select name="status">
+            <option value="active">Active</option>
+            <option value="maintenance">Under Maintenance</option>
+            <option value="inactive">Inactive</option>
+          </select>
+        </div>
+
+        <div>
+          <label>Mulkiya Expiry Date</label>
+          <input type="date" name="mulkiyaExpiry">
+        </div>
+
+        <div>
+          <label>Insurance Expiry Date</label>
+          <input type="date" name="insuranceExpiry">
+        </div>
+
+        <div style="display:flex;align-items:end;">
+          <button type="submit" style="width:100%;">Add Vehicle</button>
+        </div>
+
+      </div>
+    </form>
+  </div>
+
+  <div class="card">
+    <h2>Fleet Vehicles</h2>
+    <div id="vehiclesList" class="vehicle-grid">Loading...</div>
+  </div>
+
+</div>
+
+</main>
+</div>
+
+<script>
+const form = document.getElementById("vehicleForm");
+const messageBox = document.getElementById("message");
+const vehiclesList = document.getElementById("vehiclesList");
+
+function showMessage(text,type){
+  messageBox.className = type;
+  messageBox.textContent = text;
+  messageBox.style.display = "block";
+
+  setTimeout(()=>{
+    messageBox.className = "";
+    messageBox.style.display = "none";
+  },4000);
+}
+
+function handleVehicleCategoryChange(){
+  const category = document.getElementById("vehicleCategory").value;
+
+  if(category === "replacement"){
+    window.location.href = "/fleet-replacements";
+  }
+}
+
+function toggleRentalFields(){
+  const ownershipType = document.getElementById("ownershipType").value;
+
+  document.querySelectorAll(".rental-fields").forEach(field=>{
+    field.style.display = ownershipType === "Rented" ? "block" : "none";
+  });
+}
+
+async function loadVehicles(){
+  try{
+    const res = await fetch("/api/fleet/vehicles");
+    const data = await res.json();
+
+    if(!data.success){
+      vehiclesList.innerHTML = "Please login to Fleet Dashboard.";
+      return;
+    }
+
+    vehiclesList.innerHTML = "";
+
+    if(!data.vehicles.length){
+      vehiclesList.innerHTML = `<div class="vehicle-card">No vehicles added yet.</div>`;
+      return;
+    }
+
+    data.vehicles.forEach(vehicle=>{
+      vehiclesList.innerHTML += `
+        <div class="vehicle-card">
+          <h3>${vehicle.vehicleNumber || "-"}</h3>
+
+          <p><strong>Category:</strong> ${vehicle.vehicleCategory || "normal"}</p>
+          <p><strong>Ownership:</strong> ${vehicle.ownershipType || "Company Owned"}</p>
+          <p><strong>Type:</strong> ${vehicle.vehicleType || "-"}</p>
+          <p><strong>Brand:</strong> ${vehicle.brand || "-"}</p>
+          <p><strong>Model:</strong> ${vehicle.model || "-"}</p>
+          <p><strong>Year:</strong> ${vehicle.year || "-"}</p>
+          <p><strong>Status:</strong> ${vehicle.status || "-"}</p>
+          <p><strong>Assigned Driver:</strong> ${vehicle.assignedDriverName || "Not Assigned"}</p>
+        </div>
+      `;
+    });
+
+  }catch(error){
+    console.error(error);
+    vehiclesList.innerHTML = "Unable to load vehicles.";
+  }
+}
+
+form.addEventListener("submit",async function(e){
+  e.preventDefault();
+
+  const formData = new FormData(form);
+  const data = Object.fromEntries(formData.entries());
+
+  try{
+    const res = await fetch("/api/fleet/vehicles",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify(data)
+    });
+
+    const result = await res.json();
+
+    if(result.success){
+      showMessage(result.message,"success");
+      form.reset();
+      toggleRentalFields();
+      loadVehicles();
+    }else{
+      showMessage(result.message || "Unable to add vehicle","error");
+    }
+
+  }catch(error){
+    console.error(error);
+    showMessage("Server error while adding vehicle.","error");
+  }
+});
+
+toggleRentalFields();
+loadVehicles();
+</script>
+
+</body>
+</html>

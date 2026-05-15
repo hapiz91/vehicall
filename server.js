@@ -1692,6 +1692,61 @@ app.get('/api/fleet/drivers', requireFleet, async (req, res) => {
   }
 });
 
+app.put('/api/fleet/drivers/:driverId', requireFleet, async (req, res) => {
+  try {
+    const companyId = req.session.fleetCompanyId;
+    const { driverId } = req.params;
+
+    const {
+      driverName,
+      employeeId,
+      mobile,
+      licenseNumber,
+      licenseExpiry,
+      status
+    } = req.body;
+
+    if (!driverName || !mobile) {
+      return res.status(400).json({
+        success: false,
+        message: 'Driver name and mobile are required'
+      });
+    }
+
+    const driverRef = db.collection('fleetDrivers').doc(driverId);
+    const driverDoc = await driverRef.get();
+
+    if (!driverDoc.exists || driverDoc.data().companyId !== companyId) {
+      return res.status(404).json({
+        success: false,
+        message: 'Driver not found'
+      });
+    }
+
+    await driverRef.update({
+      driverName,
+      employeeId: employeeId || '',
+      mobile: cleanMobile(mobile),
+      licenseNumber: licenseNumber || '',
+      licenseExpiry: licenseExpiry || '',
+      status: status || 'active',
+      updatedAt: new Date().toISOString()
+    });
+
+    res.json({
+      success: true,
+      message: 'Driver updated successfully'
+    });
+
+  } catch (err) {
+    console.error('Driver update error:', err);
+    res.status(500).json({
+      success: false,
+      message: 'Driver update error'
+    });
+  }
+});
+
 app.get('/driver-login', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'driver-login.html'));
 });
@@ -5047,6 +5102,7 @@ app.post('/send-fleet-alert', async (req, res) => {
 
     if (!qr_id || !alert_type) {
       return res.status(400).json({
+        success: false,
         message: 'QR ID and alert type are required'
       });
     }
@@ -5055,6 +5111,7 @@ app.post('/send-fleet-alert', async (req, res) => {
 
     if (!alertLabel) {
       return res.status(400).json({
+        success: false,
         message: 'Invalid fleet alert type selected'
       });
     }
@@ -5066,6 +5123,7 @@ app.post('/send-fleet-alert', async (req, res) => {
 
     if (vehicleSnapshot.empty) {
       return res.status(404).json({
+        success: false,
         message: 'No active fleet vehicle found for this QR'
       });
     }
@@ -5080,6 +5138,7 @@ app.post('/send-fleet-alert', async (req, res) => {
 
     if (!companyDoc.exists) {
       return res.status(404).json({
+        success: false,
         message: 'Fleet company not found'
       });
     }
@@ -5088,48 +5147,110 @@ app.post('/send-fleet-alert', async (req, res) => {
 
     if (company.status !== 'active' || !company.alertsEnabled) {
       return res.status(400).json({
+        success: false,
         message: 'Fleet alert service is not active for this company'
       });
     }
 
-    let assignedDriverMobile = '';
-    let assignedDriverName = vehicle.assignedDriverName || '';
-    let assignedDriverId = vehicle.assignedDriverId || '';
+    const now = new Date().toISOString();
+    const today = now.slice(0, 10);
 
-    if (assignedDriverId) {
-      const driverDoc = await db.collection('fleetDrivers')
-        .doc(assignedDriverId)
-        .get();
+    let responsibleDriverId = '';
+    let responsibleDriverName = '';
+    let responsibleDriverMobile = '';
+    let responsibilitySource = 'not_assigned';
+    let activeTripId = '';
 
-      if (driverDoc.exists) {
-        const driver = driverDoc.data();
+    const activeTripSnapshot = await db.collection('fleetDailyTrips')
+      .where('companyId', '==', vehicle.companyId)
+      .where('vehicleId', '==', vehicleDocId)
+      .where('status', '==', 'active')
+      .get();
 
-        if (driver.companyId === vehicle.companyId) {
-          assignedDriverName = driver.driverName || assignedDriverName;
-          assignedDriverMobile = cleanMobile(driver.mobile || '');
+    let activeTrip = null;
+
+    if (!activeTripSnapshot.empty) {
+      const activeTrips = activeTripSnapshot.docs
+        .map(doc => ({ id: doc.id, ...doc.data() }))
+        .filter(t => !t.tripDate || t.tripDate === today)
+        .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+
+      if (activeTrips.length) {
+        activeTrip = activeTrips[0];
+      }
+    }
+
+    if (activeTrip) {
+      activeTripId = activeTrip.id;
+      responsibleDriverId = activeTrip.driverId || '';
+      responsibleDriverName = activeTrip.driverName || '';
+      responsibilitySource = 'active_daily_trip';
+
+      if (responsibleDriverId) {
+        const tripDriverDoc = await db.collection('fleetDrivers')
+          .doc(responsibleDriverId)
+          .get();
+
+        if (
+          tripDriverDoc.exists &&
+          tripDriverDoc.data().companyId === vehicle.companyId
+        ) {
+          responsibleDriverMobile = cleanMobile(tripDriverDoc.data().mobile || '');
+          responsibleDriverName = tripDriverDoc.data().driverName || responsibleDriverName;
         }
       }
     }
 
-    const now = new Date().toISOString();
+    if (!responsibleDriverId && vehicle.assignedDriverId) {
+      const driverDoc = await db.collection('fleetDrivers')
+        .doc(vehicle.assignedDriverId)
+        .get();
 
-    const driverMessage = assignedDriverMobile
+      if (
+        driverDoc.exists &&
+        driverDoc.data().companyId === vehicle.companyId
+      ) {
+        const driver = driverDoc.data();
+
+        responsibleDriverId = vehicle.assignedDriverId;
+        responsibleDriverName = driver.driverName || vehicle.assignedDriverName || '';
+        responsibleDriverMobile = cleanMobile(driver.mobile || '');
+        responsibilitySource = 'vehicle_master_assignment';
+      }
+    }
+
+    const notifySupervisor =
+      company.fleetAlertSupervisorNotify === undefined
+        ? true
+        : !!company.fleetAlertSupervisorNotify;
+
+    const supervisorMobile = notifySupervisor
+      ? cleanMobile(company.fleetAlertSupervisorMobile || company.mobile || '')
+      : '';
+
+    const driverMessage = responsibleDriverMobile
       ? `Vehicall Fleet Alert
 
 Vehicle: ${vehicle.vehicleNumber}
 Alert: ${alertLabel}
+Responsibility Source: ${responsibilitySource}
 Action Required: Please attend to the vehicle immediately.
 
 - Vehicall Fleet`
       : '';
 
-    const adminMessage = `Vehicall Fleet Alert
+    const supervisorMessage = supervisorMobile
+      ? `Vehicall Fleet Alert
 
 Company: ${company.companyName}
 Vehicle: ${vehicle.vehicleNumber}
 Alert: ${alertLabel}
-Assigned Driver: ${assignedDriverName || 'Not Assigned'}
-Time: ${new Date().toLocaleString()}`;
+Responsible Driver: ${responsibleDriverName || 'Not Assigned'}
+Source: ${responsibilitySource}
+Time: ${new Date().toLocaleString()}
+
+- Vehicall Fleet`
+      : '';
 
     const alertRef = await db.collection('fleetAlerts').add({
       companyId: vehicle.companyId,
@@ -5141,15 +5262,20 @@ Time: ${new Date().toLocaleString()}`;
       alertType: alert_type,
       alertLabel,
 
-      assignedDriverId,
-      assignedDriverName,
-      assignedDriverMobile,
+      responsibleDriverId,
+      responsibleDriverName,
+      responsibleDriverMobile,
+      responsibilitySource,
+      activeTripId,
+
+      supervisorNotify: notifySupervisor,
+      supervisorMobile,
 
       driverMessage,
-      adminMessage,
+      supervisorMessage,
 
       driverNotified: false,
-      adminNotified: false,
+      supervisorNotified: false,
 
       location: location || '',
       source: 'public_fleet_qr',
@@ -5165,8 +5291,8 @@ Time: ${new Date().toLocaleString()}`;
       vehicleId: vehicleDocId,
       vehicleNumber: vehicle.vehicleNumber,
 
-      driverId: assignedDriverId,
-      driverName: assignedDriverName,
+      driverId: responsibleDriverId,
+      driverName: responsibleDriverName,
 
       incidentType: alertLabel,
       priority: alert_type === 'EMERGENCY' ? 'high' : 'medium',
@@ -5179,27 +5305,41 @@ Time: ${new Date().toLocaleString()}`;
       source: 'public_fleet_qr',
       alertId: alertRef.id,
 
+      responsibilitySource,
+      activeTripId,
+
       createdAt: now,
       updatedAt: now
     });
 
     await vehicleRef.update({
-      lastFleetAlertAt: now
+      lastFleetAlertAt: now,
+      lastFleetAlertType: alert_type,
+      lastFleetAlertResponsibleDriverId: responsibleDriverId,
+      lastFleetAlertResponsibleDriverName: responsibleDriverName,
+      lastFleetAlertResponsibilitySource: responsibilitySource
     });
 
     res.json({
       success: true,
-      message: 'Fleet alert sent successfully',
+      message: 'Fleet alert created successfully',
       vehicleNumber: vehicle.vehicleNumber,
       issue: alertLabel,
-      assignedDriverName: assignedDriverName || '',
-      driverNotificationReady: !!assignedDriverMobile,
-      driverMobile: assignedDriverMobile || ''
+
+      responsibleDriverName,
+      responsibilitySource,
+
+      driverNotificationReady: !!responsibleDriverMobile,
+      driverMobile: responsibleDriverMobile || '',
+
+      supervisorNotificationReady: !!supervisorMobile,
+      supervisorMobile: supervisorMobile || ''
     });
 
   } catch (err) {
     console.error('Fleet alert error:', err);
     res.status(500).json({
+      success: false,
       message: 'Fleet alert error'
     });
   }

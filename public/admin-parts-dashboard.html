@@ -36,10 +36,25 @@
     .card span{color:#8fa8c2;font-size:13px;font-weight:800}
     .card strong{display:block;margin-top:10px;font-size:30px;color:#f59e0b}
 
-    .panel{background:#0f1f33;border:1px solid #20344d;border-radius:24px;padding:22px}
+    .tabs{display:flex;gap:10px;margin-bottom:18px;flex-wrap:wrap}
+    .tab-btn{
+      border:none;border-radius:14px;padding:12px 16px;font-weight:900;cursor:pointer;
+      background:#0f1f33;color:#cbd5e1;border:1px solid #20344d;
+    }
+    .tab-btn.active{background:linear-gradient(135deg,#f59e0b,#fb923c);color:#111827}
+
+    .panel{background:#0f1f33;border:1px solid #20344d;border-radius:24px;padding:22px;margin-bottom:24px}
+    .panel-title{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:18px;flex-wrap:wrap}
+    .panel-title h2{font-size:22px}
 
     .filters{display:grid;grid-template-columns:1.5fr 180px 190px 160px;gap:12px;margin-bottom:18px}
-    input,select{width:100%;padding:13px;border-radius:14px;border:1px solid #29496d;background:#081827;color:#fff;outline:none}
+    .upgrade-filters{display:grid;grid-template-columns:1.7fr 170px 170px 150px;gap:12px;margin-bottom:18px}
+
+    input,select,textarea{
+      width:100%;padding:13px;border-radius:14px;border:1px solid #29496d;background:#081827;color:#fff;outline:none;
+    }
+
+    textarea{min-height:80px;resize:vertical}
 
     table{width:100%;border-collapse:collapse}
     th,td{padding:14px;text-align:left;border-bottom:1px solid rgba(255,255,255,.08);font-size:13px;vertical-align:top}
@@ -52,10 +67,29 @@
 
     .badge{display:inline-block;padding:6px 10px;border-radius:999px;font-size:12px;font-weight:900}
     .pending{background:rgba(250,204,21,.15);color:#fde68a}
-    .active{background:rgba(34,197,94,.15);color:#bbf7d0}
+    .active,.approved{background:rgba(34,197,94,.15);color:#bbf7d0}
     .rejected{background:rgba(239,68,68,.15);color:#fecaca}
     .suspended{background:rgba(148,163,184,.15);color:#cbd5e1}
     .featured{background:rgba(0,194,255,.15);color:#bae6fd;margin-top:6px}
+    .payment{background:rgba(14,165,233,.15);color:#bae6fd}
+
+    .token{
+      display:inline-block;
+      background:#081827;
+      border:1px solid #29496d;
+      color:#facc15;
+      padding:8px 10px;
+      border-radius:12px;
+      font-weight:900;
+      letter-spacing:.03em;
+      margin-bottom:6px;
+    }
+
+    .amount{
+      color:#38bdf8;
+      font-weight:900;
+      font-size:15px;
+    }
 
     .actions{display:flex;gap:8px;flex-wrap:wrap}
     button,.btn{
@@ -68,14 +102,51 @@
     .open-btn{background:linear-gradient(135deg,#00c2ff,#0066ff);color:#fff}
     .copy-btn{background:#f59e0b;color:#111827}
     .refresh-btn{background:linear-gradient(135deg,#f59e0b,#fb923c);color:#111827;padding:12px 16px}
+    .ghost-btn{background:#334155;color:#e2e8f0}
 
     .empty{text-align:center;color:#94a3b8;padding:24px}
+
+    .hidden{display:none}
+
+    .modal-overlay{
+      position:fixed;inset:0;background:rgba(2,6,23,.82);backdrop-filter:blur(8px);
+      z-index:5000;display:none;align-items:center;justify-content:center;padding:18px;
+    }
+
+    .modal{
+      width:100%;max-width:620px;background:#0b1728;border:1px solid rgba(255,255,255,.10);
+      border-radius:24px;padding:24px;box-shadow:0 30px 90px rgba(0,0,0,.55);
+    }
+
+    .modal h3{font-size:24px;margin-bottom:8px;color:#facc15}
+    .modal p{color:#94a3b8;line-height:1.5;margin-bottom:16px}
+
+    .payment-grid{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:12px;
+      margin-bottom:14px;
+    }
+
+    .payment-summary{
+      background:#081827;
+      border:1px solid #29496d;
+      border-radius:16px;
+      padding:14px;
+      margin-bottom:14px;
+      color:#cbd5e1;
+      line-height:1.8;
+    }
+
+    .payment-summary strong{color:#facc15}
+
+    .modal-actions{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap;margin-top:14px}
 
     @media(max-width:1100px){
       body{display:block}
       aside{position:relative;width:100%;height:auto}
       main{margin-left:0;width:100%}
-      .cards,.filters{grid-template-columns:1fr}
+      .cards,.filters,.upgrade-filters,.payment-grid{grid-template-columns:1fr}
       table{display:block;overflow-x:auto;white-space:nowrap}
     }
   </style>
@@ -101,21 +172,33 @@
   <div class="topbar">
     <div>
       <h1>Parts Marketplace Admin</h1>
-      <p class="muted">Manage shop approvals, storefront links, listings, inquiries and shop status.</p>
+      <p class="muted">Manage shops, upgrade requests, payment reconciliation and package approvals.</p>
     </div>
 
-    <button class="refresh-btn" onclick="loadShops()">Refresh</button>
+    <button class="refresh-btn" onclick="refreshAll()">Refresh</button>
   </div>
 
   <section class="cards">
     <div class="card"><span>Total Shops</span><strong id="totalShops">0</strong></div>
-    <div class="card"><span>Pending</span><strong id="pendingShops">0</strong></div>
-    <div class="card"><span>Active</span><strong id="activeShops">0</strong></div>
-    <div class="card"><span>Rejected</span><strong id="rejectedShops">0</strong></div>
+    <div class="card"><span>Pending Shops</span><strong id="pendingShops">0</strong></div>
+    <div class="card"><span>Active Shops</span><strong id="activeShops">0</strong></div>
+    <div class="card"><span>Pending Upgrades</span><strong id="pendingUpgrades">0</strong></div>
     <div class="card"><span>Total Inquiries</span><strong id="totalInquiries">0</strong></div>
   </section>
 
-  <section class="panel">
+  <div class="tabs">
+    <button class="tab-btn active" id="shopTabBtn" onclick="showTab('shops')">Shop Management</button>
+    <button class="tab-btn" id="upgradeTabBtn" onclick="showTab('upgrades')">Upgrade Requests</button>
+  </div>
+
+  <section class="panel" id="shopsPanel">
+
+    <div class="panel-title">
+      <div>
+        <h2>Registered Parts Shops</h2>
+        <p class="muted">Approve shops, feature shops, suspend or reject applications.</p>
+      </div>
+    </div>
 
     <div class="filters">
       <input type="text" id="searchInput" placeholder="Search shop, owner, mobile, email, location..." oninput="renderShops()">
@@ -154,8 +237,8 @@
           <th>Shop</th>
           <th>Contact</th>
           <th>Location</th>
+          <th>Package</th>
           <th>Listings</th>
-          <th>Inquiries</th>
           <th>Status</th>
           <th>Storefront</th>
           <th>Actions</th>
@@ -169,10 +252,104 @@
 
   </section>
 
+  <section class="panel hidden" id="upgradesPanel">
+
+    <div class="panel-title">
+      <div>
+        <h2>Package Upgrade Requests</h2>
+        <p class="muted">Search by token number, verify payment, then approve package activation.</p>
+      </div>
+    </div>
+
+    <div class="upgrade-filters">
+      <input type="text" id="upgradeSearchInput" placeholder="Search token, shop, mobile, email..." oninput="renderUpgradeRequests()">
+
+      <select id="upgradeStatusFilter" onchange="renderUpgradeRequests()">
+        <option value="">All Status</option>
+        <option value="pending">Pending</option>
+        <option value="approved">Approved</option>
+        <option value="rejected">Rejected</option>
+      </select>
+
+      <select id="upgradePackageFilter" onchange="renderUpgradeRequests()">
+        <option value="">All Packages</option>
+        <option value="basic">Basic</option>
+        <option value="plus">Plus</option>
+        <option value="premium">Premium</option>
+      </select>
+
+      <select id="upgradeBillingFilter" onchange="renderUpgradeRequests()">
+        <option value="">All Billing</option>
+        <option value="monthly">Monthly</option>
+        <option value="yearly">Yearly</option>
+      </select>
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Token / Date</th>
+          <th>Shop</th>
+          <th>Package</th>
+          <th>Amount</th>
+          <th>Payment Info</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+
+      <tbody id="upgradeRequestsTable">
+        <tr><td colspan="7" class="empty">Loading upgrade requests...</td></tr>
+      </tbody>
+    </table>
+
+  </section>
+
 </main>
+
+<div class="modal-overlay" id="paymentModal">
+  <div class="modal">
+    <h3>Approve Upgrade Payment</h3>
+    <p>Enter payment details for accounting reconciliation before approving the package.</p>
+
+    <div class="payment-summary" id="paymentSummary">
+      Loading request...
+    </div>
+
+    <div class="payment-grid">
+      <div>
+        <label class="muted">Payment Received Date</label>
+        <input type="date" id="paymentReceivedDate">
+      </div>
+
+      <div>
+        <label class="muted">Bank Name</label>
+        <input type="text" id="bankName" placeholder="Example: Bank Muscat">
+      </div>
+
+      <div>
+        <label class="muted">Transaction Number</label>
+        <input type="text" id="transactionNumber" placeholder="Bank transfer / receipt reference">
+      </div>
+
+      <div>
+        <label class="muted">Payment Remarks</label>
+        <input type="text" id="paymentRemarks" placeholder="Optional remarks">
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="ghost-btn" onclick="closePaymentModal()">Cancel</button>
+      <button class="approve-btn" onclick="submitApproveUpgrade()">Approve & Activate Package</button>
+    </div>
+  </div>
+</div>
 
 <script>
 let allShops = [];
+let allUpgradeRequests = [];
+let selectedUpgradeRequestId = "";
+let selectedUpgradeRequest = null;
 
 function shortId(id){
   if(!id) return '-';
@@ -184,15 +361,46 @@ function badge(status){
   return `<span class="badge ${s}">${s.toUpperCase()}</span>`;
 }
 
+function formatAmount(value){
+  return Number(value || 0).toFixed(3);
+}
+
+function formatDate(value){
+  if(!value) return '-';
+  try{
+    return new Date(value).toLocaleString();
+  }catch(e){
+    return value;
+  }
+}
+
 function shopLink(shopId){
-  return `${window.location.origin}/parts-shop-profile.html?id=${shopId}`;
+  return `${window.location.origin}/parts-shop-profile.html?shopId=${shopId}`;
+}
+
+function copyText(text, label){
+  navigator.clipboard.writeText(text)
+    .then(()=>alert(`${label || 'Text'} copied`))
+    .catch(()=>prompt(`Copy this ${label || 'text'}:`, text));
 }
 
 function copyShopLink(shopId){
-  const link = shopLink(shopId);
-  navigator.clipboard.writeText(link)
-    .then(()=>alert('Shop profile link copied'))
-    .catch(()=>prompt('Copy this shop link:', link));
+  copyText(shopLink(shopId), 'Shop profile link');
+}
+
+function showTab(tab){
+  document.getElementById('shopsPanel').classList.toggle('hidden', tab !== 'shops');
+  document.getElementById('upgradesPanel').classList.toggle('hidden', tab !== 'upgrades');
+
+  document.getElementById('shopTabBtn').classList.toggle('active', tab === 'shops');
+  document.getElementById('upgradeTabBtn').classList.toggle('active', tab === 'upgrades');
+}
+
+async function refreshAll(){
+  await Promise.all([
+    loadShops(),
+    loadUpgradeRequests()
+  ]);
 }
 
 async function loadShops(){
@@ -216,11 +424,35 @@ async function loadShops(){
   }
 }
 
+async function loadUpgradeRequests(){
+  const tbody = document.getElementById('upgradeRequestsTable');
+  tbody.innerHTML = `<tr><td colspan="7" class="empty">Loading upgrade requests...</td></tr>`;
+
+  try{
+    const res = await fetch('/admin/parts-upgrade-requests');
+    const data = await res.json();
+
+    if(!data.success){
+      throw new Error(data.message || 'Unable to load upgrade requests');
+    }
+
+    allUpgradeRequests = data.requests || [];
+    updateStats();
+    renderUpgradeRequests();
+
+  }catch(err){
+    tbody.innerHTML = `<tr><td colspan="7" class="empty">${err.message}</td></tr>`;
+  }
+}
+
 function updateStats(){
   document.getElementById('totalShops').textContent = allShops.length;
   document.getElementById('pendingShops').textContent = allShops.filter(s => s.status === 'pending').length;
   document.getElementById('activeShops').textContent = allShops.filter(s => s.status === 'active').length;
-  document.getElementById('rejectedShops').textContent = allShops.filter(s => s.status === 'rejected').length;
+
+  document.getElementById('pendingUpgrades').textContent =
+    allUpgradeRequests.filter(r => r.status === 'pending').length;
+
   document.getElementById('totalInquiries').textContent =
     allShops.reduce((sum,s)=>sum + Number(s.totalInquiries || 0),0);
 }
@@ -235,7 +467,8 @@ function renderShops(){
   let rows = allShops.filter(shop => {
     const text = [
       shop.shopName, shop.ownerName, shop.mobile, shop.whatsapp,
-      shop.email, shop.location, shop.governorate, shop.shopType, shop.brands
+      shop.email, shop.location, shop.governorate, shop.shopType, shop.brands,
+      shop.packageLabel, shop.currentPackage, shop.lastUpgradeToken
     ].join(' ').toLowerCase();
 
     return (!search || text.includes(search)) &&
@@ -253,7 +486,7 @@ function renderShops(){
     <tr>
       <td>
         <div class="shop-cell">
-          <img class="shop-avatar" src="${shop.logoUrl || '/logo.png'}" onerror="this.src='/logo.png'">
+          <img class="shop-avatar" src="${shop.logoUrl || shop.shopLogoUrl || '/logo.png'}" onerror="this.src='/logo.png'">
           <div>
             <div class="shop-name">${shop.shopName || '-'}</div>
             <div class="muted">${shop.ownerName || '-'}</div>
@@ -275,19 +508,21 @@ function renderShops(){
       </td>
 
       <td>
-        <strong>${shop.totalListings || 0}</strong><br>
-        <span class="muted">Active: ${shop.activeListings || 0}</span>
+        <strong>${shop.packageLabel || 'Welcome Plan'}</strong><br>
+        <span class="muted">${shop.billingCycle || 'trial'}</span><br>
+        ${shop.lastUpgradeToken ? `<span class="token">${shop.lastUpgradeToken}</span>` : ''}
       </td>
 
       <td>
-        <strong>${shop.totalInquiries || 0}</strong>
+        <strong>${shop.totalListings || 0}</strong><br>
+        <span class="muted">Active: ${shop.activeListings || 0}</span>
       </td>
 
       <td>${badge(shop.status)}</td>
 
       <td>
         <div class="actions">
-          <a class="btn open-btn" href="/parts-shop-profile.html?id=${shop.id}" target="_blank">Open Shop</a>
+          <a class="btn open-btn" href="/parts-shop-profile.html?shopId=${shop.id}" target="_blank">Open Shop</a>
           <button class="copy-btn" onclick="copyShopLink('${shop.id}')">Copy Link</button>
         </div>
       </td>
@@ -297,9 +532,88 @@ function renderShops(){
           <button class="approve-btn" onclick="updateShopStatus('${shop.id}','active')">Approve</button>
           <button class="reject-btn" onclick="updateShopStatus('${shop.id}','rejected')">Reject</button>
           <button class="suspend-btn" onclick="updateShopStatus('${shop.id}','suspended')">Suspend</button>
-<button class="copy-btn" onclick="toggleFeaturedShop('${shop.id}', ${shop.isFeatured ? 'false' : 'true'})">
-  ${shop.isFeatured ? 'Remove Featured' : 'Feature'}
-</button>
+          <button class="copy-btn" onclick="toggleFeaturedShop('${shop.id}', ${shop.isFeatured ? 'false' : 'true'})">
+            ${shop.isFeatured ? 'Remove Featured' : 'Feature'}
+          </button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function renderUpgradeRequests(){
+  const tbody = document.getElementById('upgradeRequestsTable');
+
+  const search = document.getElementById('upgradeSearchInput').value.toLowerCase().trim();
+  const status = document.getElementById('upgradeStatusFilter').value;
+  const packageFilter = document.getElementById('upgradePackageFilter').value;
+  const billingFilter = document.getElementById('upgradeBillingFilter').value;
+
+  let rows = allUpgradeRequests.filter(r => {
+    const text = [
+      r.upgradeToken, r.shopName, r.ownerName, r.mobile, r.whatsapp, r.email,
+      r.requestedPackageLabel, r.billingCycle, r.status, r.transactionNumber, r.bankName
+    ].join(' ').toLowerCase();
+
+    return (!search || text.includes(search)) &&
+           (!status || r.status === status) &&
+           (!packageFilter || r.requestedPackage === packageFilter) &&
+           (!billingFilter || r.billingCycle === billingFilter);
+  });
+
+  if(!rows.length){
+    tbody.innerHTML = `<tr><td colspan="7" class="empty">No upgrade requests found.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = rows.map(r => `
+    <tr>
+      <td>
+        <span class="token">${r.upgradeToken || '-'}</span><br>
+        <button class="copy-btn" onclick="copyText('${r.upgradeToken || ''}', 'Token')">Copy Token</button><br>
+        <span class="muted">${formatDate(r.createdAt)}</span>
+      </td>
+
+      <td>
+        <strong>${r.shopName || '-'}</strong><br>
+        Owner: ${r.ownerName || '-'}<br>
+        Mobile: ${r.mobile || '-'}<br>
+        <span class="muted">${r.email || '-'}</span>
+      </td>
+
+      <td>
+        Current: ${r.currentPackageLabel || '-'}<br>
+        Requested: <strong>${r.requestedPackageLabel || '-'}</strong><br>
+        Billing: <span class="badge payment">${(r.billingCycle || '-').toUpperCase()}</span>
+      </td>
+
+      <td>
+        Base: ${formatAmount(r.baseAmount)} OMR<br>
+        VAT ${r.vatRate || 5}%: ${formatAmount(r.vatAmount)} OMR<br>
+        <span class="amount">Total: ${formatAmount(r.totalAmount)} OMR</span>
+      </td>
+
+      <td>
+        Status: ${r.paymentStatus || 'pending'}<br>
+        Bank: ${r.bankName || '-'}<br>
+        Txn: ${r.transactionNumber || '-'}<br>
+        Date: ${r.paymentReceivedDate || '-'}
+      </td>
+
+      <td>${badge(r.status)}</td>
+
+      <td>
+        <div class="actions">
+          ${
+            r.status === 'pending'
+            ? `
+              <button class="approve-btn" onclick="openPaymentModal('${r.id}')">Approve</button>
+              <button class="reject-btn" onclick="rejectUpgrade('${r.id}')">Reject</button>
+            `
+            : `
+              <button class="ghost-btn">Processed</button>
+            `
+          }
         </div>
       </td>
     </tr>
@@ -307,20 +621,39 @@ function renderShops(){
 }
 
 async function updateShopStatus(shopId,status){
+  let adminRemarks = '';
+
+  if(status === 'rejected' || status === 'suspended'){
+    adminRemarks = prompt(`Enter reason / report for ${status}:`) || '';
+
+    if(!adminRemarks){
+      alert('Reason is required.');
+      return;
+    }
+  }
+
   if(!confirm(`Change shop status to ${status}?`)) return;
 
   try{
     const res = await fetch('/admin/parts/update-shop-status',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({shopId,status})
+      body:JSON.stringify({
+        shopId,
+        status,
+        adminRemarks
+      })
     });
 
-    const data = await res.json();
+    const text = await res.text();
 
-    if(!res.ok || !data.success){
-      throw new Error(data.message || 'Update failed');
-    }
+let data;
+try {
+  data = JSON.parse(text);
+} catch (e) {
+  console.log("SERVER RETURNED:", text);
+  throw new Error("Backend returned HTML, not JSON. Check admin route /admin/parts/update-shop-status");
+}
 
     await loadShops();
     alert(data.message);
@@ -329,7 +662,6 @@ async function updateShopStatus(shopId,status){
     alert(err.message);
   }
 }
-
 async function toggleFeaturedShop(shopId, isFeatured){
   try{
     const res = await fetch('/admin/parts/toggle-featured-shop',{
@@ -338,7 +670,14 @@ async function toggleFeaturedShop(shopId, isFeatured){
       body:JSON.stringify({shopId,isFeatured})
     });
 
-    const data = await res.json();
+    const text = await res.text();
+
+let data;
+try {
+  data = JSON.parse(text);
+} catch (e) {
+  throw new Error("Backend route is returning HTML, not JSON. Check /admin/parts/update-shop-status in server.js");
+}
 
     if(!res.ok || !data.success){
       throw new Error(data.message || 'Feature update failed');
@@ -352,7 +691,116 @@ async function toggleFeaturedShop(shopId, isFeatured){
   }
 }
 
-loadShops();
+function openPaymentModal(requestId){
+  selectedUpgradeRequestId = requestId;
+  selectedUpgradeRequest = allUpgradeRequests.find(r => r.id === requestId);
+
+  if(!selectedUpgradeRequest){
+    alert('Request not found');
+    return;
+  }
+
+  document.getElementById('paymentSummary').innerHTML = `
+    <strong>Token:</strong> ${selectedUpgradeRequest.upgradeToken || '-'}<br>
+    <strong>Shop:</strong> ${selectedUpgradeRequest.shopName || '-'}<br>
+    <strong>Package:</strong> ${selectedUpgradeRequest.requestedPackageLabel || '-'} / ${(selectedUpgradeRequest.billingCycle || '').toUpperCase()}<br>
+    <strong>Total Payable:</strong> ${formatAmount(selectedUpgradeRequest.totalAmount)} OMR
+  `;
+
+  document.getElementById('paymentReceivedDate').value = new Date().toISOString().slice(0,10);
+  document.getElementById('bankName').value = '';
+  document.getElementById('transactionNumber').value = '';
+  document.getElementById('paymentRemarks').value = '';
+
+  document.getElementById('paymentModal').style.display = 'flex';
+}
+
+function closePaymentModal(){
+  document.getElementById('paymentModal').style.display = 'none';
+}
+
+async function submitApproveUpgrade(){
+  try{
+    const paymentReceivedDate = document.getElementById('paymentReceivedDate').value;
+    const bankName = document.getElementById('bankName').value.trim();
+    const transactionNumber = document.getElementById('transactionNumber').value.trim();
+    const paymentRemarks = document.getElementById('paymentRemarks').value.trim();
+
+    if(!paymentReceivedDate || !bankName || !transactionNumber){
+      alert('Payment received date, bank name and transaction number are required.');
+      return;
+    }
+
+    const confirmMsg =
+      `Approve upgrade?\n\n` +
+      `Token: ${selectedUpgradeRequest.upgradeToken}\n` +
+      `Shop: ${selectedUpgradeRequest.shopName}\n` +
+      `Total: ${formatAmount(selectedUpgradeRequest.totalAmount)} OMR\n` +
+      `Bank: ${bankName}\n` +
+      `Transaction: ${transactionNumber}`;
+
+    if(!confirm(confirmMsg)) return;
+
+    const res = await fetch('/admin/parts/approve-upgrade',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        requestId:selectedUpgradeRequestId,
+        paymentReceivedDate,
+        bankName,
+        transactionNumber,
+        paymentRemarks
+      })
+    });
+
+    const data = await res.json();
+
+    if(!res.ok || !data.success){
+      throw new Error(data.message || 'Approval failed');
+    }
+
+    closePaymentModal();
+    alert(data.message);
+
+    await refreshAll();
+    showTab('upgrades');
+
+  }catch(err){
+    alert(err.message);
+  }
+}
+
+async function rejectUpgrade(requestId){
+  const rejectionReason = prompt('Enter rejection reason, optional:') || '';
+
+  if(!confirm('Reject this upgrade request?')) return;
+
+  try{
+    const res = await fetch('/admin/parts/reject-upgrade',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        requestId,
+        rejectionReason
+      })
+    });
+
+    const data = await res.json();
+
+    if(!res.ok || !data.success){
+      throw new Error(data.message || 'Reject failed');
+    }
+
+    alert(data.message);
+    await refreshAll();
+    showTab('upgrades');
+
+  }catch(err){
+    alert(err.message);
+  }
+}
+
+refreshAll();
 </script>
 
 </body>

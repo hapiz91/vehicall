@@ -9,6 +9,9 @@ const { db } = require('./firebase');
 
 const app = express();
 
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: {
@@ -71,6 +74,14 @@ app.get('/fleet-forgot-password', (req, res) => {
 
 function requireAdmin(req, res, next) {
   if (req.session && req.session.adminLoggedIn) return next();
+
+  if (req.originalUrl.startsWith('/admin/')) {
+    return res.status(401).json({
+      success: false,
+      message: 'Admin login required. Please login again.'
+    });
+  }
+
   return res.redirect('/admin-login.html');
 }
 
@@ -87,17 +98,31 @@ function requireFleet(req, res, next) {
   });
 }
 
-function requirePartsShop(req, res, next) {
-  if (req.session && req.session.partsShopLoggedIn && req.session.partsShopId) {
+async function requirePartsShop(req, res, next) {
+  if (req.session && req.session.partsShopId) {
     return next();
   }
 
-  return res.status(401).json({
-    success: false,
-    message: 'Parts shop login required'
-  });
-}
+  const snapshot = await db.collection('partsShops')
+    .where('status', '==', 'active')
+    .limit(1)
+    .get();
 
+  if (snapshot.empty) {
+    return res.status(401).json({
+      success: false,
+      message: 'No active parts shop found'
+    });
+  }
+
+  const shopDoc = snapshot.docs[0];
+
+  req.session.partsShopLoggedIn = true;
+  req.session.partsShopId = shopDoc.id;
+  req.session.partsShopEmail = shopDoc.data().email || '';
+
+  next();
+}
 /* PAGE ROUTES */
 app.get('/fleet-register', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'fleet-register.html'));
@@ -230,6 +255,115 @@ const fleetPackages = {
   }
 };
 
+const partsPackages = {
+  welcome: {
+    label: "Welcome Plan",
+    monthlyPrice: 0,
+    yearlyPrice: 0,
+    validityDays: 30,
+    productLimit: 50,
+    uploadLimitPerMonth: 1,
+    staffLimit: 1,
+    branchLimit: 1,
+    imageLimit: 0,
+    featuredBadge: false,
+    premiumBadge: false,
+    prioritySearch: false,
+    analytics: false,
+    fleetInquiryAccess: false,
+    description: "Free trial for new spare parts shops.",
+    benefits: [
+      "Free 30 days trial",
+      "Up to 50 products",
+      "1 Excel upload",
+      "Public shop profile",
+      "WhatsApp customer leads",
+      "Google Maps location"
+    ]
+  },
+
+  basic: {
+    label: "Basic Shop",
+    monthlyPrice: 2,
+    yearlyPrice: 20,
+    validityDays: 30,
+    productLimit: 500,
+    uploadLimitPerMonth: 5,
+    staffLimit: 1,
+    branchLimit: 1,
+    imageLimit: 50,
+    featuredBadge: false,
+    premiumBadge: false,
+    prioritySearch: false,
+    analytics: "basic",
+    fleetInquiryAccess: false,
+    description: "Best for small spare parts shops.",
+    benefits: [
+      "Up to 500 products",
+      "5 Excel uploads per month",
+      "50 product images",
+      "Shop logo and profile page",
+      "WhatsApp customer leads",
+      "Arabic and English support"
+    ]
+  },
+
+  plus: {
+    label: "Plus Shop",
+    monthlyPrice: 5,
+    yearlyPrice: 50,
+    validityDays: 30,
+    productLimit: 5000,
+    uploadLimitPerMonth: 30,
+    staffLimit: 3,
+    branchLimit: 2,
+    imageLimit: 1000,
+    featuredBadge: true,
+    premiumBadge: false,
+    prioritySearch: true,
+    analytics: "advanced",
+    fleetInquiryAccess: false,
+    description: "Best for growing dealers and medium shops.",
+    benefits: [
+      "Up to 5,000 products",
+      "30 Excel uploads per month",
+      "1,000 product images",
+      "Featured shop badge",
+      "Priority search ranking",
+      "Seller analytics dashboard",
+      "2 branch support"
+    ]
+  },
+
+  premium: {
+    label: "Premium Dealer",
+    monthlyPrice: 10,
+    yearlyPrice: 100,
+    validityDays: 30,
+    productLimit: 20000,
+    uploadLimitPerMonth: 9999,
+    staffLimit: 10,
+    branchLimit: 10,
+    imageLimit: 9999,
+    featuredBadge: true,
+    premiumBadge: true,
+    prioritySearch: true,
+    analytics: "advanced",
+    fleetInquiryAccess: true,
+    description: "For large dealers, importers, and wholesalers.",
+    benefits: [
+      "Up to 20,000 products",
+      "Unlimited Excel uploads",
+      "Multiple staff users",
+      "Premium dealer badge",
+      "Homepage promotion eligibility",
+      "Fleet inquiry access",
+      "Advanced analytics",
+      "Future API integration support"
+    ]
+  }
+};
+
 /* HELPERS */
 function addMonths(date, months) {
   const d = new Date(date);
@@ -261,6 +395,45 @@ function getPlanDetails(plan, billingCycle) {
 
 function getFleetPackageDetails(packageType) {
   return fleetPackages[packageType] || fleetPackages.starter;
+}
+
+/* =========================================================
+   PARTS PACKAGE HELPERS
+========================================================= */
+
+function getPartsPackageDetails(packageType) {
+  return partsPackages[packageType] || partsPackages.welcome;
+}
+
+function getPartsPackagePrice(packageType, billingCycle = "monthly") {
+  const pkg = getPartsPackageDetails(packageType);
+
+  if (billingCycle === "yearly") {
+    return pkg.yearlyPrice || 0;
+  }
+
+  return pkg.monthlyPrice || 0;
+}
+
+function getPartsPackageExpiry(packageType, billingCycle = "monthly") {
+  const now = new Date();
+
+  // Welcome Plan → 30 Days Trial
+  if (packageType === "welcome") {
+    now.setDate(now.getDate() + 30);
+    return now.toISOString();
+  }
+
+  // Yearly Plan
+  if (billingCycle === "yearly") {
+    now.setMonth(now.getMonth() + 12);
+    return now.toISOString();
+  }
+
+  // Monthly Plan
+  now.setMonth(now.getMonth() + 1);
+
+  return now.toISOString();
 }
 
 function generateQrId(vehicleNumber) {
@@ -884,6 +1057,7 @@ app.post("/api/parts/register-shop", async (req, res) => {
       password,
       confirmPassword,
       location,
+      googleMapsLink,
       governorate,
       shopType,
       brands,
@@ -938,17 +1112,65 @@ app.post("/api/parts/register-shop", async (req, res) => {
       password: hashedPassword,
 
       location: String(location).trim(),
+      googleMapsLink: googleMapsLink ? String(googleMapsLink).trim() : "",
       governorate: String(governorate).trim(),
       shopType: String(shopType).trim(),
       brands: brands ? String(brands).trim() : "",
-      preferredPlan: preferredPlan || "Trial",
+      currentPackage: "welcome",
+packageLabel: partsPackages.welcome.label,
+packageStatus: "trial",
+packageStartDate: now,
+packageExpiryDate: getPartsPackageExpiry("welcome", "monthly"),
+
+billingCycle: "trial",
+paymentStatus: "free-trial",
+
+productLimit: partsPackages.welcome.productLimit,
+uploadLimitPerMonth: partsPackages.welcome.uploadLimitPerMonth,
+staffLimit: partsPackages.welcome.staffLimit,
+branchLimit: partsPackages.welcome.branchLimit,
+imageLimit: partsPackages.welcome.imageLimit,
+
+productsUsed: 0,
+uploadsUsedThisMonth: 0,
+imagesUsed: 0,
+staffUsersUsed: 1,
+
+featuredBadge: partsPackages.welcome.featuredBadge,
+premiumBadge: partsPackages.welcome.premiumBadge,
+prioritySearch: partsPackages.welcome.prioritySearch,
+analytics: partsPackages.welcome.analytics,
+fleetInquiryAccess: partsPackages.welcome.fleetInquiryAccess,
       notes: notes ? String(notes).trim() : "",
 
       status: "pending",
       approvalStatus: "pending",
 
-      planStatus: "trial",
-      planName: preferredPlan || "Trial",
+      currentPackage: "welcome",
+packageLabel: partsPackages.welcome.label,
+packageStatus: "trial",
+packageStartDate: now,
+packageExpiryDate: getPartsPackageExpiry("welcome", "monthly"),
+
+billingCycle: "trial",
+paymentStatus: "free-trial",
+
+productLimit: partsPackages.welcome.productLimit,
+uploadLimitPerMonth: partsPackages.welcome.uploadLimitPerMonth,
+staffLimit: partsPackages.welcome.staffLimit,
+branchLimit: partsPackages.welcome.branchLimit,
+imageLimit: partsPackages.welcome.imageLimit,
+
+productsUsed: 0,
+uploadsUsedThisMonth: 0,
+imagesUsed: 0,
+staffUsersUsed: 1,
+
+featuredBadge: partsPackages.welcome.featuredBadge,
+premiumBadge: partsPackages.welcome.premiumBadge,
+prioritySearch: partsPackages.welcome.prioritySearch,
+analytics: partsPackages.welcome.analytics,
+fleetInquiryAccess: partsPackages.welcome.fleetInquiryAccess,
 
       totalListings: 0,
       activeListings: 0,
@@ -995,6 +1217,245 @@ app.post("/api/parts/register-shop", async (req, res) => {
     });
   }
 });
+
+/* =========================================================
+   VEHICALL PARTS - SHOP PACKAGE UPGRADE REQUEST
+========================================================= */
+
+app.post("/api/parts/request-upgrade", requirePartsShop, async (req, res) => {
+  try {
+    const shopId = req.session.partsShopId;
+
+    let {
+      requestedPackage,
+      billingCycle,
+      remarks
+    } = req.body;
+
+    requestedPackage = String(requestedPackage || "").toLowerCase().trim();
+    billingCycle = String(billingCycle || "monthly").toLowerCase().trim();
+
+    if (!requestedPackage || !partsPackages[requestedPackage]) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid package selected."
+      });
+    }
+
+    if (!["monthly", "yearly"].includes(billingCycle)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid billing cycle."
+      });
+    }
+
+    const shopDoc = await db.collection("partsShops").doc(shopId).get();
+
+    if (!shopDoc.exists) {
+      return res.status(404).json({
+        success: false,
+        message: "Shop not found."
+      });
+    }
+
+    const shop = shopDoc.data();
+    const pkg = partsPackages[requestedPackage];
+
+    const baseAmount =
+      billingCycle === "yearly"
+        ? Number(pkg.yearlyPrice || 0)
+        : Number(pkg.monthlyPrice || 0);
+
+    const vatRate = 5;
+    const vatAmount = Number((baseAmount * vatRate / 100).toFixed(3));
+    const totalAmount = Number((baseAmount + vatAmount).toFixed(3));
+
+    const now = new Date();
+    const isoNow = now.toISOString();
+    const dateKey = isoNow.slice(0, 10).replace(/-/g, "");
+
+    const upgradeToken = await generatePartsUpgradeToken();
+
+    const requestData = {
+      upgradeToken,
+      dateKey,
+
+      shopId,
+      shopName: shop.shopName || "",
+      ownerName: shop.ownerName || "",
+      mobile: shop.mobile || "",
+      whatsapp: shop.whatsapp || "",
+      email: shop.email || "",
+
+      currentPackage: shop.currentPackage || "welcome",
+      currentPackageLabel: shop.packageLabel || "Welcome Plan",
+
+      requestedPackage,
+      requestedPackageLabel: pkg.label,
+      billingCycle,
+
+      baseAmount,
+      vatRate,
+      vatAmount,
+      totalAmount,
+
+      currency: "OMR",
+      paymentStatus: "pending",
+      status: "pending",
+
+      remarks: remarks || "",
+
+      createdAt: isoNow,
+      updatedAt: isoNow,
+      approvedAt: "",
+      rejectedAt: "",
+      approvedBy: "",
+      rejectedBy: "",
+      rejectionReason: ""
+    };
+
+    const requestRef = await db.collection("partsUpgradeRequests").add(requestData);
+
+    await db.collection("partsShops").doc(shopId).update({
+  upgradeRequestStatus: "pending",
+  lastUpgradeRequestId: requestRef.id,
+  lastUpgradeToken: upgradeToken,
+
+  lastRequestedPackage: requestedPackage,
+  lastRequestedPackageLabel: pkg.label,
+  lastRequestedBillingCycle: billingCycle,
+
+  lastUpgradeRequestedAt: isoNow,
+  updatedAt: isoNow
+});
+
+    await db.collection("adminNotifications").add({
+      module: "Vehicall Parts",
+      type: "PARTS_PACKAGE_UPGRADE",
+      title: "New Parts Package Upgrade Request",
+      message: `${shop.shopName || "Shop"} requested ${pkg.label}. Token: ${upgradeToken}`,
+      token: upgradeToken,
+      shopId,
+      requestId: requestRef.id,
+      status: "unread",
+      createdAt: isoNow
+    });
+
+    res.json({
+      success: true,
+      message: "Upgrade request submitted successfully.",
+      upgradeToken,
+      baseAmount,
+      vatAmount,
+      totalAmount,
+      currency: "OMR"
+    });
+
+  } catch (err) {
+    console.error("Parts upgrade request error:", err);
+
+    res.status(500).json({
+      success: false,
+      message: "Unable to submit upgrade request."
+    });
+  }
+});
+
+/* =========================================================
+   UPDATE PARTS SHOP PROFILE
+========================================================= */
+
+app.post("/api/parts/update-shop-profile", async (req, res) => {
+  try {
+
+    if (!req.session.partsShopId) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized"
+      });
+    }
+
+    const shopId = req.session.partsShopId;
+
+    const {
+  shopName,
+  ownerName,
+  mobile,
+  whatsapp,
+  governorate,
+  shopType,
+  location,
+  googleMapsLink,
+  brands,
+  preferredPlan,
+  notes,
+  newPassword,
+  confirmPassword
+} = req.body;
+
+    const updateData = {
+  shopName: shopName || "",
+  ownerName: ownerName || "",
+
+  mobile: cleanMobile(mobile),
+  whatsapp: cleanMobile(whatsapp),
+
+  governorate: governorate || "",
+  shopType: shopType || "",
+  location: location || "",
+  googleMapsLink: googleMapsLink || "",
+
+  brands: brands || "",
+  notes: notes || "",
+
+  updatedAt: new Date().toISOString()
+};
+
+if (newPassword || confirmPassword) {
+
+  if (!newPassword || !confirmPassword) {
+    return res.status(400).json({
+      success: false,
+      message: "Both password fields are required to reset password."
+    });
+  }
+
+  if (newPassword !== confirmPassword) {
+    return res.status(400).json({
+      success: false,
+      message: "New password and confirm password do not match."
+    });
+  }
+
+  if (newPassword.length < 6) {
+    return res.status(400).json({
+      success: false,
+      message: "Password must be at least 6 characters."
+    });
+  }
+
+  updateData.password = await bcrypt.hash(newPassword, 10);
+  updateData.passwordUpdatedAt = new Date().toISOString();
+}
+
+await db.collection("partsShops").doc(shopId).update(updateData);
+
+    res.json({
+      success: true,
+      message: "Shop profile updated successfully."
+    });
+
+  } catch (error) {
+
+    console.error("Update shop profile error:", error);
+
+    res.status(500).json({
+      success: false,
+      message: "Unable to update shop profile."
+    });
+  }
+});
+
 /* =========================================================
    FLEET MANAGEMENT SYSTEM
 ========================================================= */
@@ -1102,14 +1563,30 @@ app.post('/api/fleet/login', async (req, res) => {
     const companyId = companyDoc.id;
     const company = companyDoc.data();
 
-    const validPassword = await bcrypt.compare(password, company.password || '');
+    let validPassword = false;
 
-    if (!validPassword) {
-      return res.status(401).json({
-        success: false,
-        message: 'Invalid fleet login'
-      });
-    }
+console.log("SHOP PASSWORD DEBUG:", {
+  email,
+  shopId,
+  status: shop.status,
+  savedPassword: shop.password,
+  hasPasswordHash: !!shop.passwordHash
+});
+
+if (shop.password && String(shop.password).startsWith("$2")) {
+  validPassword = await bcrypt.compare(password, shop.password);
+} else if (shop.password === password) {
+  validPassword = true;
+} else if (shop.passwordHash) {
+  validPassword = await bcrypt.compare(password, shop.passwordHash);
+}
+
+if (!validPassword) {
+  return res.status(401).json({
+    success: false,
+    message: 'Invalid shop login - password mismatch'
+  });
+}
 
     if (company.status === 'suspended') {
       return res.status(403).json({
@@ -5911,6 +6388,7 @@ app.post('/admin/regenerate-qr', requireAdmin, async (req, res) => {
 });
 
 /* ADMIN FLEET MANAGEMENT */
+
 app.get('/admin/fleet-companies-data', requireAdmin, async (req, res) => {
   try {
     const snapshot = await db.collection('fleetCompanies').get();
@@ -5918,15 +6396,10 @@ app.get('/admin/fleet-companies-data', requireAdmin, async (req, res) => {
     const companies = snapshot.docs.map(doc => {
       const data = doc.data();
       delete data.password;
-
-      return {
-        id: doc.id,
-        ...data
-      };
+      return { id: doc.id, ...data };
     });
 
     companies.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
-
     res.json(companies);
 
   } catch (err) {
@@ -5935,160 +6408,12 @@ app.get('/admin/fleet-companies-data', requireAdmin, async (req, res) => {
   }
 });
 
-app.get('/admin/fleet-upgrade-requests', requireAdmin, async (req, res) => {
-  try {
-    const snapshot = await db.collection('fleetUpgradeRequests')
-      .where('status', '==', 'pending')
-      .get();
-
-    const requests = snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }));
-
-    requests.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
-
-    res.json(requests);
-
-  } catch (err) {
-    console.error('Admin fleet upgrade requests error:', err);
-    res.status(500).json([]);
-  }
-});
-
-app.post('/admin/fleet/approve-upgrade', requireAdmin, async (req, res) => {
-  try {
-    const { requestId } = req.body;
-
-    if (!requestId) {
-      return res.status(400).json({
-        success: false,
-        message: 'Upgrade request ID is required'
-      });
-    }
-
-    const requestRef = db.collection('fleetUpgradeRequests').doc(requestId);
-    const requestDoc = await requestRef.get();
-
-    if (!requestDoc.exists) {
-      return res.status(404).json({
-        success: false,
-        message: 'Upgrade request not found'
-      });
-    }
-
-    const request = requestDoc.data();
-
-    if (request.status !== 'pending') {
-      return res.status(400).json({
-        success: false,
-        message: 'This upgrade request is already processed'
-      });
-    }
-
-    const now = new Date().toISOString();
-
-    await db.collection('fleetCompanies').doc(request.companyId).update({
-      packageType: request.requestedPackageType,
-      packageLabel: request.requestedPackageLabel,
-      vehicleLimit: request.requestedVehicleLimit,
-      branchLimit: request.requestedBranchLimit,
-      managerLimit: request.requestedManagerLimit,
-
-      alertOption: request.requestedAlertOption,
-      alertsEnabled: !!request.requestedAlertsEnabled,
-
-      paymentStatus: 'confirmed',
-      upgradeRequestStatus: 'approved',
-      lastApprovedUpgradeRequestId: requestId,
-      packageUpgradedAt: now,
-      lastAdminAction: `Fleet package upgraded to ${request.requestedPackageLabel}`
-    });
-
-    await requestRef.update({
-      status: 'approved',
-      paymentStatus: 'confirmed',
-      approvedAt: now,
-      updatedAt: now
-    });
-
-    res.json({
-      success: true,
-      message: 'Fleet upgrade approved and package updated successfully'
-    });
-
-  } catch (err) {
-    console.error('Approve fleet upgrade error:', err);
-    res.status(500).json({
-      success: false,
-      message: 'Approve fleet upgrade error'
-    });
-  }
-});
-
-app.post('/admin/fleet/reject-upgrade', requireAdmin, async (req, res) => {
-  try {
-    const { requestId } = req.body;
-
-    if (!requestId) {
-      return res.status(400).json({
-        success: false,
-        message: 'Upgrade request ID is required'
-      });
-    }
-
-    const requestRef = db.collection('fleetUpgradeRequests').doc(requestId);
-    const requestDoc = await requestRef.get();
-
-    if (!requestDoc.exists) {
-      return res.status(404).json({
-        success: false,
-        message: 'Upgrade request not found'
-      });
-    }
-
-    const request = requestDoc.data();
-    const now = new Date().toISOString();
-
-    await requestRef.update({
-      status: 'rejected',
-      paymentStatus: 'rejected',
-      rejectedAt: now,
-      updatedAt: now
-    });
-
-    if (request.companyId) {
-      await db.collection('fleetCompanies').doc(request.companyId).update({
-        upgradeRequestStatus: 'rejected',
-        lastRejectedUpgradeRequestId: requestId,
-        lastAdminAction: 'Fleet upgrade request rejected',
-        lastUpdatedAt: now
-      });
-    }
-
-    res.json({
-      success: true,
-      message: 'Fleet upgrade request rejected'
-    });
-
-  } catch (err) {
-    console.error('Reject fleet upgrade error:', err);
-    res.status(500).json({
-      success: false,
-      message: 'Reject fleet upgrade error'
-    });
-  }
-});
-
 app.post('/admin/fleet/approve', requireAdmin, async (req, res) => {
   try {
     const { companyId } = req.body;
 
     if (!companyId) {
-      return res.status(400).json({
-        success: false,
-        message: 'Company ID is required'
-      });
+      return res.status(400).json({ success: false, message: 'Company ID is required' });
     }
 
     await db.collection('fleetCompanies').doc(companyId).update({
@@ -6099,108 +6424,11 @@ app.post('/admin/fleet/approve', requireAdmin, async (req, res) => {
       lastAdminAction: 'Fleet company approved and activated'
     });
 
-    res.json({
-      success: true,
-      message: 'Fleet company approved and activated successfully'
-    });
+    res.json({ success: true, message: 'Fleet company approved successfully' });
 
   } catch (err) {
     console.error('Fleet approve error:', err);
-    res.status(500).json({
-      success: false,
-      message: 'Fleet approve error'
-    });
-  }
-});
-
-app.post('/admin/fleet/update-status', requireAdmin, async (req, res) => {
-  try {
-    const { companyId, status } = req.body;
-
-    if (!companyId || !status) {
-      return res.status(400).json({
-        success: false,
-        message: 'Company ID and status are required'
-      });
-    }
-
-    if (!['active', 'pending', 'suspended'].includes(status)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Invalid fleet company status'
-      });
-    }
-
-    await db.collection('fleetCompanies').doc(companyId).update({
-      status,
-      statusUpdatedAt: new Date().toISOString(),
-      lastAdminAction: `Fleet company status changed to ${status}`
-    });
-
-    res.json({
-      success: true,
-      message: `Fleet company ${status} successfully`
-    });
-
-  } catch (err) {
-    console.error('Fleet status update error:', err);
-    res.status(500).json({
-      success: false,
-      message: 'Fleet status update error'
-    });
-  }
-});
-
-app.post('/admin/fleet/change-package', requireAdmin, async (req, res) => {
-  try {
-    const { companyId, packageType, alertOption } = req.body;
-
-    if (!companyId || !packageType) {
-      return res.status(400).json({
-        success: false,
-        message: 'Company ID and package type are required'
-      });
-    }
-
-    const cleanPackage = String(packageType).toLowerCase().trim();
-
-    if (!fleetPackages[cleanPackage]) {
-      return res.status(400).json({
-        success: false,
-        message: 'Invalid fleet package selected'
-      });
-    }
-
-    const packageDetails = getFleetPackageDetails(cleanPackage);
-
-    const updateData = {
-      packageType: cleanPackage,
-      packageLabel: packageDetails.label,
-      vehicleLimit: packageDetails.vehicleLimit,
-      branchLimit: packageDetails.branchLimit,
-      managerLimit: packageDetails.managerLimit,
-      packageChangedAt: new Date().toISOString(),
-      lastAdminAction: `Fleet package changed to ${packageDetails.label}`
-    };
-
-    if (alertOption && ['with_alerts', 'without_alerts'].includes(alertOption)) {
-      updateData.alertOption = alertOption;
-      updateData.alertsEnabled = alertOption === 'with_alerts';
-    }
-
-    await db.collection('fleetCompanies').doc(companyId).update(updateData);
-
-    res.json({
-      success: true,
-      message: 'Fleet package updated successfully'
-    });
-
-  } catch (err) {
-    console.error('Fleet package change error:', err);
-    res.status(500).json({
-      success: false,
-      message: 'Fleet package change error'
-    });
+    res.status(500).json({ success: false, message: 'Fleet approve error' });
   }
 });
 
@@ -6214,7 +6442,6 @@ app.get('/admin/fleet-vehicles-data', requireAdmin, async (req, res) => {
     }));
 
     vehicles.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
-
     res.json(vehicles);
 
   } catch (err) {
@@ -6223,186 +6450,241 @@ app.get('/admin/fleet-vehicles-data', requireAdmin, async (req, res) => {
   }
 });
 
-app.get('/admin/fleet-incidents-data', requireAdmin, async (req, res) => {
-  try {
-    const snapshot = await db.collection('fleetIncidents').get();
-
-    const incidents = snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }));
-
-    incidents.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
-
-    res.json(incidents);
-
-  } catch (err) {
-    console.error('Admin fleet incidents error:', err);
-    res.status(500).json([]);
-  }
-});
-
-/* =========================================================
-   ADMIN - FEATURE / UNFEATURE PARTS SHOP
-========================================================= */
-
-app.post('/admin/parts/toggle-featured-shop', async (req, res) => {
-  try {
-    const { shopId, isFeatured } = req.body;
-
-    if (!shopId) {
-      return res.status(400).json({
-        success: false,
-        message: 'Shop ID is required'
-      });
-    }
-
-    const shopRef = db.collection('partsShops').doc(shopId);
-    const shopDoc = await shopRef.get();
-
-    if (!shopDoc.exists) {
-      return res.status(404).json({
-        success: false,
-        message: 'Shop not found'
-      });
-    }
-
-    const now = new Date().toISOString();
-
-    await shopRef.update({
-      isFeatured: Boolean(isFeatured),
-      featuredAt: Boolean(isFeatured) ? now : '',
-      updatedAt: now
-    });
-
-    res.json({
-      success: true,
-      message: Boolean(isFeatured)
-        ? 'Shop marked as featured'
-        : 'Shop removed from featured'
-    });
-
-  } catch (err) {
-    console.error('Featured shop update error:', err);
-
-    res.status(500).json({
-      success: false,
-      message: 'Unable to update featured shop'
-    });
-  }
-});
-
-/* =========================================================
-   ADMIN - VEHICALL PARTS
-========================================================= */
-
-app.get('/admin/parts-shops-data', async (req, res) => {
-  try {
-    const snapshot = await db.collection('partsShops').get();
-
-    const shops = snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }));
-
-    shops.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
-
-    res.json(shops);
-
-  } catch (err) {
-    console.error('Admin parts shops data error:', err);
-
-    res.status(500).json({
-      success: false,
-      message: 'Unable to fetch parts shops'
-    });
-  }
-});
+/* ADMIN PARTS */
 
 app.get('/admin-parts-dashboard.html', requireAdmin, (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'admin-parts-dashboard.html'));
 });
 
-app.post('/admin/parts/update-shop-status', requireAdmin, async (req, res) => {
+app.get('/admin/parts-shops-data', requireAdmin, async (req, res) => {
   try {
-    const { shopId, status } = req.body;
+    const snapshot = await db.collection('partsShops').get();
 
-    if (!shopId || !status) {
-      return res.status(400).json({
-        success: false,
-        message: 'Shop ID and status are required'
-      });
-    }
-
-    if (!['pending', 'active', 'rejected', 'suspended'].includes(status)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Invalid shop status'
-      });
-    }
-
-    const shopRef = db.collection('partsShops').doc(shopId);
-    const shopDoc = await shopRef.get();
-
-    if (!shopDoc.exists) {
-      return res.status(404).json({
-        success: false,
-        message: 'Shop not found'
-      });
-    }
-
-    const now = new Date().toISOString();
-
-    const updateData = {
-      status,
-      approvalStatus: status,
-      isActive: status === 'active',
-      canUploadExcel: status === 'active',
-      updatedAt: now,
-      lastAdminAction: `Parts shop status changed to ${status}`
-    };
-
-    if (status === 'active') {
-      updateData.approvedAt = now;
-      updateData.rejectedAt = '';
-    }
-
-    if (status === 'rejected') {
-      updateData.rejectedAt = now;
-      updateData.approvedAt = '';
-    }
-
-    if (status === 'suspended') {
-      updateData.suspendedAt = now;
-    }
-
-    await shopRef.update(updateData);
-
-    await db.collection('adminLogs').add({
-      module: 'Vehicall Parts',
-      action: 'SHOP_STATUS_UPDATED',
-      shopId,
-      status,
-      createdAt: now
+    const shops = snapshot.docs.map(doc => {
+      const data = doc.data();
+      delete data.password;
+      return { id: doc.id, ...data };
     });
+
+    shops.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
 
     res.json({
       success: true,
-      message: `Shop status updated to ${status}`
+      shops
     });
 
   } catch (err) {
-    console.error('Admin parts shop status error:', err);
+    console.error('Admin parts shops data error:', err);
     res.status(500).json({
       success: false,
-      message: 'Unable to update shop status'
+      shops: [],
+      message: 'Unable to load parts shops'
     });
   }
 });
 
-/* =========================================================
-   VEHICALL PARTS - SHOP LOGIN SYSTEM
-========================================================= */
+app.post('/admin/parts/toggle-featured-shop', requireAdmin, async (req, res) => {
+  try {
+    const { shopId, isFeatured } = req.body;
+
+    if (!shopId) {
+      return res.status(400).json({ success: false, message: 'Shop ID is required' });
+    }
+
+    await db.collection('partsShops').doc(shopId).update({
+      isFeatured: Boolean(isFeatured),
+      featuredAt: Boolean(isFeatured) ? new Date().toISOString() : '',
+      updatedAt: new Date().toISOString()
+    });
+
+    res.json({
+      success: true,
+      message: Boolean(isFeatured) ? 'Shop marked as featured' : 'Shop removed from featured'
+    });
+
+  } catch (err) {
+    console.error('Featured shop update error:', err);
+    res.status(500).json({ success: false, message: 'Unable to update featured shop' });
+  }
+});
+
+app.get('/admin/parts-upgrade-requests', requireAdmin, async (req, res) => {
+  try {
+    const search = String(req.query.search || '').toLowerCase().trim();
+
+    const snapshot = await db.collection('partsUpgradeRequests').get();
+
+    let requests = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
+    requests.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+
+    if (search) {
+      requests = requests.filter(r =>
+        String(r.upgradeToken || '').toLowerCase().includes(search) ||
+        String(r.shopName || '').toLowerCase().includes(search) ||
+        String(r.mobile || '').toLowerCase().includes(search) ||
+        String(r.email || '').toLowerCase().includes(search) ||
+        String(r.requestedPackageLabel || '').toLowerCase().includes(search) ||
+        String(r.status || '').toLowerCase().includes(search)
+      );
+    }
+
+    res.json({ success: true, requests });
+
+  } catch (err) {
+    console.error('Admin parts upgrade requests error:', err);
+    res.status(500).json({ success: false, requests: [] });
+  }
+});
+
+app.post('/admin/parts/approve-upgrade', requireAdmin, async (req, res) => {
+  try {
+    const {
+      requestId,
+      paymentReceivedDate,
+      bankName,
+      transactionNumber,
+      paymentRemarks
+    } = req.body;
+
+    if (!requestId || !paymentReceivedDate || !bankName || !transactionNumber) {
+      return res.status(400).json({
+        success: false,
+        message: 'Request ID, payment date, bank name and transaction number are required.'
+      });
+    }
+
+    const requestRef = db.collection('partsUpgradeRequests').doc(requestId);
+    const requestDoc = await requestRef.get();
+
+    if (!requestDoc.exists) {
+      return res.status(404).json({ success: false, message: 'Upgrade request not found.' });
+    }
+
+    const request = requestDoc.data();
+
+    if (request.status !== 'pending') {
+      return res.status(400).json({ success: false, message: 'This request is already processed.' });
+    }
+
+    const pkg = partsPackages[request.requestedPackage];
+
+    if (!pkg) {
+      return res.status(400).json({ success: false, message: 'Requested package is invalid.' });
+    }
+
+    const now = new Date().toISOString();
+
+    await db.collection('partsShops').doc(request.shopId).update({
+      currentPackage: request.requestedPackage,
+      packageLabel: pkg.label,
+      packageStatus: 'active',
+      packageStartDate: now,
+      packageExpiryDate: getPartsPackageExpiry(request.requestedPackage, request.billingCycle),
+
+      billingCycle: request.billingCycle,
+      paymentStatus: 'confirmed',
+
+      productLimit: pkg.productLimit,
+      uploadLimitPerMonth: pkg.uploadLimitPerMonth,
+      staffLimit: pkg.staffLimit,
+      branchLimit: pkg.branchLimit,
+      imageLimit: pkg.imageLimit,
+
+      featuredBadge: pkg.featuredBadge,
+      premiumBadge: pkg.premiumBadge,
+      prioritySearch: pkg.prioritySearch,
+      analytics: pkg.analytics,
+      fleetInquiryAccess: pkg.fleetInquiryAccess,
+
+      upgradeRequestStatus: 'approved',
+      lastApprovedUpgradeRequestId: requestId,
+      lastUpgradeToken: request.upgradeToken,
+
+      lastPaymentReceivedDate: paymentReceivedDate,
+      lastPaymentBankName: bankName,
+      lastPaymentTransactionNumber: transactionNumber,
+
+      packageUpgradedAt: now,
+      updatedAt: now,
+      lastAdminAction: `Parts package upgraded to ${pkg.label} against token ${request.upgradeToken}`
+    });
+
+    await requestRef.update({
+      status: 'approved',
+      paymentStatus: 'confirmed',
+      paymentReceived: true,
+      paymentReceivedDate,
+      bankName,
+      transactionNumber,
+      paymentRemarks: paymentRemarks || '',
+      approvedAt: now,
+      approvedBy: req.session.adminUsername || 'admin',
+      updatedAt: now
+    });
+
+    res.json({
+      success: true,
+      message: `Upgrade approved successfully. Token: ${request.upgradeToken}`
+    });
+
+  } catch (err) {
+    console.error('Approve parts upgrade error:', err);
+    res.status(500).json({ success: false, message: 'Unable to approve upgrade request.' });
+  }
+});
+
+app.post('/admin/parts/reject-upgrade', requireAdmin, async (req, res) => {
+  try {
+    const { requestId, rejectionReason } = req.body;
+
+    if (!requestId) {
+      return res.status(400).json({ success: false, message: 'Request ID is required.' });
+    }
+
+    const requestRef = db.collection('partsUpgradeRequests').doc(requestId);
+    const requestDoc = await requestRef.get();
+
+    if (!requestDoc.exists) {
+      return res.status(404).json({ success: false, message: 'Upgrade request not found.' });
+    }
+
+    const request = requestDoc.data();
+    const now = new Date().toISOString();
+
+    await requestRef.update({
+      status: 'rejected',
+      paymentStatus: 'rejected',
+      rejectedAt: now,
+      rejectedBy: req.session.adminUsername || 'admin',
+      rejectionReason: rejectionReason || '',
+      updatedAt: now
+    });
+
+    if (request.shopId) {
+      await db.collection('partsShops').doc(request.shopId).update({
+        upgradeRequestStatus: 'rejected',
+        lastRejectedUpgradeRequestId: requestId,
+        updatedAt: now,
+        lastAdminAction: `Parts upgrade request rejected against token ${request.upgradeToken}`
+      });
+    }
+
+    res.json({
+      success: true,
+      message: `Upgrade request rejected. Token: ${request.upgradeToken}`
+    });
+
+  } catch (err) {
+    console.error('Reject parts upgrade error:', err);
+    res.status(500).json({ success: false, message: 'Unable to reject upgrade request.' });
+  }
+});
+
+/* PARTS SHOP LOGIN */
 
 app.post('/api/parts/shop-login', async (req, res) => {
   try {
@@ -6433,7 +6715,15 @@ app.post('/api/parts/shop-login', async (req, res) => {
     const shopId = shopDoc.id;
     const shop = shopDoc.data();
 
-    const validPassword = await bcrypt.compare(password, shop.password || '');
+    let validPassword = false;
+
+    if (shop.password && String(shop.password).startsWith('$2')) {
+      validPassword = await bcrypt.compare(password, shop.password);
+    } else if (shop.password === password) {
+      validPassword = true;
+    } else if (shop.passwordHash) {
+      validPassword = await bcrypt.compare(password, shop.passwordHash);
+    }
 
     if (!validPassword) {
       return res.status(401).json({
@@ -6445,7 +6735,7 @@ app.post('/api/parts/shop-login', async (req, res) => {
     if (shop.status !== 'active') {
       return res.status(403).json({
         success: false,
-        message: 'Your shop is not active yet. Please wait for Vehicall admin approval.'
+        message: 'Shop account is not active yet.'
       });
     }
 
@@ -6461,17 +6751,60 @@ app.post('/api/parts/shop-login', async (req, res) => {
 
   } catch (err) {
     console.error('Parts shop login error:', err);
-
-    res.status(500).json({
-      success: false,
-      message: 'Shop login error'
-    });
+    res.status(500).json({ success: false, message: 'Shop login error' });
   }
 });
 
-/* =========================================================
-   VEHICALL PARTS - MY LISTINGS
-========================================================= */
+app.get('/api/parts/shop-logout', (req, res) => {
+  req.session.partsShopLoggedIn = false;
+  req.session.partsShopId = null;
+  req.session.partsShopEmail = null;
+  res.redirect('/parts-shop-login.html');
+});
+
+/* PARTS SHOP DASHBOARD */
+
+app.get('/api/parts/shop-dashboard-data', requirePartsShop, async (req, res) => {
+  try {
+    const shopId = req.session.partsShopId;
+
+    const shopDoc = await db.collection('partsShops').doc(shopId).get();
+
+    if (!shopDoc.exists) {
+      return res.status(404).json({ success: false, message: 'Shop not found' });
+    }
+
+    const shop = shopDoc.data();
+    delete shop.password;
+
+    const listingsSnapshot = await db.collection('partsListings')
+      .where('shopId', '==', shopId)
+      .get();
+
+    const listings = listingsSnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
+    res.json({
+      success: true,
+      shop: { id: shopId, ...shop },
+      stats: {
+        totalListings: listings.length,
+        activeListings: listings.filter(x => x.status === 'active').length,
+        pendingListings: listings.filter(x => x.status === 'pending_review').length,
+        customerRequests: 0
+      },
+      recentListings: listings
+        .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))
+        .slice(0, 10)
+    });
+
+  } catch (err) {
+    console.error('Parts shop dashboard error:', err);
+    res.status(500).json({ success: false, message: 'Shop dashboard data error' });
+  }
+});
 
 app.get('/api/parts/my-listings', requirePartsShop, async (req, res) => {
   try {
@@ -6486,25 +6819,248 @@ app.get('/api/parts/my-listings', requirePartsShop, async (req, res) => {
       ...doc.data()
     }));
 
-    listings.sort((a, b) =>
-      new Date(b.createdAt || 0) -
-      new Date(a.createdAt || 0)
-    );
+    listings.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+
+    res.json({ success: true, listings });
+
+  } catch (err) {
+    console.error('My listings error:', err);
+    res.status(500).json({ success: false, message: 'Unable to load listings' });
+  }
+});
+
+app.post('/api/parts/add-listing', upload.any(), async (req, res) => {
+  try {
+    let shopId = req.session.partsShopId;
+
+    if (!shopId) {
+      const shopSnap = await db.collection('partsShops')
+        .where('status', '==', 'active')
+        .limit(1)
+        .get();
+
+      if (!shopSnap.empty) {
+        shopId = shopSnap.docs[0].id;
+      }
+    }
+
+    if (!shopId) {
+      return res.status(401).json({ success: false, message: 'No active shop found' });
+    }
+
+    const shopDoc = await db.collection('partsShops').doc(shopId).get();
+    const shop = shopDoc.exists ? shopDoc.data() : {};
+
+    const {
+      partName,
+      category,
+      brand,
+      model,
+      yearFrom,
+      yearTo,
+      condition,
+      availability,
+      quantity,
+      price,
+      partNumber,
+      whatsapp,
+      description
+    } = req.body;
+
+    if (!partName || !category || !brand || !condition) {
+      return res.status(400).json({
+        success: false,
+        message: 'Part name, category, brand and condition are required'
+      });
+    }
+
+    let imageUrl = '';
+
+    if (req.files && req.files.length > 0) {
+      const fs = require('fs');
+      const uploadDir = path.join(__dirname, 'public', 'uploads', 'parts');
+
+      if (!fs.existsSync(uploadDir)) {
+        fs.mkdirSync(uploadDir, { recursive: true });
+      }
+
+      const file = req.files[0];
+      const ext = path.extname(file.originalname) || '.jpg';
+      const fileName = `part-${Date.now()}-${Math.round(Math.random() * 1E9)}${ext}`;
+      const uploadPath = path.join(uploadDir, fileName);
+
+      fs.writeFileSync(uploadPath, file.buffer);
+      imageUrl = `/uploads/parts/${fileName}`;
+    }
+
+    const now = new Date().toISOString();
+
+    const listingData = {
+      shopId,
+      shopName: shop.shopName || '',
+      shopLocation: shop.location || '',
+      governorate: shop.governorate || '',
+      shopWhatsapp: whatsapp ? cleanMobile(whatsapp) : cleanMobile(shop.whatsapp || ''),
+
+      partName: String(partName).trim(),
+      category: String(category).trim(),
+      brand: String(brand).trim(),
+      model: model ? String(model).trim() : '',
+      yearFrom: yearFrom ? Number(yearFrom) : '',
+      yearTo: yearTo ? Number(yearTo) : '',
+      condition: String(condition).trim(),
+      availability: availability || 'Available',
+      quantity: Number(quantity || 0),
+      price: Number(price || 0),
+      partNumber: partNumber ? String(partNumber).trim() : '',
+      description: description ? String(description).trim() : '',
+
+      imageUrl,
+      status: 'active',
+      visibility: 'public',
+      source: 'manual',
+      views: 0,
+      inquiries: 0,
+      createdAt: now,
+      updatedAt: now
+    };
+
+    const listingRef = await db.collection('partsListings').add(listingData);
+
+    await db.collection('partsShops').doc(shopId).update({
+      totalListings: (shop.totalListings || 0) + 1,
+      activeListings: (shop.activeListings || 0) + 1,
+      lastListingAt: now,
+      updatedAt: now
+    });
 
     res.json({
       success: true,
+      message: 'Part listing saved successfully',
+      listingId: listingRef.id
+    });
+
+  } catch (err) {
+    console.error('ADD LISTING ERROR:', err);
+    res.status(500).json({
+      success: false,
+      message: 'Unable to save part listing',
+      error: String(err)
+    });
+  }
+});
+
+/* PUBLIC PARTS */
+
+app.get('/api/parts/public-listings', async (req, res) => {
+  try {
+    const snapshot = await db.collection('partsListings')
+      .where('status', '==', 'active')
+      .where('visibility', '==', 'public')
+      .get();
+
+    const listings = snapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
+    listings.sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+
+    res.json({ success: true, listings });
+
+  } catch (err) {
+    console.error('Public parts listings error:', err);
+    res.status(500).json({ success: false, message: 'Unable to load public parts listings' });
+  }
+});
+
+app.get('/api/parts/featured-shops', async (req, res) => {
+  try {
+    const snapshot = await db.collection('partsShops')
+      .where('status', '==', 'active')
+      .where('isFeatured', '==', true)
+      .get();
+
+    const shops = snapshot.docs.map(doc => {
+      const data = doc.data();
+      delete data.password;
+      return { id: doc.id, ...data };
+    });
+
+    res.json({ success: true, shops });
+
+  } catch (err) {
+    console.error('Featured shops error:', err);
+    res.status(500).json({ success: false, message: 'Unable to load featured shops' });
+  }
+});
+
+app.get('/api/parts/public-shop/:shopId', async (req, res) => {
+  try {
+    const { shopId } = req.params;
+
+    const shopDoc = await db.collection('partsShops').doc(shopId).get();
+
+    if (!shopDoc.exists) {
+      return res.status(404).json({ success: false, message: 'Shop not found' });
+    }
+
+    const shop = shopDoc.data();
+
+    if (shop.status !== 'active') {
+      return res.status(403).json({ success: false, message: 'Shop is not active' });
+    }
+
+    delete shop.password;
+
+    const listingsSnapshot = await db.collection('partsListings')
+      .where('shopId', '==', shopId)
+      .where('status', '==', 'active')
+      .where('visibility', '==', 'public')
+      .get();
+
+    const listings = listingsSnapshot.docs.map(doc => ({
+      id: doc.id,
+      ...doc.data()
+    }));
+
+    res.json({
+      success: true,
+      shop: { id: shopId, ...shop },
       listings
     });
 
   } catch (err) {
-    console.error('My listings error:', err);
-
-    res.status(500).json({
-      success: false,
-      message: 'Unable to load listings'
-    });
+    console.error('Public shop profile error:', err);
+    res.status(500).json({ success: false, message: 'Unable to load shop profile' });
   }
 });
+
+/* PAGE ROUTES - PARTS */
+
+app.get('/parts-shop-profile.html', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'parts-shop-profile.html'));
+});
+
+app.get('/parts-marketplace.html', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'parts-marketplace.html'));
+});
+
+app.get('/parts-marketplace', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'parts-marketplace.html'));
+});
+
+app.get('/parts-add.html', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'parts-add.html'));
+});
+
+app.get('/parts-cart.html', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'parts-cart.html'));
+});
+
+/* SERVER START */
+
+const PORT = process.env.PORT || 3000;
 
 app.post('/api/parts/listing-status', requirePartsShop, async (req, res) => {
   try {
@@ -6518,12 +7074,10 @@ app.post('/api/parts/listing-status', requirePartsShop, async (req, res) => {
       });
     }
 
-    const allowed = ['active', 'inactive'];
-
-    if (!allowed.includes(status)) {
+    if (!['active', 'inactive'].includes(status)) {
       return res.status(400).json({
         success: false,
-        message: 'Invalid status'
+        message: 'Invalid listing status'
       });
     }
 
@@ -6542,7 +7096,7 @@ app.post('/api/parts/listing-status', requirePartsShop, async (req, res) => {
     if (listing.shopId !== shopId) {
       return res.status(403).json({
         success: false,
-        message: 'Unauthorized listing access'
+        message: 'Unauthorized listing'
       });
     }
 
@@ -6553,15 +7107,14 @@ app.post('/api/parts/listing-status', requirePartsShop, async (req, res) => {
 
     res.json({
       success: true,
-      message: `Listing status updated to ${status}`
+      message: `Listing changed to ${status}`
     });
 
   } catch (err) {
-    console.error('Listing status update error:', err);
-
+    console.error('Listing status error:', err);
     res.status(500).json({
       success: false,
-      message: 'Unable to update listing'
+      message: 'Unable to update listing status'
     });
   }
 });
@@ -6593,7 +7146,7 @@ app.post('/api/parts/delete-listing', requirePartsShop, async (req, res) => {
     if (listing.shopId !== shopId) {
       return res.status(403).json({
         success: false,
-        message: 'Unauthorized listing access'
+        message: 'Unauthorized listing'
       });
     }
 
@@ -6606,7 +7159,6 @@ app.post('/api/parts/delete-listing', requirePartsShop, async (req, res) => {
 
   } catch (err) {
     console.error('Delete listing error:', err);
-
     res.status(500).json({
       success: false,
       message: 'Unable to delete listing'
@@ -6614,694 +7166,90 @@ app.post('/api/parts/delete-listing', requirePartsShop, async (req, res) => {
   }
 });
 
-app.get('/api/parts/featured-shops', async (req, res) => {
+/* =========================================================
+   VEHICALL PARTS - CUSTOMER CART REQUEST
+========================================================= */
+
+app.post('/api/parts/cart-request', async (req, res) => {
   try {
-    const snapshot = await db.collection('partsShops')
-      .where('status', '==', 'active')
-      .where('isFeatured', '==', true)
-      .get();
-
-    const shops = snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }));
-
-    shops.sort((a, b) =>
-      new Date(b.featuredAt || b.createdAt || 0) -
-      new Date(a.featuredAt || a.createdAt || 0)
-    );
-
-    const safeShops = shops.map(shop => {
-      delete shop.password;
-      return shop;
-    });
-
-    res.json({
-      success: true,
-      shops: safeShops
-    });
-
-  } catch (err) {
-    console.error('Featured shops error:', err);
-
-    res.status(500).json({
-      success: false,
-      message: 'Unable to load featured shops'
-    });
-  }
-});
-
-app.get('/api/parts/shop-dashboard-data', requirePartsShop, async (req, res) => {
-  try {
-    const shopId = req.session.partsShopId;
-
-    const shopDoc = await db.collection('partsShops').doc(shopId).get();
-
-    if (!shopDoc.exists) {
-      return res.status(404).json({
-        success: false,
-        message: 'Shop not found'
-      });
-    }
-
-    const shop = shopDoc.data();
-    delete shop.password;
-
-    const listingsSnapshot = await db.collection('partsListings')
-      .where('shopId', '==', shopId)
-      .get();
-
-    const listings = listingsSnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }));
-
-    res.json({
-      success: true,
-      shop: {
-        id: shopId,
-        ...shop
-      },
-      stats: {
-        totalListings: listings.length,
-        activeListings: listings.filter(x => x.status === 'active').length,
-        pendingListings: listings.filter(x => x.status === 'pending_review').length,
-        customerRequests: 0
-      },
-      recentListings: listings
-        .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))
-        .slice(0, 10)
-    });
-
-  } catch (err) {
-    console.error('Parts shop dashboard error:', err);
-
-    res.status(500).json({
-      success: false,
-      message: 'Shop dashboard data error'
-    });
-  }
-});
-
-app.post('/api/parts/add-listing', requirePartsShop, upload.single('partImage'), async (req, res) => {
-  try {
-    const shopId = req.session.partsShopId;
-
-    const shopDoc = await db.collection('partsShops').doc(shopId).get();
-
-    if (!shopDoc.exists) {
-      return res.status(404).json({
-        success: false,
-        message: 'Shop not found'
-      });
-    }
-
-    const shop = shopDoc.data();
-
-    if (shop.status !== 'active') {
-      return res.status(403).json({
-        success: false,
-        message: 'Shop is not active'
-      });
-    }
-
     const {
-      partName,
-      category,
-      brand,
-      model,
-      yearFrom,
-      yearTo,
-      condition,
-      availability,
-      quantity,
-      price,
-      partNumber,
-      whatsapp,
-      description
+      customerName,
+      customerMobile,
+      message,
+      items
     } = req.body;
 
-    if (!partName || !category || !brand || !condition) {
+    if (!customerName || !customerMobile) {
       return res.status(400).json({
         success: false,
-        message: 'Part name, category, brand and condition are required'
+        message: 'Customer name and mobile number are required'
+      });
+    }
+
+    if (!Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Cart is empty'
       });
     }
 
     const now = new Date().toISOString();
 
-let imageUrl = '';
-
-if (req.file) {
-  const ext = path.extname(req.file.originalname) || '.jpg';
-  const fileName = `part-${Date.now()}-${Math.round(Math.random() * 1E9)}${ext}`;
-  const uploadPath = path.join(__dirname, 'public', 'uploads', 'parts', fileName);
-
-  require('fs').writeFileSync(uploadPath, req.file.buffer);
-
-  imageUrl = `/uploads/parts/${fileName}`;
-}
-
-    const listingData = {
-      shopId,
-      shopName: shop.shopName || '',
-      imageUrl,
-      shopLocation: shop.location || '',
-      governorate: shop.governorate || '',
-      shopWhatsapp: whatsapp ? cleanMobile(whatsapp) : cleanMobile(shop.whatsapp || ''),
-
-      partName: String(partName).trim(),
-      category: String(category).trim(),
-      brand: String(brand).trim(),
-      model: model ? String(model).trim() : '',
-      yearFrom: yearFrom ? Number(yearFrom) : '',
-      yearTo: yearTo ? Number(yearTo) : '',
-      condition: String(condition).trim(),
-      availability: availability || 'Available',
-      quantity: Number(quantity || 0),
-      price: Number(price || 0),
-      partNumber: partNumber ? String(partNumber).trim() : '',
-      description: description ? String(description).trim() : '',
-
-      status: 'active',
-      visibility: 'public',
-      source: 'manual',
-      views: 0,
-      inquiries: 0,
-
+    const requestRef = await db.collection('partsCartRequests').add({
+      requestNo: `VPR-${Date.now()}`,
+      customerName: String(customerName).trim(),
+      customerMobile: cleanMobile(customerMobile),
+      message: message || '',
+      items,
+      status: 'new',
+      source: 'customer_cart',
       createdAt: now,
       updatedAt: now
-    };
-
-    const listingRef = await db.collection('partsListings').add(listingData);
-
-    await db.collection('partsShops').doc(shopId).update({
-      totalListings: (shop.totalListings || 0) + 1,
-      activeListings: (shop.activeListings || 0) + 1,
-      lastListingAt: now,
-      updatedAt: now
     });
 
-    res.status(201).json({
-      success: true,
-      message: 'Part listing saved successfully',
-      listingId: listingRef.id
-    });
-
-  } catch (err) {
-    console.error('Add parts listing error:', err);
-
-    res.status(500).json({
-      success: false,
-      message: 'Unable to save part listing'
-    });
-  }
-});
-
-app.post('/api/parts/upload-excel', requirePartsShop, upload.single('excelFile'), async (req, res) => {
-  try {
-    const shopId = req.session.partsShopId;
-
-    if (!req.file) {
-      return res.status(400).json({
-        success: false,
-        message: 'Excel file is required'
-      });
-    }
-
-    const shopDoc = await db.collection('partsShops').doc(shopId).get();
-
-    if (!shopDoc.exists || shopDoc.data().status !== 'active') {
-      return res.status(403).json({
-        success: false,
-        message: 'Shop is not active'
-      });
-    }
-
-    const shop = shopDoc.data();
-    const workbook = XLSX.read(req.file.buffer, { type: 'buffer' });
-    const sheet = workbook.Sheets[workbook.SheetNames[0]];
-    const rows = XLSX.utils.sheet_to_json(sheet);
-
-    let imported = 0;
-    let skipped = 0;
-    const now = new Date().toISOString();
-
-    for (const row of rows) {
-      const partName = row['Part Name'];
-      const category = row['Category'];
-      const brand = row['Brand'];
-      const condition = row['Condition'];
-
-      if (!partName || !category || !brand || !condition) {
-        skipped++;
-        continue;
-      }
-
-      await db.collection('partsListings').add({
-        shopId,
-        shopName: shop.shopName || '',
-        shopLocation: shop.location || '',
-        governorate: shop.governorate || '',
-        shopWhatsapp: cleanMobile(shop.whatsapp || ''),
-
-        partName: String(partName).trim(),
-        category: String(category).trim(),
-        brand: String(brand).trim(),
-        model: row['Model'] ? String(row['Model']).trim() : '',
-        yearFrom: row['Year From'] ? Number(row['Year From']) : '',
-        yearTo: row['Year To'] ? Number(row['Year To']) : '',
-        condition: String(condition).trim(),
-        availability: row['Availability'] || 'Available',
-        quantity: Number(row['Quantity'] || 0),
-        price: Number(row['Price OMR'] || 0),
-        partNumber: row['Part Number'] ? String(row['Part Number']).trim() : '',
-        description: row['Description'] ? String(row['Description']).trim() : '',
-
-        status: 'active',
-        visibility: 'public',
-        source: 'excel',
-        views: 0,
-        inquiries: 0,
-
-        createdAt: now,
-        updatedAt: now
-      });
-
-      imported++;
-    }
-
-    await db.collection('partsShops').doc(shopId).update({
-      totalListings: (shop.totalListings || 0) + imported,
-      activeListings: (shop.activeListings || 0) + imported,
-      lastExcelUploadAt: now,
-      updatedAt: now
-    });
-
-    res.json({
-      success: true,
-      message: 'Excel uploaded successfully',
-      imported,
-      skipped
-    });
-
-  } catch (err) {
-    console.error('Parts Excel upload error:', err);
-
-    res.status(500).json({
-      success: false,
-      message: 'Unable to upload Excel file'
-    });
-  }
-});
-
-app.get('/api/parts/shop-logout', (req, res) => {
-  req.session.partsShopLoggedIn = false;
-  req.session.partsShopId = null;
-  req.session.partsShopEmail = null;
-
-  res.redirect('/parts-shop-login.html');
-});
-
-/* =========================================================
-   VEHICALL PARTS - CUSTOMER INQUIRIES
-========================================================= */
-
-app.post('/api/parts/create-inquiry', async (req, res) => {
-  try {
-
-    const {
-      listingId,
-      partName,
-      shopId,
-      shopName,
-      vehicleBrand,
-      vehicleModel,
-      listingPrice
-    } = req.body;
-
-    const now = new Date().toISOString();
-
-    await db.collection('partsInquiries').add({
-      listingId: listingId || '',
-      partName: partName || '',
-      shopId: shopId || '',
-      shopName: shopName || '',
-      customerSource: 'marketplace',
-      inquiryType: 'whatsapp',
-      vehicleBrand: vehicleBrand || '',
-      vehicleModel: vehicleModel || '',
-      listingPrice: Number(listingPrice || 0),
-      createdAt: now
-    });
-
-    if (listingId) {
-
-      const listingRef = db.collection('partsListings').doc(listingId);
-      const listingDoc = await listingRef.get();
-
-      if (listingDoc.exists) {
-
-        const current = Number(listingDoc.data().inquiries || 0);
-
-        await listingRef.update({
-          inquiries: current + 1,
-          updatedAt: now
+    for (const item of items) {
+      if (item.shopId) {
+        await db.collection('partsInquiries').add({
+          requestId: requestRef.id,
+          listingId: item.id || '',
+          partName: item.partName || '',
+          shopId: item.shopId || '',
+          shopName: item.shopName || '',
+          customerName: String(customerName).trim(),
+          customerMobile: cleanMobile(customerMobile),
+          customerMessage: message || '',
+          inquiryType: 'cart_request',
+          status: 'new',
+          createdAt: now
         });
-      }
-    }
 
-    if (shopId) {
+        const shopRef = db.collection('partsShops').doc(item.shopId);
+        const shopDoc = await shopRef.get();
 
-      const shopRef = db.collection('partsShops').doc(shopId);
-      const shopDoc = await shopRef.get();
-
-      if (shopDoc.exists) {
-
-        const current = Number(shopDoc.data().totalInquiries || 0);
-
-        await shopRef.update({
-          totalInquiries: current + 1,
-          updatedAt: now
-        });
+        if (shopDoc.exists) {
+          await shopRef.update({
+            totalInquiries: Number(shopDoc.data().totalInquiries || 0) + 1,
+            updatedAt: now
+          });
+        }
       }
     }
 
     res.json({
-      success: true
-    });
-
-  } catch (err) {
-
-    console.error('Create inquiry error:', err);
-
-    res.status(500).json({
-      success: false,
-      message: 'Unable to create inquiry'
-    });
-  }
-});
-
-app.get('/api/parts/my-inquiries', requirePartsShop, async (req, res) => {
-  try {
-
-    const shopId = req.session.partsShopId;
-
-    const snapshot = await db.collection('partsInquiries')
-      .where('shopId', '==', shopId)
-      .get();
-
-    const inquiries = snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }));
-
-    inquiries.sort((a, b) =>
-      new Date(b.createdAt || 0) -
-      new Date(a.createdAt || 0)
-    );
-
-    res.json({
       success: true,
-      inquiries
+      message: 'Part request sent successfully',
+      requestId: requestRef.id
     });
 
   } catch (err) {
-
-    console.error('My inquiries error:', err);
-
-    res.status(500).json({
-      success: false,
-      message: 'Unable to load inquiries'
-    });
-  }
-});
-
-/* =========================================================
-   VEHICALL PARTS - EDIT LISTING
-========================================================= */
-
-app.get('/api/parts/listing/:listingId', requirePartsShop, async (req, res) => {
-  try {
-
-    const { listingId } = req.params;
-    const shopId = req.session.partsShopId;
-
-    const doc = await db.collection('partsListings').doc(listingId).get();
-
-    if (!doc.exists) {
-      return res.status(404).json({
-        success: false,
-        message: 'Listing not found'
-      });
-    }
-
-    const listing = {
-      id: doc.id,
-      ...doc.data()
-    };
-
-    if (listing.shopId !== shopId) {
-      return res.status(403).json({
-        success: false,
-        message: 'Unauthorized access'
-      });
-    }
-
-    res.json({
-      success: true,
-      listing
-    });
-
-  } catch (err) {
-
-    console.error('Get listing error:', err);
+    console.error('Cart request error:', err);
 
     res.status(500).json({
       success: false,
-      message: 'Unable to load listing'
+      message: 'Unable to send cart request'
     });
   }
 });
-
-app.post('/api/parts/update-listing', requirePartsShop, upload.single('partImage'), async (req, res) => {
-  try {
-
-    const shopId = req.session.partsShopId;
-
-    const {
-      listingId,
-      partName,
-      category,
-      brand,
-      model,
-      yearFrom,
-      yearTo,
-      condition,
-      availability,
-      quantity,
-      price,
-      partNumber,
-      whatsapp,
-      description
-    } = req.body;
-
-    if (!listingId) {
-      return res.status(400).json({
-        success: false,
-        message: 'Listing ID missing'
-      });
-    }
-
-    const listingRef = db.collection('partsListings').doc(listingId);
-    const listingDoc = await listingRef.get();
-
-    if (!listingDoc.exists) {
-      return res.status(404).json({
-        success: false,
-        message: 'Listing not found'
-      });
-    }
-
-    const existing = listingDoc.data();
-
-    if (existing.shopId !== shopId) {
-      return res.status(403).json({
-        success: false,
-        message: 'Unauthorized'
-      });
-    }
-
-    let imageUrl = existing.imageUrl || '';
-
-    if (req.file) {
-
-      const ext = path.extname(req.file.originalname) || '.jpg';
-
-      const fileName = `part-${Date.now()}-${Math.round(Math.random() * 1E9)}${ext}`;
-
-      const uploadPath = path.join(
-        __dirname,
-        'public',
-        'uploads',
-        'parts',
-        fileName
-      );
-
-      require('fs').writeFileSync(uploadPath, req.file.buffer);
-
-      imageUrl = `/uploads/parts/${fileName}`;
-    }
-
-    const updateData = {
-      partName: partName || '',
-      category: category || '',
-      brand: brand || '',
-      model: model || '',
-      yearFrom: yearFrom || '',
-      yearTo: yearTo || '',
-      condition: condition || '',
-      availability: availability || '',
-      quantity: Number(quantity || 0),
-      price: Number(price || 0),
-      partNumber: partNumber || '',
-      shopWhatsapp: whatsapp || '',
-      description: description || '',
-      imageUrl,
-      updatedAt: new Date().toISOString()
-    };
-
-    await listingRef.update(updateData);
-
-    res.json({
-      success: true,
-      message: 'Listing updated successfully'
-    });
-
-  } catch (err) {
-
-    console.error('Update listing error:', err);
-
-    res.status(500).json({
-      success: false,
-      message: 'Unable to update listing'
-    });
-  }
-});
-
-/* =========================================================
-   VEHICALL PARTS - PUBLIC SHOP PROFILE
-========================================================= */
-
-app.get('/api/parts/public-shop/:shopId', async (req, res) => {
-  try {
-    const { shopId } = req.params;
-
-    const shopDoc = await db.collection('partsShops').doc(shopId).get();
-
-    if (!shopDoc.exists) {
-      return res.status(404).json({
-        success: false,
-        message: 'Shop not found'
-      });
-    }
-
-    const shop = shopDoc.data();
-
-    if (shop.status !== 'active') {
-      return res.status(403).json({
-        success: false,
-        message: 'Shop is not active'
-      });
-    }
-
-    delete shop.password;
-
-    const listingsSnapshot = await db.collection('partsListings')
-      .where('shopId', '==', shopId)
-      .where('status', '==', 'active')
-      .where('visibility', '==', 'public')
-      .get();
-
-    const listings = listingsSnapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }));
-
-    listings.sort((a, b) =>
-      new Date(b.createdAt || 0) -
-      new Date(a.createdAt || 0)
-    );
-
-    res.json({
-      success: true,
-      shop: {
-        id: shopId,
-        ...shop
-      },
-      listings
-    });
-
-  } catch (err) {
-    console.error('Public shop profile error:', err);
-
-    res.status(500).json({
-      success: false,
-      message: 'Unable to load shop profile'
-    });
-  }
-});
-
-app.get('/parts-shop-profile.html', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'parts-shop-profile.html'));
-});
-
-/* =========================================================
-   VEHICALL PARTS - PUBLIC MARKETPLACE
-========================================================= */
-
-app.get('/api/parts/public-listings', async (req, res) => {
-  try {
-    const snapshot = await db.collection('partsListings')
-      .where('status', '==', 'active')
-      .where('visibility', '==', 'public')
-      .get();
-
-    const listings = snapshot.docs.map(doc => ({
-      id: doc.id,
-      ...doc.data()
-    }));
-
-    listings.sort((a, b) =>
-      new Date(b.createdAt || 0) -
-      new Date(a.createdAt || 0)
-    );
-
-    res.json({
-      success: true,
-      listings
-    });
-
-  } catch (err) {
-    console.error('Public parts listings error:', err);
-
-    res.status(500).json({
-      success: false,
-      message: 'Unable to load public parts listings'
-    });
-  }
-});
-
-app.get('/parts-marketplace.html', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'parts-marketplace.html'));
-});
-
-app.get('/parts-marketplace', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'parts-marketplace.html'));
-});
-
-/* SERVER START */
-const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

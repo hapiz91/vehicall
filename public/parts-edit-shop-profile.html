@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Edit Shop Profile | Vehicall Parts</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
+    body{background:#07111f;color:#fff;min-height:100vh}
+    .wrap{max-width:900px;margin:40px auto;padding:22px}
+    .card{background:#0f1f33;border:1px solid #20344d;border-radius:24px;padding:26px}
+    h1{font-size:32px;margin-bottom:8px}
+    p{color:#94a3b8;margin-bottom:24px}
+    label{display:block;margin-top:16px;margin-bottom:8px;font-weight:800;color:#cbd5e1}
+    input,textarea,select{
+      width:100%;padding:13px;border-radius:14px;border:1px solid #29496d;
+      background:#07111f;color:#fff;outline:none
+    }
+    textarea{min-height:90px;resize:vertical}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+    .btn{
+      border:none;border-radius:14px;padding:13px 18px;font-weight:900;cursor:pointer;
+      color:#111827;background:linear-gradient(135deg,#f59e0b,#fb923c);margin-top:22px
+    }
+    .btn.blue{background:linear-gradient(135deg,#00c2ff,#0066ff);color:#fff}
+    .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;gap:12px;flex-wrap:wrap}
+    .msg{margin-top:14px;color:#bbf7d0;font-weight:800}
+    @media(max-width:700px){.grid{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="top">
+    <div>
+      <h1>Edit Shop Profile</h1>
+      <p>Update your public shop details, contact information, and Google Maps link.</p>
+    </div>
+    <button class="btn blue" onclick="location.href='/parts-shop-dashboard.html'">Back to Dashboard</button>
+  </div>
+
+  <div class="card">
+  <div class="grid">
+    <div>
+      <label>Shop Name</label>
+      <input id="shopName">
+    </div>
+
+    <div>
+      <label>Owner Name</label>
+      <input id="ownerName">
+    </div>
+  </div>
+
+  <div class="grid">
+    <div>
+      <label>Mobile</label>
+      <input id="mobile">
+    </div>
+
+    <div>
+      <label>WhatsApp</label>
+      <input id="whatsapp">
+    </div>
+  </div>
+
+  <div class="grid">
+    <div>
+      <label>Governorate</label>
+      <select id="governorate">
+        <option value="">Select Governorate</option>
+        <option value="Muscat">Muscat</option>
+        <option value="Dhofar">Dhofar</option>
+        <option value="Musandam">Musandam</option>
+        <option value="Al Buraimi">Al Buraimi</option>
+        <option value="Al Dakhiliyah">Al Dakhiliyah</option>
+        <option value="Al Dhahirah">Al Dhahirah</option>
+        <option value="North Al Batinah">North Al Batinah</option>
+        <option value="South Al Batinah">South Al Batinah</option>
+        <option value="North Al Sharqiyah">North Al Sharqiyah</option>
+        <option value="South Al Sharqiyah">South Al Sharqiyah</option>
+        <option value="Al Wusta">Al Wusta</option>
+      </select>
+    </div>
+
+    <div>
+      <label>Shop Type</label>
+      <select id="shopType">
+        <option value="">Select Shop Type</option>
+        <option value="Spare Parts">Spare Parts</option>
+        <option value="Used Parts">Used Parts</option>
+        <option value="New Parts">New Parts</option>
+        <option value="Accessories">Accessories</option>
+        <option value="Garage">Garage</option>
+        <option value="Tyres & Batteries">Tyres & Batteries</option>
+        <option value="Mixed Auto Services">Mixed Auto Services</option>
+      </select>
+    </div>
+  </div>
+
+  <label>Location</label>
+  <input id="location">
+
+  <label>Google Maps Link</label>
+  <input id="googleMapsLink" placeholder="Paste Google Maps shop link">
+
+  <label>Brands</label>
+  <input id="brands" placeholder="Toyota, Hyundai, Nissan, Kia...">
+
+  <div class="grid">
+    <div>
+      <label>Email / Login Email</label>
+      <input id="email" disabled>
+    </div>
+
+    <div>
+      <label>Preferred Plan</label>
+      <select id="preferredPlan">
+        <option value="Trial">Trial</option>
+        <option value="Basic">Basic</option>
+        <option value="Featured">Featured Shop</option>
+        <option value="Premium">Premium Advertising</option>
+      </select>
+    </div>
+  </div>
+
+  <div class="grid">
+    <div>
+      <label>New Password Optional</label>
+      <input id="newPassword" type="password" placeholder="Leave blank if no change">
+    </div>
+
+    <div>
+      <label>Confirm New Password</label>
+      <input id="confirmPassword" type="password" placeholder="Leave blank if no change">
+    </div>
+  </div>
+
+  <label>Notes / Shop Description</label>
+  <textarea id="notes"></textarea>
+
+  <button class="btn" onclick="updateProfile()">Save Changes</button>
+  <div id="msg" class="msg"></div>
+</div>
+</div>
+
+<script>
+async function loadProfile(){
+  const res = await fetch('/api/parts/shop-dashboard-data');
+  const data = await res.json();
+
+  if(!data.success){
+    location.href = '/parts-shop-login.html';
+    return;
+  }
+
+  const shop = data.shop || {};
+
+  document.getElementById('shopName').value = shop.shopName || '';
+  document.getElementById('ownerName').value = shop.ownerName || '';
+  document.getElementById('mobile').value = shop.mobile || '';
+  document.getElementById('whatsapp').value = shop.whatsapp || '';
+  document.getElementById('governorate').value = shop.governorate || '';
+  document.getElementById('shopType').value = shop.shopType || '';
+  document.getElementById('location').value = shop.location || '';
+  document.getElementById('googleMapsLink').value = shop.googleMapsLink || '';
+  document.getElementById('brands').value = shop.brands || '';
+  document.getElementById('notes').value = shop.notes || '';
+  document.getElementById('email').value = shop.email || '';
+  document.getElementById('preferredPlan').value = shop.preferredPlan || shop.planName || 'Trial';
+  }
+
+async function updateProfile(){
+  const payload = {
+  shopName: document.getElementById('shopName').value.trim(),
+  ownerName: document.getElementById('ownerName').value.trim(),
+
+  mobile: document.getElementById('mobile').value.trim(),
+  whatsapp: document.getElementById('whatsapp').value.trim(),
+
+  governorate: document.getElementById('governorate').value.trim(),
+  shopType: document.getElementById('shopType').value.trim(),
+
+  location: document.getElementById('location').value.trim(),
+  googleMapsLink: document.getElementById('googleMapsLink').value.trim(),
+
+  brands: document.getElementById('brands').value.trim(),
+
+  notes: document.getElementById('notes').value.trim(),
+
+  preferredPlan: document.getElementById('preferredPlan').value,
+
+  newPassword: document.getElementById('newPassword').value,
+  confirmPassword: document.getElementById('confirmPassword').value
+};
+
+  const res = await fetch('/api/parts/update-shop-profile', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify(payload)
+  });
+
+  const data = await res.json();
+  document.getElementById('msg').textContent = data.message || 'Updated';
+
+  if(data.success){
+    setTimeout(()=>location.href='/parts-shop-dashboard.html', 900);
+  }
+}
+
+loadProfile();
+</script>
+
+</body>
+</html>

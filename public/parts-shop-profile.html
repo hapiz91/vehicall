@@ -1,191 +1,728 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr">
+<html lang="en">
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Shop Profile | Vehicall Parts</title>
+  <title>Vehicall Parts Shop Profile</title>
+
   <style>
-    *{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
-    body{background:#06101d;color:#fff;min-height:100vh}
-    .nav{position:sticky;top:0;z-index:999;background:rgba(5,13,24,.96);backdrop-filter:blur(12px);border-bottom:1px solid rgba(255,255,255,.08);padding:14px 5%;display:flex;justify-content:space-between;align-items:center}
-    .brand{display:flex;align-items:center;gap:12px;color:#f59e0b;text-decoration:none;font-weight:900;font-size:22px}
-    .brand img{width:52px;height:52px;object-fit:contain;background:#fff;border-radius:14px;padding:6px}
-    .nav a,.lang-btn{color:#dbeafe;text-decoration:none;background:#0f1f33;border:1px solid #29496d;padding:10px 14px;border-radius:12px;font-weight:800;cursor:pointer}
-    .hero{padding:50px 5%;background:linear-gradient(135deg,#10243d,#06101d);border-bottom:1px solid rgba(255,255,255,.08)}
-    .shop-card{background:#0f1f33;border:1px solid #20344d;border-radius:26px;padding:30px;display:grid;grid-template-columns:120px 1fr auto;gap:22px;align-items:center}
-    .shop-logo{width:110px;height:110px;border-radius:24px;background:#fff;padding:12px;object-fit:contain}
-    h1{font-size:38px;margin-bottom:10px}
-    .muted{color:#94a3b8;line-height:1.6}
-    .badge{display:inline-block;margin-top:12px;background:rgba(34,197,94,.15);color:#bbf7d0;border-radius:999px;padding:8px 12px;font-weight:900;font-size:12px}
-    .btn{display:inline-block;text-decoration:none;border:none;border-radius:14px;padding:13px 18px;font-weight:900;cursor:pointer;text-align:center}
-    .whatsapp{background:#22c55e;color:#052e16}
-    .orange{background:linear-gradient(135deg,#f59e0b,#fb923c);color:#111827}
-    .section{padding:30px 5%}
-    .section-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;gap:12px;flex-wrap:wrap}
-    .grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
-    .part-card{background:#0f1f33;border:1px solid #20344d;border-radius:22px;overflow:hidden;transition:.25s}
-    .part-card:hover{transform:translateY(-4px);border-color:#00aaff}
-    .part-img{height:160px;background:#081827;display:grid;place-items:center;font-size:46px;border-bottom:1px solid rgba(255,255,255,.08)}
-    .part-img img{width:100%;height:100%;object-fit:cover}
-    .part-body{padding:18px}
-    .part-body h3{font-size:18px;margin-bottom:8px}
-    .meta{color:#b7c4d4;font-size:13px;line-height:1.6}
-    .price{color:#f59e0b;font-size:21px;font-weight:900;margin:12px 0}
-    .actions{display:flex;gap:8px;margin-top:14px}
-    .empty{background:#0f1f33;border:1px solid #20344d;border-radius:22px;padding:30px;color:#94a3b8;text-align:center;grid-column:1/-1}
-    [dir="rtl"] body,[dir="rtl"] .meta{text-align:right}
-    [dir="rtl"] .nav,[dir="rtl"] .actions{direction:rtl}
-    @media(max-width:1000px){.grid{grid-template-columns:repeat(2,1fr)}.shop-card{grid-template-columns:1fr;text-align:center}.shop-logo{margin:auto}}
-    @media(max-width:650px){.grid{grid-template-columns:1fr}.nav{flex-direction:column;align-items:flex-start;gap:12px}h1{font-size:30px}}
+    *{
+      margin:0;
+      padding:0;
+      box-sizing:border-box;
+      font-family:Arial,Helvetica,sans-serif;
+    }
+
+    body{
+      background:#020617;
+      color:#fff;
+      min-height:100vh;
+      font-size:14px;
+    }
+
+    .topbar{
+      position:sticky;
+      top:0;
+      z-index:1000;
+      background:rgba(2,6,23,.96);
+      backdrop-filter:blur(14px);
+      border-bottom:1px solid rgba(255,255,255,.08);
+      padding:14px 0;
+    }
+
+    .container{
+      width:min(1400px,92%);
+      margin:auto;
+    }
+
+    .nav{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:16px;
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:12px;
+      text-decoration:none;
+      color:#fff;
+    }
+
+    .brand img{
+      width:48px;
+      height:48px;
+      object-fit:contain;
+      background:#fff;
+      border-radius:14px;
+      padding:5px;
+    }
+
+    .brand strong{
+      font-size:20px;
+      font-weight:900;
+      color:#f8fafc;
+    }
+
+    .nav-actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .btn{
+      border:none;
+      border-radius:13px;
+      padding:10px 14px;
+      font-weight:900;
+      cursor:pointer;
+      text-decoration:none;
+      display:inline-flex;
+      align-items:center;
+      gap:7px;
+      font-size:13px;
+      color:#fff;
+      background:linear-gradient(135deg,#0ea5e9,#2563eb);
+    }
+
+    .btn.orange{
+      background:linear-gradient(135deg,#f59e0b,#ea580c);
+      color:#111827;
+    }
+
+    .btn.green{
+      background:#22c55e;
+      color:#052e16;
+    }
+
+    .btn.gray{
+      background:#334155;
+      color:#e2e8f0;
+    }
+
+    .hero{
+  position:sticky;
+  top:78px;
+  z-index:900;
+
+  margin-top:14px;
+
+  background:
+    radial-gradient(circle at right, rgba(14,165,233,.12), transparent 35%),
+    linear-gradient(135deg,#07111f,#0f172a);
+
+  border:1px solid rgba(255,255,255,.07);
+  border-radius:18px;
+
+  padding:14px 18px;
+
+  display:grid;
+  grid-template-columns:70px 1fr auto;
+  gap:14px;
+  align-items:center;
+}
+
+    .shop-logo{
+  width:70px;
+  height:70px;
+  border-radius:16px;
+  background:#fff;
+  padding:5px;
+  object-fit:contain;
+  overflow:hidden;
+  flex-shrink:0;
+}
+
+    .shop-title h1{
+  font-size:20px;
+  font-weight:900;
+  line-height:1.2;
+  margin-bottom:3px;
+}
+
+    .shop-meta{
+  color:#94a3b8;
+  font-size:12px;
+  line-height:1.4;
+}
+
+    .badges{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      margin-top:10px;
+    }
+
+    .badge{
+      display:inline-block;
+      padding:6px 10px;
+      border-radius:999px;
+      font-size:11px;
+      font-weight:900;
+    }
+
+    .verified{
+      background:rgba(34,197,94,.15);
+      color:#bbf7d0;
+    }
+
+    .featured{
+      background:rgba(245,158,11,.15);
+      color:#fde68a;
+    }
+
+    .premium{
+      background:rgba(14,165,233,.15);
+      color:#bae6fd;
+    }
+
+    .hero-actions{
+  display:flex;
+  gap:8px;
+  align-items:center;
+}
+
+    .info-grid{
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:14px;
+      margin-top:18px;
+    }
+
+    .info-card{
+      background:#07111f;
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:18px;
+      padding:16px;
+    }
+
+    .info-card label{
+      display:block;
+      color:#94a3b8;
+      font-size:12px;
+      margin-bottom:6px;
+    }
+
+    .info-card strong{
+      font-size:14px;
+      color:#f8fafc;
+      word-break:break-word;
+    }
+
+    .section{
+      margin-top:28px;
+      background:#07111f;
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:22px;
+      padding:20px;
+    }
+
+    .section-header{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:14px;
+      flex-wrap:wrap;
+      margin-bottom:16px;
+    }
+
+    .section-header h2{
+      font-size:22px;
+      font-weight:900;
+    }
+
+    .search-box{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .search-box input{
+      min-width:260px;
+      padding:12px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.12);
+      background:#020617;
+      color:#fff;
+      outline:none;
+    }
+
+    .table-wrap{
+      overflow:auto;
+    }
+
+    table{
+      width:100%;
+      border-collapse:collapse;
+      min-width:900px;
+    }
+
+    th{
+      text-align:left;
+      color:#facc15;
+      font-size:12px;
+      text-transform:uppercase;
+      letter-spacing:.04em;
+      padding:13px;
+      background:#0f172a;
+      border-bottom:1px solid rgba(255,255,255,.08);
+    }
+
+    td{
+      padding:14px 13px;
+      border-bottom:1px solid rgba(255,255,255,.07);
+      vertical-align:middle;
+      font-size:13px;
+      color:#e2e8f0;
+    }
+
+    .part-cell{
+      display:flex;
+      align-items:center;
+      gap:12px;
+    }
+
+    .part-img{
+      width:54px;
+      height:54px;
+      border-radius:14px;
+      background:#0f172a;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      overflow:hidden;
+      color:#facc15;
+      font-size:20px;
+      flex-shrink:0;
+      border:1px solid rgba(255,255,255,.08);
+    }
+
+    .part-img img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+    }
+
+    .part-name{
+      font-weight:900;
+      color:#fff;
+      font-size:14px;
+      margin-bottom:4px;
+    }
+
+    .muted{
+      color:#94a3b8;
+      font-size:12px;
+    }
+
+    .price{
+      color:#f59e0b;
+      font-weight:900;
+      font-size:15px;
+    }
+
+    .stock{
+      display:inline-block;
+      padding:5px 10px;
+      border-radius:999px;
+      background:rgba(34,197,94,.15);
+      color:#bbf7d0;
+      font-weight:900;
+      font-size:11px;
+    }
+
+    .empty{
+      text-align:center;
+      color:#94a3b8;
+      padding:28px;
+    }
+
+    .footer-actions{
+      position:sticky;
+      bottom:0;
+      background:rgba(2,6,23,.92);
+      backdrop-filter:blur(14px);
+      border-top:1px solid rgba(255,255,255,.08);
+      padding:12px 0;
+      margin-top:28px;
+      display:none;
+    }
+
+    .footer-actions .container{
+      display:grid;
+      grid-template-columns:1fr 1fr 1fr;
+      gap:10px;
+    }
+
+    @media(max-width:900px){
+      .hero{
+        grid-template-columns:70px 1fr;
+      }
+
+      .shop-logo{
+        width:70px;
+        height:70px;
+        border-radius:16px;
+      }
+
+      .shop-title h1{
+        font-size:22px;
+      }
+
+      .hero-actions{
+        grid-column:1 / -1;
+        flex-direction:row;
+        flex-wrap:wrap;
+      }
+
+      .info-grid{
+        grid-template-columns:1fr 1fr;
+      }
+
+      .nav{
+        align-items:flex-start;
+        flex-direction:column;
+      }
+
+      .footer-actions{
+        display:block;
+      }
+    }
+
+    @media(max-width:600px){
+      .info-grid{
+        grid-template-columns:1fr;
+      }
+
+      .search-box input{
+        min-width:100%;
+      }
+
+      .hero-actions .btn{
+        width:100%;
+        justify-content:center;
+      }
+
+      .footer-actions .container{
+        grid-template-columns:1fr;
+      }
+    }
   </style>
 </head>
 
 <body>
 
-<nav class="nav">
-  <a href="/parts-marketplace.html" class="brand">
-    <img src="/images/vehicall-logo.png" onerror="this.src='/logo.png'" alt="Vehicall Logo">
-    <span>Vehicall Parts</span>
-  </a>
+<header class="topbar">
+  <div class="container nav">
+    <a class="brand" href="/parts">
+      <img src="/images/vehicall-logo.png" onerror="this.src='/logo.png'" alt="Vehicall Logo">
+      <strong>Vehicall Parts</strong>
+    </a>
 
-  <div style="display:flex;gap:10px;flex-wrap:wrap;">
-    <a href="/parts-marketplace.html" data-en="Marketplace" data-ar="السوق">Marketplace</a>
-    <button class="lang-btn" onclick="toggleLang()" id="langBtn">العربية</button>
+    <div class="nav-actions">
+      <a class="btn gray" href="/parts">Marketplace</a>
+      <button class="btn gray" onclick="toggleArabic()">العربية</button>
+    </div>
   </div>
-</nav>
+</header>
 
-<section class="hero">
-  <div class="shop-card">
-    <img class="shop-logo" src="/logo.png" alt="Shop Logo">
+<main class="container">
 
-    <div>
+  <section class="hero">
+    <img class="shop-logo" id="shopLogo" src="/images/vehicall-logo.png" onerror="this.src='/logo.png'" alt="Shop Logo">
+
+    <div class="shop-title">
       <h1 id="shopName">Loading Shop...</h1>
-      <p class="muted" id="shopInfo">Fetching shop profile.</p>
-      <span class="badge" data-en="Verified Vehicall Parts Shop" data-ar="محل موثق في فيهيكل">Verified Vehicall Parts Shop</span>
+      <div class="shop-meta" id="shopMeta">Loading shop details...</div>
+
+      <div class="badges">
+        <span class="badge verified">Verified Vehicall Parts Shop</span>
+        <span class="badge featured" id="featuredBadge" style="display:none;">Featured Shop</span>
+        <span class="badge premium" id="premiumBadge" style="display:none;">Premium Dealer</span>
+      </div>
     </div>
 
-    <div>
-      <a id="shopWhatsapp" class="btn whatsapp" href="#" target="_blank" data-en="WhatsApp Shop" data-ar="تواصل واتساب">WhatsApp Shop</a>
+    <div class="hero-actions">
+      <a class="btn green" id="whatsappBtn" href="#">WhatsApp</a>
+      <a class="btn" id="callBtn" href="#">Call</a>
+      <a class="btn orange" id="locationBtn" href="#" target="_blank">Location</a>
     </div>
-  </div>
-</section>
+  </section>
 
-<section class="section">
-  <div class="section-head">
-    <h2 data-en="Shop Listings" data-ar="قطع الغيار المتوفرة">Shop Listings</h2>
-    <a href="/parts-marketplace.html" class="btn orange" data-en="Back to Marketplace" data-ar="الرجوع للسوق">Back to Marketplace</a>
-  </div>
+  <section class="info-grid">
+    <div class="info-card">
+      <label>Shop Type</label>
+      <strong id="shopType">-</strong>
+    </div>
 
-  <div class="grid" id="partsGrid">
-    <div class="empty">Loading listings...</div>
+    <div class="info-card">
+      <label>Governorate</label>
+      <strong id="governorate">-</strong>
+    </div>
+
+    <div class="info-card">
+      <label>Mobile</label>
+      <strong id="mobile">-</strong>
+    </div>
+
+    <div class="info-card">
+      <label>Brands / Specialization</label>
+      <strong id="brands">-</strong>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-header">
+      <div>
+        <h2>Available Parts</h2>
+        <p class="muted">Browse listed spare parts from this shop.</p>
+      </div>
+
+      <div class="search-box">
+        <input type="text" id="searchInput" placeholder="Search part, brand, model..." oninput="renderListings()">
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Part</th>
+            <th>Brand</th>
+            <th>Model</th>
+            <th>Condition</th>
+            <th>Availability</th>
+            <th>Price</th>
+            <th>Contact</th>
+          </tr>
+        </thead>
+
+        <tbody id="listingsBody">
+          <tr>
+            <td colspan="7" class="empty">Loading listings...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+</main>
+
+<div class="footer-actions">
+  <div class="container">
+    <a class="btn green" id="mobileWhatsappBtn" href="#">WhatsApp</a>
+    <a class="btn" id="mobileCallBtn" href="#">Call</a>
+    <a class="btn orange" id="mobileLocationBtn" href="#" target="_blank">Location</a>
   </div>
-</section>
+</div>
 
 <script>
-let currentLang = localStorage.getItem('vehicall_parts_lang') || 'en';
-let shop = {};
-let listings = [];
+let shopData = {};
+let listingsData = [];
 
-const params = new URLSearchParams(window.location.search);
-const shopId = params.get('id');
+function getShopId(){
+  const params = new URLSearchParams(window.location.search);
+  return params.get("shopId") || params.get("id") || "";
+}
 
-const icons = {
-  'Engine Parts':'⚙️','Body Parts':'🚘','Electrical Parts':'🔌','Suspension':'🔩',
-  'Brake System':'🛑','Lights':'💡','Interior':'💺','Transmission':'⚙️',
-  'Tires & Wheels':'🛞','Battery':'🔋','Oil & Filters':'🛢️','Accessories':'✨','Other':'🔧'
-};
+function cleanMobile(mobile){
+  return String(mobile || "").replace(/\D/g,"");
+}
 
-if(!shopId){
-  alert('Shop ID missing');
-  window.location.href = '/parts-marketplace.html';
+function getWhatsAppLink(partName){
+  const mobile = cleanMobile(shopData.whatsapp || shopData.mobile);
+
+  let msg = `Hello, I found your shop on Vehicall Parts.`;
+
+  if(partName){
+    msg += ` I want to inquire about: ${partName}`;
+  }
+
+  return `https://wa.me/${mobile}?text=${encodeURIComponent(msg)}`;
+}
+
+function getCallLink(){
+  const mobile = cleanMobile(shopData.mobile || shopData.whatsapp);
+  return `tel:${mobile}`;
+}
+
+function getLocationLink(){
+  if(shopData.googleMapLink){
+    return shopData.googleMapLink;
+  }
+
+  const locationText = [
+    shopData.location,
+    shopData.governorate,
+    "Oman"
+  ].filter(Boolean).join(" ");
+
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(locationText)}`;
 }
 
 async function loadShopProfile(){
   try{
+    const shopId = getShopId();
+
+    if(!shopId){
+      document.getElementById("shopName").textContent = "Shop not found";
+      return;
+    }
+
     const res = await fetch(`/api/parts/public-shop/${shopId}`);
     const data = await res.json();
 
     if(!data.success){
-      throw new Error(data.message || 'Unable to load shop');
+      document.getElementById("shopName").textContent = data.message || "Shop not found";
+      return;
     }
 
-    shop = data.shop || {};
-    listings = data.listings || [];
+    shopData = data.shop || {};
+    listingsData = data.listings || [];
 
-    document.getElementById('shopName').textContent = shop.shopName || 'Vehicall Parts Shop';
-    document.getElementById('shopInfo').textContent =
-      `${shop.location || '-'} | ${shop.governorate || '-'} | ${shop.shopType || '-'}`;
-
-    const cleanWa = String(shop.whatsapp || '').replace(/^968/, '');
-    document.getElementById('shopWhatsapp').href = cleanWa ? `https://wa.me/968${cleanWa}` : '#';
-
+    renderShop();
     renderListings();
-    applyLanguage();
 
   }catch(err){
     console.error(err);
-    document.getElementById('partsGrid').innerHTML =
-      `<div class="empty">Unable to load shop profile.</div>`;
+    document.getElementById("shopName").textContent = "Unable to load shop";
   }
+}
+
+function renderShop(){
+  document.getElementById("shopName").textContent =
+    shopData.shopName || "Vehicall Parts Shop";
+
+  document.getElementById("shopMeta").textContent =
+    `${shopData.location || "-"} | ${shopData.governorate || "-"} | ${shopData.shopType || "Spare Parts Shop"}`;
+
+  document.getElementById("shopType").textContent =
+    shopData.shopType || "-";
+
+  document.getElementById("governorate").textContent =
+    shopData.governorate || "-";
+
+  document.getElementById("mobile").textContent =
+    shopData.mobile || shopData.whatsapp || "-";
+
+  document.getElementById("brands").textContent =
+    shopData.brands || "-";
+
+  const logoElement = document.getElementById("shopLogo");
+
+const logoUrl =
+  shopData.logoUrl ||
+  shopData.shopLogoUrl ||
+  "";
+
+if(
+  logoUrl &&
+  !logoUrl.toLowerCase().includes("vehicall") &&
+  !logoUrl.toLowerCase().includes("banner")
+){
+  logoElement.src = logoUrl;
+}else{
+  logoElement.src = "/images/vehicall-logo.png";
+}
+
+  if(shopData.featuredBadge || shopData.isFeatured){
+    document.getElementById("featuredBadge").style.display = "inline-block";
+  }
+
+  if(shopData.premiumBadge || shopData.currentPackage === "premium"){
+    document.getElementById("premiumBadge").style.display = "inline-block";
+  }
+
+  const whatsappLink = getWhatsAppLink();
+  const callLink = getCallLink();
+  const locationLink = getLocationLink();
+
+  document.getElementById("whatsappBtn").href = whatsappLink;
+  document.getElementById("mobileWhatsappBtn").href = whatsappLink;
+
+  document.getElementById("callBtn").href = callLink;
+  document.getElementById("mobileCallBtn").href = callLink;
+
+  document.getElementById("locationBtn").href = locationLink;
+  document.getElementById("mobileLocationBtn").href = locationLink;
 }
 
 function renderListings(){
-  const grid = document.getElementById('partsGrid');
+  const tbody = document.getElementById("listingsBody");
+  const search = document.getElementById("searchInput").value.toLowerCase().trim();
 
-  if(!listings.length){
-    grid.innerHTML = `<div class="empty">${currentLang === 'ar' ? 'لا توجد قطع متوفرة حالياً.' : 'No active listings from this shop yet.'}</div>`;
+  let rows = listingsData.filter(item => {
+    const text = [
+      item.partName,
+      item.brand,
+      item.model,
+      item.vehicleModel,
+      item.condition,
+      item.stockStatus
+    ].join(" ").toLowerCase();
+
+    return !search || text.includes(search);
+  });
+
+  if(!rows.length){
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="7" class="empty">No parts found.</td>
+      </tr>
+    `;
     return;
   }
 
-  grid.innerHTML = listings.map(item => {
-    const price = Number(item.price || 0);
-    const whatsapp = item.shopWhatsapp || shop.whatsapp || '';
-    const cleanWa = String(whatsapp).replace(/^968/, '');
-    const msg = encodeURIComponent(`Hello, I found this part on Vehicall Parts:\n\nPart: ${item.partName || '-'}\nBrand: ${item.brand || '-'}\nModel: ${item.model || '-'}\nPrice: ${price.toFixed(3)} OMR\n\nIs it available?`);
-    const waLink = cleanWa ? `https://wa.me/968${cleanWa}?text=${msg}` : '#';
+  tbody.innerHTML = rows.map(item => {
+    const partName = item.partName || "-";
+    const image = item.imageUrl || item.partImageUrl || "";
 
     return `
-      <div class="part-card">
-        <div class="part-img">
-          ${item.imageUrl ? `<img src="${item.imageUrl}" onerror="this.parentElement.innerHTML='${icons[item.category] || '🔧'}'">` : icons[item.category] || '🔧'}
-        </div>
-        <div class="part-body">
-          <h3>${item.partName || '-'}</h3>
-          <div class="meta">
-            ${item.brand || '-'} ${item.model || ''}<br>
-            ${item.category || '-'} | ${item.condition || '-'}<br>
-            ${item.availability || 'Available'}
+      <tr>
+        <td>
+          <div class="part-cell">
+            <div class="part-img">
+              ${
+                image
+                ? `<img src="${image}" alt="${partName}">`
+                : `💡`
+              }
+            </div>
+            <div>
+              <div class="part-name">${partName}</div>
+              <div class="muted">${item.category || item.partCategory || "Spare Part"}</div>
+            </div>
           </div>
-          <div class="price">${price ? price.toFixed(3) + ' OMR' : (currentLang === 'ar' ? 'السعر عند الطلب' : 'Price on request')}</div>
-          <div class="actions">
-            <a class="btn whatsapp" href="${waLink}" target="_blank">${currentLang === 'ar' ? 'واتساب' : 'WhatsApp'}</a>
-          </div>
-        </div>
-      </div>
+        </td>
+
+        <td>${item.brand || "-"}</td>
+
+        <td>${item.model || item.vehicleModel || "-"}</td>
+
+        <td>${item.condition || "-"}</td>
+
+        <td>
+          <span class="stock">${item.stockStatus || item.availability || "Available"}</span>
+        </td>
+
+        <td>
+          <span class="price">${Number(item.price || 0).toFixed(3)} OMR</span>
+        </td>
+
+        <td>
+          <a class="btn green" href="${getWhatsAppLink(partName)}" target="_blank">WhatsApp</a>
+        </td>
+      </tr>
     `;
-  }).join('');
+  }).join("");
 }
 
-function toggleLang(){
-  currentLang = currentLang === 'en' ? 'ar' : 'en';
-  localStorage.setItem('vehicall_parts_lang', currentLang);
-  applyLanguage();
-  renderListings();
+function toggleArabic(){
+  alert("Arabic public shop profile will be connected next.");
 }
 
-function applyLanguage(){
-  document.documentElement.lang = currentLang;
-  document.documentElement.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
-
-  document.querySelectorAll('[data-en]').forEach(el => {
-    el.textContent = el.getAttribute(`data-${currentLang}`);
-  });
-
-  document.getElementById('langBtn').textContent =
-    currentLang === 'en' ? 'العربية' : 'English';
-}
-
-loadShopProfile();
+document.addEventListener("DOMContentLoaded", loadShopProfile);
 </script>
 
 </body>

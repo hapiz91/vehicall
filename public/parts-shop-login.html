@@ -6,213 +6,367 @@
   <title>Vehicall Parts Shop Login</title>
 
   <style>
-    *{
-      margin:0;
-      padding:0;
-      box-sizing:border-box;
-      font-family:Arial,sans-serif;
-    }
-
+    *{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
     body{
       min-height:100vh;
-      background:#07111f;
-      display:flex;
-      justify-content:center;
-      align-items:center;
-      padding:20px;
+      background:linear-gradient(135deg,#020617,#07111f);
       color:#fff;
+      display:grid;
+      place-items:center;
+      padding:20px;
     }
 
-    .card{
+    .box{
       width:100%;
-      max-width:420px;
-      background:#0f1f33;
-      border:1px solid #20344d;
+      max-width:430px;
+      background:#07111f;
+      border:1px solid rgba(255,255,255,.08);
       border-radius:24px;
-      padding:35px;
+      padding:28px;
+      box-shadow:0 30px 90px rgba(0,0,0,.45);
     }
 
-    .logo{
+    .brand{
       text-align:center;
-      margin-bottom:25px;
+      margin-bottom:24px;
     }
 
-    .logo img{
-      width:80px;
+    .brand img{
+      width:78px;
+      height:78px;
+      object-fit:contain;
       background:#fff;
-      border-radius:18px;
+      border-radius:20px;
       padding:8px;
+      margin-bottom:12px;
     }
 
     h1{
-      text-align:center;
-      margin-bottom:10px;
+      font-size:26px;
+      margin-bottom:6px;
     }
 
-    .subtitle{
-      text-align:center;
-      color:#9fb0c5;
-      margin-bottom:28px;
+    p{
+      color:#94a3b8;
+      font-size:14px;
       line-height:1.5;
     }
 
     label{
       display:block;
-      margin-bottom:8px;
-      margin-top:18px;
-      font-weight:700;
+      margin-top:16px;
+      margin-bottom:7px;
+      color:#cbd5e1;
+      font-weight:800;
+      font-size:13px;
     }
 
     input{
       width:100%;
       padding:14px;
-      border:none;
-      border-radius:12px;
-      background:#081827;
-      color:#fff;
+      border-radius:14px;
       border:1px solid #29496d;
+      background:#020617;
+      color:#fff;
+      outline:none;
     }
 
-    button{
+    .btn{
       width:100%;
-      margin-top:24px;
-      padding:15px;
+      margin-top:18px;
       border:none;
       border-radius:14px;
+      padding:14px;
+      font-weight:900;
+      cursor:pointer;
+      background:linear-gradient(135deg,#f59e0b,#fb923c);
+      color:#111827;
+    }
+
+    .btn.blue{
       background:linear-gradient(135deg,#00c2ff,#0066ff);
       color:#fff;
-      font-size:16px;
-      font-weight:700;
+    }
+
+    .link-btn{
+      margin-top:14px;
+      background:none;
+      border:none;
+      color:#38bdf8;
+      font-weight:800;
       cursor:pointer;
+      width:100%;
     }
 
-    .msg{
+    .bottom{
       margin-top:18px;
-      padding:12px;
-      border-radius:10px;
-      display:none;
-    }
-
-    .success{
-      background:rgba(34,197,94,0.15);
-      color:#bbf7d0;
-    }
-
-    .error{
-      background:rgba(239,68,68,0.15);
-      color:#fecaca;
-    }
-
-    .register-link{
       text-align:center;
-      margin-top:22px;
-      color:#9fb0c5;
+      color:#94a3b8;
+      font-size:13px;
     }
 
-    .register-link a{
-      color:#00c2ff;
+    .bottom a{
+      color:#f59e0b;
+      font-weight:900;
       text-decoration:none;
-      font-weight:700;
+    }
+
+    .message{
+      margin-top:14px;
+      padding:12px;
+      border-radius:14px;
+      display:none;
+      font-size:13px;
+      line-height:1.5;
+    }
+
+    .message.success{
+      display:block;
+      background:rgba(34,197,94,.14);
+      color:#bbf7d0;
+      border:1px solid rgba(34,197,94,.25);
+    }
+
+    .message.error{
+      display:block;
+      background:rgba(239,68,68,.14);
+      color:#fecaca;
+      border:1px solid rgba(239,68,68,.25);
+    }
+
+    .modal-overlay{
+      position:fixed;
+      inset:0;
+      background:rgba(2,6,23,.82);
+      backdrop-filter:blur(8px);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      padding:20px;
+      z-index:9999;
+    }
+
+    .modal{
+      width:100%;
+      max-width:450px;
+      background:#07111f;
+      border:1px solid rgba(255,255,255,.1);
+      border-radius:24px;
+      padding:24px;
+      box-shadow:0 30px 90px rgba(0,0,0,.55);
+    }
+
+    .modal h2{
+      font-size:22px;
+      margin-bottom:8px;
+      color:#facc15;
+    }
+
+    .modal-actions{
+      display:flex;
+      gap:10px;
+      margin-top:16px;
+    }
+
+    .modal-actions button{
+      flex:1;
+    }
+
+    .ghost{
+      background:#334155!important;
+      color:#e2e8f0!important;
+    }
+
+    .token-box{
+      margin-top:14px;
+      padding:14px;
+      border-radius:14px;
+      background:#020617;
+      border:1px solid #29496d;
+      color:#facc15;
+      font-weight:900;
+      text-align:center;
+      display:none;
+      letter-spacing:.08em;
     }
   </style>
 </head>
 
 <body>
 
-<div class="card">
-
-  <div class="logo">
-    <img src="/images/vehicall-logo.png"
-         onerror="this.src='/logo.png'">
-  </div>
-
-  <h1>Shop Login</h1>
-
-  <div class="subtitle">
-    Vehicall Parts Marketplace Partner Portal
+<div class="box">
+  <div class="brand">
+    <img src="/images/vehicall-logo.png" onerror="this.src='/logo.png'" alt="Vehicall Logo">
+    <h1>Parts Shop Login</h1>
+    <p>Login to manage your Vehicall Parts shop, listings, Excel uploads and package upgrades.</p>
   </div>
 
   <form id="loginForm">
-
     <label>Email</label>
-    <input type="email" id="email" required />
+    <input type="email" id="email" placeholder="shop@example.com" required>
 
     <label>Password</label>
-    <input type="password" id="password" required />
+    <input type="password" id="password" placeholder="Enter password" required>
 
-    <button type="submit">
-      Login
-    </button>
-
-    <div id="message" class="msg"></div>
-
+    <button class="btn" type="submit">Login</button>
   </form>
 
-  <div class="register-link">
-    New Shop?
-    <a href="/parts-shop-register.html">
-      Register Here
-    </a>
-  </div>
+  <button class="link-btn" onclick="openForgotModal()">Forgot Password?</button>
 
+  <div id="message" class="message"></div>
+
+  <div class="bottom">
+    New shop?
+    <a href="/parts-shop-register.html">Register here</a>
+  </div>
+</div>
+
+<div class="modal-overlay" id="forgotModal">
+  <div class="modal">
+    <h2>Forgot Password</h2>
+    <p>Enter your registered shop email. For MVP, the reset token will be shown on screen.</p>
+
+    <label>Registered Email</label>
+    <input type="email" id="forgotEmail" placeholder="shop@example.com">
+
+    <button class="btn blue" onclick="generateResetToken()">Generate Reset Token</button>
+
+    <div class="token-box" id="resetTokenBox"></div>
+
+    <label>Reset Token</label>
+    <input type="text" id="resetToken" placeholder="Enter reset token">
+
+    <label>New Password</label>
+    <input type="password" id="newPassword" placeholder="Enter new password">
+
+    <button class="btn" onclick="resetPassword()">Reset Password</button>
+
+    <div id="forgotMessage" class="message"></div>
+
+    <div class="modal-actions">
+      <button class="btn ghost" onclick="closeForgotModal()">Close</button>
+    </div>
+  </div>
 </div>
 
 <script>
+const messageBox = document.getElementById("message");
+const forgotMessage = document.getElementById("forgotMessage");
 
-const form = document.getElementById('loginForm');
-const message = document.getElementById('message');
+function showMessage(type, text){
+  messageBox.className = "message " + type;
+  messageBox.textContent = text;
+}
 
-form.addEventListener('submit', async (e)=>{
+function showForgotMessage(type, text){
+  forgotMessage.className = "message " + type;
+  forgotMessage.textContent = text;
+}
 
+function openForgotModal(){
+  document.getElementById("forgotModal").style.display = "flex";
+}
+
+function closeForgotModal(){
+  document.getElementById("forgotModal").style.display = "none";
+}
+
+document.getElementById("loginForm").addEventListener("submit", async function(e){
   e.preventDefault();
 
-  message.style.display='none';
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value;
 
   try{
-
-    const payload = {
-      email: document.getElementById('email').value.trim(),
-      password: document.getElementById('password').value
-    };
-
-    const res = await fetch('/api/parts/shop-login',{
-      method:'POST',
-      headers:{
-        'Content-Type':'application/json'
-      },
-      body:JSON.stringify(payload)
+    const res = await fetch("/api/parts/shop-login", {
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body:JSON.stringify({ email, password })
     });
 
     const data = await res.json();
 
-    message.style.display='block';
-
     if(data.success){
-
-      message.className='msg success';
-      message.textContent=data.message;
-
-      setTimeout(()=>{
-        window.location.href='/parts-shop-dashboard.html';
-      },1200);
-
+      localStorage.setItem("partsShopId", data.shopId || "");
+      showMessage("success", "Login successful. Redirecting...");
+      setTimeout(() => {
+        window.location.href = "/parts-shop-dashboard.html";
+      }, 700);
     }else{
-
-      message.className='msg error';
-      message.textContent=data.message;
+      showMessage("error", data.message || "Login failed");
     }
 
   }catch(err){
-
     console.error(err);
-
-    message.style.display='block';
-    message.className='msg error';
-    message.textContent='Login failed';
+    showMessage("error", "Login failed. Please try again.");
   }
-
 });
 
+async function generateResetToken(){
+  const email = document.getElementById("forgotEmail").value.trim();
+
+  if(!email){
+    showForgotMessage("error", "Please enter registered email.");
+    return;
+  }
+
+  try{
+    const res = await fetch("/api/parts/shop-forgot-password", {
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body:JSON.stringify({ email })
+    });
+
+    const data = await res.json();
+
+    if(data.success){
+      document.getElementById("resetTokenBox").style.display = "block";
+      document.getElementById("resetTokenBox").textContent = data.resetToken;
+      document.getElementById("resetToken").value = data.resetToken;
+      showForgotMessage("success", "Reset token generated. Use this token to set a new password.");
+    }else{
+      showForgotMessage("error", data.message || "Unable to generate reset token.");
+    }
+
+  }catch(err){
+    console.error(err);
+    showForgotMessage("error", "Unable to generate reset token.");
+  }
+}
+
+async function resetPassword(){
+  const email = document.getElementById("forgotEmail").value.trim();
+  const resetToken = document.getElementById("resetToken").value.trim();
+  const newPassword = document.getElementById("newPassword").value;
+
+  if(!email || !resetToken || !newPassword){
+    showForgotMessage("error", "Email, reset token and new password are required.");
+    return;
+  }
+
+  try{
+    const res = await fetch("/api/parts/shop-reset-password", {
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body:JSON.stringify({ email, resetToken, newPassword })
+    });
+
+    const data = await res.json();
+
+    if(data.success){
+      showForgotMessage("success", data.message || "Password reset successfully.");
+      setTimeout(() => {
+        closeForgotModal();
+      }, 1200);
+    }else{
+      showForgotMessage("error", data.message || "Password reset failed.");
+    }
+
+  }catch(err){
+    console.error(err);
+    showForgotMessage("error", "Password reset failed.");
+  }
+}
 </script>
 
 </body>

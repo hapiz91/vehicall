@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="en" dir="ltr">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Vehicall Parts Marketplace</title>
 
   <style>
@@ -11,451 +11,481 @@
     body{background:#06101d;color:#fff;min-height:100vh}
 
     .nav{
-      position:sticky;top:0;z-index:9999;
-      background:rgba(5,13,24,.96);
-      backdrop-filter:blur(14px);
-      border-bottom:1px solid rgba(255,255,255,.08);
-      padding:14px 5%;
+      position:sticky;
+      top:0;
+      z-index:9999;
+      background:#050d18;
+      border-bottom:1px solid #17304d;
+      padding:12px 5%;
       display:grid;
-      grid-template-columns:220px 1fr auto;
+      grid-template-columns:240px 1fr auto;
       gap:22px;
       align-items:center;
     }
 
     .brand{
-      display:flex;align-items:center;gap:12px;
-      color:#f59e0b;text-decoration:none;font-weight:900;font-size:22px;
+      display:flex;
+      align-items:center;
+      gap:12px;
+      color:#f59e0b;
+      text-decoration:none;
+      font-weight:900;
+      font-size:24px;
     }
 
     .brand img{
-      width:54px;height:54px;object-fit:contain;
-      background:#fff;border-radius:15px;padding:6px;
+      width:58px;
+      height:58px;
+      object-fit:contain;
+      background:white;
+      border-radius:15px;
+      padding:6px;
     }
 
-    .brand small{display:block;color:#fff;font-size:12px;font-weight:600;margin-top:3px}
+    .brand small{
+      display:block;
+      color:white;
+      font-size:12px;
+      margin-top:2px;
+    }
 
     .nav-search{
-      display:flex;align-items:center;background:#0f1f33;
-      border:1px solid #29496d;border-radius:15px;overflow:hidden;
-      max-width:520px;
+      display:flex;
+      max-width:560px;
+      background:#0f1f33;
+      border:1px solid #29496d;
+      border-radius:14px;
+      overflow:hidden;
     }
 
     .nav-search input{
-      flex:1;background:transparent;border:none;color:#fff;padding:14px;outline:none;
+      flex:1;
+      border:none;
+      outline:none;
+      background:transparent;
+      color:white;
+      padding:14px;
+      font-size:15px;
     }
 
     .nav-search button{
-      background:#f59e0b;border:none;color:#111827;padding:14px 18px;font-weight:900;cursor:pointer;
+      width:62px;
+      border:none;
+      background:#f59e0b;
+      color:#111827;
+      font-weight:900;
+      cursor:pointer;
+      font-size:18px;
     }
 
-    .nav-links{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
-
-    .nav-links a,.lang-btn{
-      color:#dbeafe;text-decoration:none;background:#0f1f33;
-      border:1px solid #29496d;padding:11px 15px;border-radius:13px;
-      font-weight:800;cursor:pointer;
+    .nav-links{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      flex-wrap:wrap;
     }
 
-    .nav-links a:hover,.lang-btn:hover{color:#facc15;border-color:#f59e0b}
-    .orange{background:linear-gradient(135deg,#f59e0b,#fb923c)!important;color:#111827!important;border:none!important}
+    .nav-links a,
+    .lang-btn{
+      text-decoration:none;
+      color:#dbeafe;
+      background:#0f1f33;
+      border:1px solid #29496d;
+      padding:11px 15px;
+      border-radius:13px;
+      font-weight:800;
+      cursor:pointer;
+      white-space:nowrap;
+    }
+
+    .orange{
+      background:linear-gradient(135deg,#f59e0b,#fb923c)!important;
+      color:#111827!important;
+      border:none!important;
+    }
 
     .hero{
-      min-height:430px;
-      padding:70px 5%;
+      margin:0;
+      padding:32px 5%;
       background:
-        linear-gradient(90deg,rgba(6,16,29,.98) 0%,rgba(6,16,29,.88) 42%,rgba(6,16,29,.35) 100%),
-        radial-gradient(circle at 75% 30%,rgba(245,158,11,.18),transparent 28%),
-        linear-gradient(135deg,#10243d,#06101d);
-      position:relative;overflow:hidden;
-      border-bottom:1px solid rgba(255,255,255,.08);
+        linear-gradient(90deg,rgba(6,16,29,.98),rgba(6,16,29,.84)),
+        radial-gradient(circle at 85% 30%,rgba(14,165,233,.25),transparent 28%),
+        linear-gradient(135deg,#0f2744,#06101d);
+      border-bottom:1px solid #17304d;
+      min-height:180px;
+      position:relative;
+      overflow:hidden;
     }
 
     .hero::after{
       content:"";
-      position:absolute;right:5%;top:55px;width:44%;height:320px;
-      background:
-        linear-gradient(135deg,rgba(255,255,255,.08),rgba(255,255,255,.02)),
-        url("https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&w=1200&q=80");
-      background-size:cover;background-position:center;
-      border-radius:34px;
-      border:1px solid rgba(255,255,255,.14);
-      box-shadow:0 30px 80px rgba(0,0,0,.45);
-      opacity:.88;
+      position:absolute;
+      right:5%;
+      top:18px;
+      width:360px;
+      height:140px;
+      background:url("https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?auto=format&fit=crop&w=900&q=80");
+      background-size:cover;
+      background-position:center;
+      border-radius:20px;
+      opacity:.65;
+      border:1px solid rgba(255,255,255,.12);
     }
 
-    .hero-content{max-width:650px;position:relative;z-index:2}
-
-    .hero h1{font-size:52px;line-height:1.1;margin-bottom:18px}
-    .hero p{color:#cbd5e1;line-height:1.8;font-size:17px;margin-bottom:30px}
-
-    .trust-row{display:flex;gap:22px;flex-wrap:wrap}
-    .trust-item{display:flex;gap:10px;align-items:center;color:#dbeafe;font-size:14px}
-    .trust-icon{
-      width:38px;height:38px;border-radius:14px;display:grid;place-items:center;
-      background:rgba(0,194,255,.13);border:1px solid rgba(0,194,255,.25)
+    .hero h1{
+      font-size:30px;
+      margin-bottom:12px;
+      position:relative;
+      z-index:2;
     }
 
-    .promo{
-      margin:28px 5%;
-      background:
-        linear-gradient(100deg,#f59e0b 0%,#facc15 32%,rgba(15,31,51,.95) 32%,rgba(15,31,51,.95) 100%);
-      border:1px solid #20344d;border-radius:24px;overflow:hidden;
-      display:grid;grid-template-columns:1fr 1.2fr 1fr;
-      min-height:170px;
-      box-shadow:0 18px 50px rgba(0,0,0,.32);
-    }
-
-    .promo-box{padding:28px;display:flex;flex-direction:column;justify-content:center}
-    .promo h2{color:#07111f;font-size:28px;margin-bottom:12px}
-    .promo p{color:#dbeafe;line-height:1.6}
-    .promo .dark-title{color:#fff}
-    .promo-img{
-      background:url("https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&w=900&q=80");
-      background-size:cover;background-position:center;
-      min-height:170px;
+    .hero p{
+      max-width:620px;
+      color:#dbeafe;
+      line-height:1.6;
+      position:relative;
+      z-index:2;
     }
 
     .search-panel{
-      margin:28px 5%;
-      background:#0f1f33;border:1px solid #20344d;border-radius:24px;padding:22px;
+      margin:20px 5%;
+      background:#0f1f33;
+      border:1px solid #203b5c;
+      border-radius:18px;
+      padding:20px;
+      box-shadow:0 14px 40px rgba(0,0,0,.22);
     }
 
     .filters{
-  display:grid;
-  grid-template-columns:2fr 1fr 1fr 1fr;
-  gap:14px;
-  align-items:end;
-}
+      display:grid;
+      grid-template-columns:2fr 1.2fr 1.2fr 1.2fr;
+      gap:14px;
+      margin-bottom:14px;
+    }
 
-.advanced-filters{
-  display:grid;
-  grid-template-columns:1fr 1fr 1fr 1fr 1fr auto;
-  gap:14px;
-  align-items:end;
-  margin-top:14px;
-}
+    .advanced-filters{
+      display:grid;
+      grid-template-columns:1fr 1fr 1fr 1fr 1fr auto;
+      gap:14px;
+      margin-bottom:14px;
+    }
 
-    label{display:block;margin-bottom:8px;color:#dbeafe;font-weight:800;font-size:13px}
+    label{
+      display:block;
+      color:#dbeafe;
+      font-size:13px;
+      font-weight:900;
+      margin-bottom:7px;
+    }
 
     input,select{
-      width:100%;padding:14px;border-radius:14px;
-      border:1px solid #29496d;background:#081827;color:#fff;outline:none;
+      width:100%;
+      background:#081827;
+      color:white;
+      border:1px solid #29496d;
+      border-radius:12px;
+      padding:13px;
+      outline:none;
+      font-size:14px;
     }
 
     .search-btn{
-      padding:14px 22px;border:none;border-radius:14px;
       background:linear-gradient(135deg,#f59e0b,#fb923c);
-      color:#111827;font-weight:900;cursor:pointer;
+      color:#111827;
+      border:none;
+      border-radius:12px;
+      padding:13px 22px;
+      font-weight:900;
+      cursor:pointer;
     }
 
-    .chips{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+    .chips{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
     .chip{
-      background:#081827;border:1px solid #223854;border-radius:999px;
-      padding:8px 12px;color:#cbd5e1;cursor:pointer;font-weight:700;font-size:13px;
+      background:#081827;
+      border:1px solid #29496d;
+      color:#dbeafe;
+      padding:8px 13px;
+      border-radius:999px;
+      font-size:13px;
+      font-weight:800;
+      cursor:pointer;
     }
 
-    .section{padding:22px 5%}
-    .section-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;gap:12px}
-    .section h2{font-size:28px}
-
-    .category-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:16px}
-    .cat-card{
-      background:#0f1f33;border:1px solid #20344d;border-radius:20px;
-      padding:18px;text-align:center;cursor:pointer;transition:.25s
+    .section{
+      padding:18px 5%;
     }
-    .cat-card:hover{transform:translateY(-4px);border-color:#f59e0b}
-    .cat-icon{font-size:34px;margin-bottom:10px}
-    .cat-card strong{display:block;margin-bottom:5px}
-    .cat-card span{color:#94a3b8;font-size:13px}
 
-    .parts-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
-    .part-card{
-  background:linear-gradient(180deg,#13243a,#0b1828);
-  border:1px solid rgba(148,163,184,.22);
-  border-radius:26px;
-  overflow:hidden;
-  transition:.28s ease;
-  position:relative;
-  box-shadow:0 18px 45px rgba(0,0,0,.22);
-}
+    .section-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      margin-bottom:14px;
+    }
 
-.part-card:hover{
-  transform:translateY(-7px);
-  border-color:#f59e0b;
-  box-shadow:0 24px 65px rgba(0,0,0,.42);
-}
+    .section h2{
+      font-size:26px;
+    }
 
-.part-img{
-  height:210px;
-  background:radial-gradient(circle at top,#1e3a5f,#081827 70%);
-  display:grid;
-  place-items:center;
-  font-size:58px;
-  border-bottom:1px solid rgba(255,255,255,.08);
-  position:relative;
-  overflow:hidden;
-}
+    .result-count{
+      color:#dbeafe;
+      font-size:14px;
+    }
 
-.part-img img{
-  width:100%;
-  height:100%;
-  object-fit:cover;
-  transition:.35s ease;
-}
+    .parts-grid{
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
 
-.part-card:hover .part-img img{
-  transform:scale(1.06);
-}
+    .part-row{
+      background:#10243d;
+      border:1px solid #203b5c;
+      border-radius:14px;
+      padding:12px 16px;
+      min-height:112px;
+      display:grid;
+      grid-template-columns:90px 1.5fr 120px 1.5fr 410px;
+      gap:18px;
+      align-items:center;
+      box-shadow:0 10px 26px rgba(0,0,0,.18);
+    }
 
-.feature-ribbon{
-  position:absolute;
-  top:14px;
-  left:14px;
-  background:linear-gradient(135deg,#f59e0b,#facc15);
-  color:#111827;
-  font-size:11px;
-  font-weight:900;
-  padding:7px 10px;
-  border-radius:999px;
-  z-index:5;
-}
+    .part-img{
+      width:84px;
+      height:84px;
+      background:white;
+      border-radius:10px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      overflow:hidden;
+      color:#111827;
+      font-size:28px;
+    }
 
-.wishlist-floating{
-  position:absolute;
-  top:14px;
-  right:14px;
-  z-index:5;
-}
+    .part-img img{
+      width:100%;
+      height:100%;
+      object-fit:cover;
+    }
 
-.part-body{
-  padding:18px;
-}
+    .part-name{
+      font-size:17px;
+      font-weight:900;
+      margin-bottom:7px;
+    }
 
-.part-title-row{
-  display:flex;
-  justify-content:space-between;
-  gap:10px;
-  align-items:flex-start;
-  margin-bottom:10px;
-}
+    .tags{
+      display:flex;
+      gap:7px;
+      flex-wrap:wrap;
+      margin-bottom:7px;
+    }
 
-.part-body h3{
-  font-size:19px;
-  line-height:1.25;
-  margin:0;
-}
+    .tag{
+      background:#2b3548;
+      color:#facc15;
+      border-radius:999px;
+      padding:4px 9px;
+      font-size:11px;
+      font-weight:900;
+    }
 
-.stock-chip{
-  background:rgba(34,197,94,.14);
-  color:#bbf7d0;
-  border:1px solid rgba(34,197,94,.25);
-  padding:6px 9px;
-  border-radius:999px;
-  font-size:11px;
-  font-weight:900;
-  white-space:nowrap;
-}
+    .available{
+      background:#064e3b;
+      color:#bbf7d0;
+    }
 
-.part-meta-box{
-  background:rgba(8,24,39,.9);
-  border:1px solid rgba(148,163,184,.18);
-  border-radius:16px;
-  padding:12px;
-  margin:12px 0;
-}
+    .meta{
+      color:#dbeafe;
+      font-size:12px;
+      line-height:1.55;
+    }
 
-.meta{
-  color:#b7c4d4;
-  line-height:1.7;
-  font-size:13px;
-}
+    .price{
+      color:#f59e0b;
+      font-size:18px;
+      font-weight:900;
+      white-space:nowrap;
+    }
 
-.price{
-  color:#f59e0b;
-  font-size:28px;
-  font-weight:900;
-  margin:16px 0;
-}
+    .shop-info{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      font-size:12px;
+      color:#dbeafe;
+      border-left:1px solid rgba(255,255,255,.14);
+      padding-left:18px;
+    }
 
-.badge-row{
-  display:flex;
-  gap:8px;
-  flex-wrap:wrap;
-  margin:10px 0;
-}
+    .shop-info img{
+      width:30px;
+      height:30px;
+      border-radius:8px;
+      background:white;
+      padding:3px;
+    }
 
-.badge{
-  background:rgba(245,158,11,.15);
-  color:#fde68a;
-  border-radius:999px;
-  padding:6px 10px;
-  font-size:11px;
-  font-weight:900;
-}
+    .shop-info strong{
+      color:white;
+      font-size:13px;
+    }
 
-.shop-mini{
-  display:flex;
-  align-items:center;
-  gap:10px;
-  background:#081827;
-  border:1px solid #223854;
-  border-radius:16px;
-  padding:12px;
-  color:#cbd5e1;
-  font-size:13px;
-  line-height:1.45;
-}
+    .row-actions{
+      display:flex;
+      gap:8px;
+      justify-content:flex-end;
+      align-items:center;
+    }
 
-.shop-mini img{
-  width:36px;
-  height:36px;
-  background:#fff;
-  border-radius:10px;
-  padding:4px;
-  object-fit:contain;
-}
-
-.actions{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:10px;
-  margin-top:16px;
-}
-
-.wishlist-btn{
-  width:46px;
-  height:46px;
-  border:none;
-  border-radius:14px;
-  cursor:pointer;
-  font-size:20px;
-  font-weight:900;
-  background:#10243d;
-  color:#94a3b8;
-  transition:.25s;
-}
-
-.wishlist-btn:hover{
-  transform:translateY(-2px);
-}
-
-.wishlist-btn.active{
-  background:#ef4444;
-  color:#fff;
-  box-shadow:0 0 18px rgba(239,68,68,.45);
-}
-
-.btn{
-  display:inline-block;
-  text-decoration:none;
-  border:none;
-  border-radius:14px;
-  padding:13px 14px;
-  font-weight:900;
-  cursor:pointer;
-  text-align:center;
-  font-size:14px;
-}
-
-.whatsapp{
-  background:#22c55e;
-  color:#052e16;
-}
-
-.details{
-  background:linear-gradient(135deg,#00c2ff,#0066ff);
-  color:#fff;
-}
-
-.wishlist-btn{
-  width:46px;
-  height:46px;
-  border:none;
-  border-radius:14px;
-  cursor:pointer;
-  font-size:20px;
-  font-weight:900;
-  background:#10243d;
-  color:#94a3b8;
-  transition:.25s;
-}
-
-.wishlist-btn:hover{
-  transform:translateY(-2px);
-}
-
-.wishlist-btn.active{
-  background:#ef4444;
-  color:#fff;
-  box-shadow:0 0 18px rgba(239,68,68,.45);
-}
     .btn{
-      display:inline-block;text-decoration:none;border:none;border-radius:13px;
-      padding:11px 12px;font-weight:900;cursor:pointer;text-align:center;font-size:13px;
-    }
-    .whatsapp{background:#22c55e;color:#052e16;flex:1}
-    .details{background:linear-gradient(135deg,#00c2ff,#0066ff);color:#fff;flex:1}
-
-    .ad-strip{
-      margin:22px 5%;
-      display:grid;grid-template-columns:1fr 1fr;gap:20px;
-    }
-    .ad-card{
-      min-height:170px;border-radius:24px;overflow:hidden;border:1px solid #20344d;
-      background:linear-gradient(135deg,rgba(15,31,51,.95),rgba(8,24,39,.95));
-      padding:28px;position:relative;
-    }
-    .ad-card h2{font-size:28px;margin-bottom:10px}
-    .ad-card p{color:#cbd5e1;line-height:1.6;margin-bottom:18px}
-    .ad-card::after{
-      content:"";position:absolute;right:-25px;bottom:-25px;width:190px;height:190px;border-radius:50%;
-      background:rgba(245,158,11,.12)
+      border:none;
+      padding:10px 13px;
+      border-radius:6px;
+      font-size:13px;
+      font-weight:900;
+      cursor:pointer;
+      white-space:nowrap;
     }
 
-    .benefits{
-      margin:22px 5%;background:#0f1f33;border:1px solid #20344d;border-radius:24px;
-      display:grid;grid-template-columns:repeat(5,1fr);overflow:hidden;
+    .fav{
+      background:#0f1f33;
+      color:#facc15;
+      border:1px solid #f59e0b;
     }
-    .benefit{padding:24px;border-right:1px solid rgba(255,255,255,.08)}
-    .benefit:last-child{border-right:none}
-    .benefit strong{display:block;margin-bottom:8px}
-    .benefit span{color:#94a3b8;font-size:13px;line-height:1.5}
+
+    .wa{
+      background:#22c55e;
+      color:#052e16;
+    }
+
+    .cart{
+      background:#f59e0b;
+      color:#111827;
+    }
+
+    .shop{
+      background:#0ea5e9;
+      color:white;
+    }
+
+    .featured-grid{
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      gap:14px;
+    }
+
+    .shop-card{
+      background:#10243d;
+      border:1px solid #203b5c;
+      border-radius:14px;
+      padding:14px;
+      display:flex;
+      align-items:center;
+      gap:12px;
+      cursor:pointer;
+    }
+
+    .shop-card img{
+      width:54px;
+      height:54px;
+      background:white;
+      border-radius:12px;
+      padding:5px;
+    }
+
+    .shop-card strong{
+      display:block;
+      margin-bottom:4px;
+    }
+
+    .shop-card span{
+      color:#cbd5e1;
+      font-size:13px;
+    }
 
     .empty{
-      background:#0f1f33;border:1px solid #20344d;border-radius:22px;
-      padding:30px;color:#94a3b8;text-align:center;grid-column:1/-1;
+      background:#10243d;
+      border:1px solid #203b5c;
+      border-radius:14px;
+      padding:24px;
+      text-align:center;
+      color:#94a3b8;
     }
 
     footer{
-      margin-top:35px;padding:35px 5%;background:#050d18;border-top:1px solid rgba(255,255,255,.08);
-      display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:28px;color:#cbd5e1;
-    }
-    footer h3{color:#fff;margin-bottom:12px}
-    footer a{display:block;color:#cbd5e1;text-decoration:none;margin:8px 0}
-    footer a:hover{color:#f59e0b}
-
-    [dir="rtl"] body,[dir="rtl"] input,[dir="rtl"] select{text-align:right}
-    [dir="rtl"] .nav,[dir="rtl"] .trust-row,[dir="rtl"] .actions,[dir="rtl"] .nav-links{direction:rtl}
-    [dir="rtl"] .hero::after{right:auto;left:5%}
-    [dir="rtl"] .hero-content{margin-right:auto}
-
-    @media(max-width:1200px){
-      .parts-grid{grid-template-columns:repeat(3,1fr)}
-      .category-grid{grid-template-columns:repeat(3,1fr)}
-      .filters{grid-template-columns:1fr 1fr}
-      .search-btn{grid-column:1/-1}
-      .nav{grid-template-columns:1fr}
-      .nav-search{max-width:none}
+      margin-top:28px;
+      background:#050d18;
+      border-top:1px solid #17304d;
+      padding:28px 5%;
+      color:#cbd5e1;
     }
 
-    @media(max-width:800px){
-      .hero{padding:42px 5%;min-height:auto}
-      .hero::after{display:none}
-      .hero h1{font-size:36px}
-      .promo,.ad-strip,.benefits,footer{grid-template-columns:1fr}
-      .parts-grid,.category-grid{grid-template-columns:1fr}
-      .filters{grid-template-columns:1fr}
-      .benefit{border-right:none;border-bottom:1px solid rgba(255,255,255,.08)}
+    @media(max-width:1150px){
+      .nav{
+        grid-template-columns:1fr;
+      }
+
+      .filters,
+      .advanced-filters{
+        grid-template-columns:1fr 1fr;
+      }
+
+      .part-row{
+        grid-template-columns:80px 1fr;
+      }
+
+      .price,
+      .shop-info,
+      .row-actions{
+        grid-column:1 / -1;
+      }
+
+      .shop-info{
+        border-left:none;
+        padding-left:0;
+      }
+
+      .row-actions{
+        justify-content:flex-start;
+        flex-wrap:wrap;
+      }
+
+      .featured-grid{
+        grid-template-columns:repeat(2,1fr);
+      }
+    }
+
+    @media(max-width:650px){
+      .filters,
+      .advanced-filters,
+      .featured-grid{
+        grid-template-columns:1fr;
+      }
+
+      .nav-links{
+        overflow:auto;
+        flex-wrap:nowrap;
+      }
+
+      .hero::after{
+        display:none;
+      }
+
+      .part-row{
+        grid-template-columns:1fr;
+      }
+
+      .part-img{
+        width:100%;
+        height:180px;
+      }
     }
   </style>
 </head>
@@ -467,137 +497,106 @@
     <img src="/images/vehicall-logo.png" onerror="this.src='/logo.png'" alt="Vehicall Logo">
     <span>
       Vehicall Parts
-      <small data-en="Find it. Fix it. Drive it." data-ar="ابحث. أصلح. انطلق.">Find it. Fix it. Drive it.</small>
+      <small>Find it. Fix it. Drive it.</small>
     </span>
   </a>
 
   <div class="nav-search">
-    <input id="navSearch" placeholder="Search parts, brands, models, part numbers..." onkeydown="syncSearch(event)">
+    <input id="navSearch" placeholder="Search parts, brands, models..." onkeydown="syncSearch(event)">
     <button onclick="applyNavSearch()">🔍</button>
   </div>
 
   <div class="nav-links">
-    <a href="/parts-marketplace.html" data-en="Home" data-ar="الرئيسية">Home</a>
-    <a href="#latest" data-en="Latest Parts" data-ar="أحدث القطع">Latest Parts</a>
-    <a href="/parts-favorites.html">Favorites ❤️</a>
-    <a href="/parts-shop-login.html" data-en="Shop Login" data-ar="دخول المحل">Shop Login</a>
-    <a href="/parts-shop-register.html" class="orange" data-en="Register Shop" data-ar="تسجيل محل">Register Shop</a>
-    <button class="lang-btn" onclick="toggleLang()" id="langBtn">العربية</button>
+    <a href="/parts-marketplace.html">Home</a>
+    <a href="#latest">Latest Parts</a>
+    <a href="/parts-favorites.html">Favorites 💗</a>
+    <a href="/parts-cart.html">🛒 Cart</a>
+    <a href="/parts-shop-login.html">Shop Login</a>
+    <a href="/parts-shop-register.html" class="orange">Register Shop</a>
+    <button class="lang-btn">العربية</button>
   </div>
 </nav>
 
 <section class="hero">
-  <div class="hero-content">
-    <h1 data-en="Find Vehicle Spare Parts in Oman" data-ar="ابحث عن قطع غيار السيارات في عُمان">Find Vehicle Spare Parts in Oman</h1>
-    <p data-en="Search thousands of spare parts from trusted shops across Oman. Compare availability, prices, location and contact shops instantly through WhatsApp."
-       data-ar="ابحث عن قطع الغيار من محلات موثوقة في عُمان. قارن التوفر والأسعار والموقع وتواصل مع المحلات مباشرة عبر واتساب.">
-      Search thousands of spare parts from trusted shops across Oman. Compare availability, prices, location and contact shops instantly through WhatsApp.
-    </p>
-
-    <div class="trust-row">
-      <div class="trust-item"><div class="trust-icon">🛡️</div><span data-en="Verified Shops" data-ar="محلات موثوقة">Verified Shops</span></div>
-      <div class="trust-item"><div class="trust-icon">💬</div><span data-en="Direct WhatsApp" data-ar="تواصل واتساب">Direct WhatsApp</span></div>
-      <div class="trust-item"><div class="trust-icon">📍</div><span data-en="Across Oman" data-ar="في جميع أنحاء عُمان">Across Oman</span></div>
-    </div>
-  </div>
-</section>
-
-<section class="promo">
-  <div class="promo-box">
-    <h2 data-en="Best Quality Parts For Every Vehicle" data-ar="أفضل قطع الغيار لكل مركبة">Best Quality Parts For Every Vehicle</h2>
-    <button class="btn details" onclick="scrollToSearch()" data-en="Shop Now" data-ar="تسوق الآن">Shop Now</button>
-  </div>
-  <div class="promo-img"></div>
-  <div class="promo-box">
-    <h2 class="dark-title" data-en="Fast Local Shop Contact" data-ar="تواصل سريع مع المحلات">Fast Local Shop Contact</h2>
-    <p data-en="Find parts nearby and contact trusted shops directly." data-ar="اعثر على القطع القريبة وتواصل مع المحلات مباشرة.">Find parts nearby and contact trusted shops directly.</p>
-  </div>
+  <h1>Find Vehicle Spare Parts in Oman</h1>
+  <p>
+    Search spare parts from trusted shops across Oman. Compare availability,
+    prices, location and contact shops instantly.
+  </p>
 </section>
 
 <section class="search-panel" id="search">
   <div class="filters">
     <div>
-      <label data-en="Search" data-ar="بحث">Search</label>
-      <input type="text" id="searchInput" placeholder="Search part, brand, model..." oninput="renderListings()">
+      <label>Search</label>
+      <input id="searchInput" placeholder="Search part, brand, model..." oninput="renderListings()">
     </div>
+
     <div>
-      <label data-en="Category" data-ar="الفئة">Category</label>
+      <label>Category</label>
       <select id="categoryFilter" onchange="renderListings()">
         <option value="">All Categories</option>
-        <option>Engine Parts</option><option>Body Parts</option><option>Electrical Parts</option>
-        <option>Suspension</option><option>Brake System</option><option>Lights</option>
-        <option>Interior</option><option>Transmission</option><option>Tires & Wheels</option>
-        <option>Battery</option><option>Oil & Filters</option><option>Accessories</option><option>Other</option>
+        <option>Engine Parts</option>
+        <option>Body Parts</option>
+        <option>Electrical Parts</option>
+        <option>Suspension</option>
+        <option>Brake System</option>
+        <option>Lights</option>
+        <option>Interior</option>
+        <option>Transmission</option>
+        <option>Tires & Wheels</option>
+        <option>Battery</option>
+        <option>Oil & Filters</option>
+        <option>Accessories</option>
+        <option>Other</option>
       </select>
     </div>
+
     <div>
-      <label data-en="Governorate" data-ar="المحافظة">Governorate</label>
+      <label>Governorate</label>
       <select id="governorateFilter" onchange="renderListings()">
         <option value="">All Governorates</option>
-        <option>Muscat</option><option>Dhofar</option><option>Al Batinah</option><option>Al Dakhiliyah</option>
-        <option>Al Dhahirah</option><option>Al Sharqiyah</option><option>Al Buraimi</option>
-        <option>Musandam</option><option>Al Wusta</option>
+        <option>Muscat</option>
+        <option>Dhofar</option>
+        <option>Al Batinah</option>
+        <option>Al Dakhiliyah</option>
+        <option>Al Dhahirah</option>
+        <option>Al Sharqiyah</option>
+        <option>Al Buraimi</option>
+        <option>Musandam</option>
+        <option>Al Wusta</option>
       </select>
     </div>
+
     <div>
-      <label data-en="Condition" data-ar="الحالة">Condition</label>
+      <label>Condition</label>
       <select id="conditionFilter" onchange="renderListings()">
         <option value="">All Conditions</option>
-        <option>New</option><option>Used</option><option>Refurbished</option>
+        <option>New</option>
+        <option>Used</option>
+        <option>Refurbished</option>
       </select>
     </div>
-    <button class="search-btn" onclick="renderListings()" data-en="Search" data-ar="بحث">Search</button>
   </div>
 
-<div class="advanced-filters">
+  <div class="advanced-filters">
+    <input id="brandFilter" placeholder="Brand" oninput="renderListings()">
+    <input id="modelFilter" placeholder="Model" oninput="renderListings()">
+    <input id="minPriceFilter" type="number" placeholder="Min Price" oninput="renderListings()">
+    <input id="maxPriceFilter" type="number" placeholder="Max Price" oninput="renderListings()">
 
-  <div>
-    <label>Brand</label>
-    <input type="text" id="brandFilter"
-           placeholder="Toyota, Hyundai..."
-           oninput="renderListings()">
-  </div>
-
-  <div>
-    <label>Model</label>
-    <input type="text" id="modelFilter"
-           placeholder="Elantra, Corolla..."
-           oninput="renderListings()">
-  </div>
-
-  <div>
-    <label>Min Price</label>
-    <input type="number" id="minPriceFilter"
-           placeholder="0"
-           oninput="renderListings()">
-  </div>
-
-  <div>
-    <label>Max Price</label>
-    <input type="number" id="maxPriceFilter"
-           placeholder="100"
-           oninput="renderListings()">
-  </div>
-
-  <div>
-    <label>Availability</label>
     <select id="availabilityFilter" onchange="renderListings()">
-      <option value="">All</option>
+      <option value="">All Availability</option>
       <option>Available</option>
       <option>Out of Stock</option>
     </select>
-  </div>
 
-  <div>
-    <label>Sort By</label>
     <select id="sortFilter" onchange="renderListings()">
       <option value="latest">Latest</option>
       <option value="priceLow">Price Low</option>
       <option value="priceHigh">Price High</option>
     </select>
   </div>
-
-</div>
 
   <div class="chips">
     <span class="chip" onclick="quickSearch('Brake Pad')">Brake Pad</span>
@@ -606,38 +605,15 @@
     <span class="chip" onclick="quickSearch('Head Light')">Head Light</span>
     <span class="chip" onclick="quickSearch('Toyota')">Toyota</span>
     <span class="chip" onclick="quickSearch('Hyundai')">Hyundai</span>
-  </div>
-</section>
-
-<section class="section">
-  <div class="section-head">
-    <h2 data-en="Featured Shops" data-ar="المحلات المميزة">Featured Shops</h2>
-  </div>
-
-  <div class="category-grid" id="featuredShopsGrid">
-    <div class="empty">Loading featured shops...</div>
-  </div>
-</section>
-
-<section class="section">
-  <div class="section-head">
-    <h2 data-en="Recommended Categories" data-ar="الفئات المقترحة">Recommended Categories</h2>
-  </div>
-
-  <div class="category-grid">
-    <div class="cat-card" onclick="setCategory('Engine Parts')"><div class="cat-icon">⚙️</div><strong>Engine Parts</strong><span>Find engine items</span></div>
-    <div class="cat-card" onclick="setCategory('Brake System')"><div class="cat-icon">🛑</div><strong>Brake System</strong><span>Brake pads & more</span></div>
-    <div class="cat-card" onclick="setCategory('Suspension')"><div class="cat-icon">🔩</div><strong>Suspension</strong><span>Shocks & arms</span></div>
-    <div class="cat-card" onclick="setCategory('Electrical Parts')"><div class="cat-icon">🔌</div><strong>Electrical</strong><span>Alternator, sensors</span></div>
-    <div class="cat-card" onclick="setCategory('Lights')"><div class="cat-icon">💡</div><strong>Lights</strong><span>Headlights & lamps</span></div>
-    <div class="cat-card" onclick="setCategory('Tires & Wheels')"><div class="cat-icon">🛞</div><strong>Tires & Wheels</strong><span>Wheels and tires</span></div>
+    <span class="chip" onclick="setCategory('Engine Parts')">Engine Parts</span>
+    <span class="chip" onclick="setCategory('Lights')">Lights</span>
   </div>
 </section>
 
 <section class="section" id="latest">
   <div class="section-head">
-    <h2 data-en="Latest Parts" data-ar="أحدث قطع الغيار">Latest Parts</h2>
-    <p class="meta"><span id="resultCount">0</span> <span data-en="results found" data-ar="نتيجة">results found</span></p>
+    <h2>Latest Parts</h2>
+    <p class="result-count"><span id="resultCount">0</span> results found</p>
   </div>
 
   <div class="parts-grid" id="partsGrid">
@@ -645,114 +621,63 @@
   </div>
 </section>
 
-<section class="ad-strip">
-  <div class="ad-card">
-    <h2 data-en="Keep Your Engine Running Smooth" data-ar="حافظ على أداء المحرك">Keep Your Engine Running Smooth</h2>
-    <p data-en="Find oils, filters and service parts from trusted shops." data-ar="اعثر على الزيوت والفلاتر وقطع الصيانة من محلات موثوقة.">Find oils, filters and service parts from trusted shops.</p>
-    <button class="btn orange" onclick="setCategory('Oil & Filters')" data-en="Shop Oils & Filters" data-ar="تسوق الزيوت والفلاتر">Shop Oils & Filters</button>
+<section class="section">
+  <div class="section-head">
+    <h2>Featured Shops</h2>
   </div>
-  <div class="ad-card">
-    <h2 data-en="Top Brands, Best Prices" data-ar="أفضل الماركات والأسعار">Top Brands, Best Prices</h2>
-    <p data-en="Compare local shop availability before visiting the market." data-ar="قارن توفر القطع لدى المحلات قبل زيارة السوق.">Compare local shop availability before visiting the market.</p>
-    <button class="btn orange" onclick="scrollToSearch()" data-en="Search Now" data-ar="ابحث الآن">Search Now</button>
-  </div>
-</section>
 
-<section class="benefits">
-  <div class="benefit"><strong>🚗 Wide Range</strong><span>Thousands of parts for all vehicles.</span></div>
-  <div class="benefit"><strong>🛡️ Trusted Shops</strong><span>Verified shops you can rely on.</span></div>
-  <div class="benefit"><strong>💰 Best Prices</strong><span>Compare and get better deals.</span></div>
-  <div class="benefit"><strong>💬 Easy Contact</strong><span>Chat directly through WhatsApp.</span></div>
-  <div class="benefit"><strong>📍 Fast & Local</strong><span>Find shops near you across Oman.</span></div>
+  <div class="featured-grid" id="featuredShopsGrid">
+    <div class="empty">Loading featured shops...</div>
+  </div>
 </section>
 
 <footer>
-  <div>
-    <h3>Vehicall Parts</h3>
-    <p>Oman’s trusted marketplace for vehicle spare parts.</p>
-  </div>
-  <div>
-    <h3>Quick Links</h3>
-    <a href="/parts-marketplace.html">Home</a>
-    <a href="/parts-shop-register.html">Register Shop</a>
-    <a href="/parts-shop-login.html">Shop Login</a>
-  </div>
-  <div>
-    <h3>Categories</h3>
-    <a href="#" onclick="setCategory('Engine Parts')">Engine Parts</a>
-    <a href="#" onclick="setCategory('Brake System')">Brake System</a>
-    <a href="#" onclick="setCategory('Electrical Parts')">Electrical Parts</a>
-  </div>
-  <div>
-    <h3>Contact</h3>
-    <p>Muscat, Sultanate of Oman</p>
-    <p>Vehicall Marketplace</p>
-  </div>
+  <strong>Vehicall Parts</strong><br>
+  Oman’s trusted marketplace for vehicle spare parts.
 </footer>
 
 <script>
 let allListings = [];
-let currentLang = localStorage.getItem('vehicall_parts_lang') || 'en';
 
 const icons = {
-  'Engine Parts':'⚙️','Body Parts':'🚘','Electrical Parts':'🔌','Suspension':'🔩',
-  'Brake System':'🛑','Lights':'💡','Interior':'💺','Transmission':'⚙️',
-  'Tires & Wheels':'🛞','Battery':'🔋','Oil & Filters':'🛢️','Accessories':'✨','Other':'🔧'
+  'Engine Parts':'⚙️',
+  'Body Parts':'🚘',
+  'Electrical Parts':'🔌',
+  'Suspension':'🔩',
+  'Brake System':'🛑',
+  'Lights':'💡',
+  'Interior':'💺',
+  'Transmission':'⚙️',
+  'Tires & Wheels':'🛞',
+  'Battery':'🔋',
+  'Oil & Filters':'🛢️',
+  'Accessories':'✨',
+  'Other':'🔧'
 };
-
-function getFavorites(){
-  return JSON.parse(localStorage.getItem('vehicall_favorites') || '[]');
-}
-
-function isFavorite(id){
-  return getFavorites().includes(id);
-}
-
-function toggleFavorite(event,id){
-  event.stopPropagation();
-
-  let favorites = getFavorites();
-
-  if(favorites.includes(id)){
-    favorites = favorites.filter(x => x !== id);
-  }else{
-    favorites.push(id);
-  }
-
-  localStorage.setItem(
-    'vehicall_favorites',
-    JSON.stringify(favorites)
-  );
-
-  renderListings();
-}
 
 async function loadFeaturedShops(){
   try{
     const res = await fetch('/api/parts/featured-shops');
     const data = await res.json();
-
     const grid = document.getElementById('featuredShopsGrid');
 
     if(!data.success || !data.shops || !data.shops.length){
-      grid.innerHTML = `
-        <div class="empty">
-          ${currentLang === 'ar' ? 'لا توجد محلات مميزة حالياً.' : 'No featured shops yet.'}
-        </div>
-      `;
+      grid.innerHTML = `<div class="empty">No featured shops yet.</div>`;
       return;
     }
 
     grid.innerHTML = data.shops.map(shop => `
-      <div class="cat-card" onclick="window.location.href='/parts-shop-profile.html?id=${shop.id}'">
-        <div class="cat-icon">🏪</div>
-        <strong>${shop.shopName || '-'}</strong>
-        <span>${shop.location || '-'} | ${shop.governorate || '-'}</span>
+      <div class="shop-card" onclick="goToShop('${shop.id}')">
+        <img src="/images/vehicall-logo.png" onerror="this.src='/logo.png'">
+        <div>
+          <strong>${shop.shopName || '-'}</strong>
+          <span>${shop.location || '-'} | ${shop.governorate || '-'}</span>
+        </div>
       </div>
     `).join('');
 
   }catch(err){
-    console.error(err);
+    console.error('Featured shops error:', err);
   }
 }
 
@@ -760,172 +685,213 @@ async function loadPublicListings(){
   try{
     const res = await fetch('/api/parts/public-listings');
     const data = await res.json();
-    if(!data.success) throw new Error(data.message || 'Unable to load parts');
+
+    if(!data.success){
+      throw new Error(data.message || 'Unable to load parts');
+    }
+
     allListings = data.listings || [];
     renderListings();
+
   }catch(err){
-    console.error(err);
-    document.getElementById('partsGrid').innerHTML = `<div class="empty">Unable to load parts.</div>`;
+    console.error('Public listings error:', err);
+    document.getElementById('partsGrid').innerHTML =
+      `<div class="empty">Unable to load parts.</div>`;
   }
 }
 
 function renderListings(){
   const grid = document.getElementById('partsGrid');
+
   const search = document.getElementById('searchInput').value.toLowerCase().trim();
   const category = document.getElementById('categoryFilter').value;
   const governorate = document.getElementById('governorateFilter').value;
   const condition = document.getElementById('conditionFilter').value;
-const brand = document.getElementById('brandFilter').value.toLowerCase().trim();
-const model = document.getElementById('modelFilter').value.toLowerCase().trim();
-
-const minPrice = Number(document.getElementById('minPriceFilter').value || 0);
-
-const maxPrice = Number(
-  document.getElementById('maxPriceFilter').value || 999999
-);
-
-const availability =
-  document.getElementById('availabilityFilter').value;
-
-const sort =
-  document.getElementById('sortFilter').value;
+  const brand = document.getElementById('brandFilter').value.toLowerCase().trim();
+  const model = document.getElementById('modelFilter').value.toLowerCase().trim();
+  const minPrice = Number(document.getElementById('minPriceFilter').value || 0);
+  const maxPrice = Number(document.getElementById('maxPriceFilter').value || 999999);
+  const availability = document.getElementById('availabilityFilter').value;
+  const sort = document.getElementById('sortFilter').value;
 
   let rows = allListings.filter(item => {
-    const text = [item.partName,item.brand,item.model,item.partNumber,item.category,item.condition,item.description,item.shopName].join(' ').toLowerCase();
+    const text = [
+      item.partName,
+      item.brand,
+      item.model,
+      item.partNumber,
+      item.category,
+      item.condition,
+      item.description,
+      item.shopName,
+      item.shopLocation,
+      item.governorate
+    ].join(' ').toLowerCase();
+
     const itemPrice = Number(item.price || 0);
 
-return (!search || text.includes(search)) &&
-       (!category || item.category === category) &&
-       (!governorate || item.governorate === governorate) &&
-       (!condition || item.condition === condition) &&
-       (!brand || (item.brand || '').toLowerCase().includes(brand)) &&
-       (!model || (item.model || '').toLowerCase().includes(model)) &&
-       (!availability || item.availability === availability) &&
-       itemPrice >= minPrice &&
-       itemPrice <= maxPrice;
+    return (!search || text.includes(search)) &&
+      (!category || item.category === category) &&
+      (!governorate || item.governorate === governorate) &&
+      (!condition || item.condition === condition) &&
+      (!brand || String(item.brand || '').toLowerCase().includes(brand)) &&
+      (!model || String(item.model || '').toLowerCase().includes(model)) &&
+      (!availability || item.availability === availability) &&
+      itemPrice >= minPrice &&
+      itemPrice <= maxPrice;
   });
 
-if(sort === 'priceLow'){
-  rows.sort((a,b) => Number(a.price || 0) - Number(b.price || 0));
-}
+  if(sort === 'priceLow'){
+    rows.sort((a,b) => Number(a.price || 0) - Number(b.price || 0));
+  }
 
-if(sort === 'priceHigh'){
-  rows.sort((a,b) => Number(b.price || 0) - Number(a.price || 0));
-}
+  if(sort === 'priceHigh'){
+    rows.sort((a,b) => Number(b.price || 0) - Number(a.price || 0));
+  }
 
-if(sort === 'latest'){
-  rows.sort((a,b) =>
-    new Date(b.createdAt || 0) - new Date(a.createdAt || 0)
-  );
-}
+  if(sort === 'latest'){
+    rows.sort((a,b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+  }
+
   document.getElementById('resultCount').textContent = rows.length;
 
   if(!rows.length){
-    grid.innerHTML = `<div class="empty">${currentLang === 'ar' ? 'لا توجد قطع مطابقة للبحث.' : 'No matching parts found.'}</div>`;
+    grid.innerHTML = `<div class="empty">No matching parts found.</div>`;
     return;
   }
 
   grid.innerHTML = rows.map(item => {
     const price = Number(item.price || 0);
-    const whatsapp = item.shopWhatsapp || '';
-    const cleanWa = whatsapp.replace(/^968/, '');
-    const msg = encodeURIComponent(`Hello, I found this part on Vehicall Parts:\n\nPart: ${item.partName || '-'}\nBrand: ${item.brand || '-'}\nModel: ${item.model || '-'}\nPrice: ${price.toFixed(3)} OMR\n\nIs it available?`);
-    const waLink = cleanWa ? `https://wa.me/968${cleanWa}?text=${msg}` : '#';
+    const img = item.imageUrl
+      ? `<img src="${item.imageUrl}" onerror="this.parentElement.innerHTML='${icons[item.category] || '🔧'}'">`
+      : `${icons[item.category] || '🔧'}`;
 
     return `
-      <div class="part-card">
+      <div class="part-row">
+        <div class="part-img">
+          ${img}
+        </div>
 
-  ${item.isFeatured ? `
-    <div class="feature-ribbon">
-      FEATURED
-    </div>
-  ` : ''}
+        <div>
+          <div class="part-name">${item.partName || '-'}</div>
 
-  <div class="wishlist-floating">
-    <button class="wishlist-btn ${isFavorite(item.id) ? 'active' : ''}"
-            onclick="toggleFavorite(event,'${item.id}')">
-      ❤
-    </button>
-  </div>
+          <div class="tags">
+            <span class="tag">${item.category || '-'}</span>
+            <span class="tag">${item.condition || '-'}</span>
+            <span class="tag available">${item.availability || 'Available'}</span>
+          </div>
 
-  <div class="part-img">
-    ${
-      item.imageUrl
-        ? `<img src="${item.imageUrl}"
-             onerror="this.parentElement.innerHTML='${icons[item.category] || '🔧'}'">`
-        : `${icons[item.category] || '🔧'}`
-    }
-  </div>
+          <div class="meta">
+            <strong>Vehicle:</strong> ${item.brand || '-'} ${item.model || ''}<br>
+            <strong>Year:</strong> ${item.yearFrom || '-'} ${item.yearTo ? ' - ' + item.yearTo : ''}<br>
+            <strong>Part No:</strong> ${item.partNumber || '-'}
+          </div>
+        </div>
 
-  <div class="part-body">
+        <div class="price">
+          ${price ? price.toFixed(3) + ' OMR' : 'Price on request'}
+        </div>
 
-    <div class="part-title-row">
-      <h3>${item.partName || '-'}</h3>
+        <div class="shop-info">
+          <img src="/images/vehicall-logo.png" onerror="this.src='/logo.png'">
+          <div>
+            <strong>${item.shopName || '-'}</strong><br>
+            ${item.shopLocation || '-'}, ${item.governorate || '-'}
+          </div>
+        </div>
 
-      <div class="stock-chip">
-        ${item.availability || 'Available'}
+        <div class="row-actions">
+          <button class="btn fav" onclick="toggleFavorite('${item.id}')">Favorites 💗</button>
+          <button class="btn wa" onclick="openWhatsappInquiry('${item.id}')">WhatsApp</button>
+          <button class="btn cart" onclick="addToCart('${item.id}')">🛒 Add Cart</button>
+          <button class="btn shop" onclick="goToShop('${item.shopId}')">View Shop</button>
+        </div>
       </div>
-    </div>
-
-    <div class="badge-row">
-      <span class="badge">${item.category || '-'}</span>
-      <span class="badge">${item.condition || '-'}</span>
-    </div>
-
-    <div class="part-meta-box">
-      <div class="meta">
-        <strong>${currentLang === 'ar' ? 'المركبة' : 'Vehicle'}:</strong>
-        ${item.brand || '-'} ${item.model || ''}<br>
-
-        <strong>${currentLang === 'ar' ? 'السنة' : 'Year'}:</strong>
-        ${item.yearFrom || '-'}
-        ${item.yearTo ? ' - ' + item.yearTo : ''}<br>
-
-        <strong>${currentLang === 'ar' ? 'رقم القطعة' : 'Part No'}:</strong>
-        ${item.partNumber || '-'}
-      </div>
-    </div>
-
-    <div class="price">
-      ${price
-        ? price.toFixed(3) + ' OMR'
-        : (currentLang === 'ar'
-            ? 'السعر عند الطلب'
-            : 'Price on request')}
-    </div>
-
-    <div class="shop-mini">
-  <img src="/images/vehicall-logo.png"
-       onerror="this.style.display='none'">
-
-  <div>
-    <strong>${item.shopName || '-'}</strong><br>
-    ${item.shopLocation || '-'}, ${item.governorate || '-'}
-  </div>
-</div>
-
-<div class="actions">
-
-  <button class="btn whatsapp"
-          onclick="openWhatsappInquiry('${item.id}')">
-    ${currentLang === 'ar' ? 'واتساب' : 'WhatsApp'}
-  </button>
-
-  <button class="btn details"
-          onclick="showDetails('${item.id}')">
-    ${currentLang === 'ar' ? 'تفاصيل' : 'Details'}
-  </button>
-
-</div>
-
-  </div>
-
-</div>
-     `;
+    `;
   }).join('');
 }
 
-async function openWhatsappInquiry(id){
+function quickSearch(text){
+  document.getElementById('searchInput').value = text;
+  document.getElementById('navSearch').value = text;
+  renderListings();
+  document.getElementById('latest').scrollIntoView({behavior:'smooth'});
+}
+
+function setCategory(cat){
+  document.getElementById('categoryFilter').value = cat;
+  renderListings();
+  document.getElementById('latest').scrollIntoView({behavior:'smooth'});
+}
+
+function syncSearch(e){
+  if(e.key === 'Enter'){
+    applyNavSearch();
+  }
+}
+
+function applyNavSearch(){
+  document.getElementById('searchInput').value =
+    document.getElementById('navSearch').value;
+
+  renderListings();
+  document.getElementById('latest').scrollIntoView({behavior:'smooth'});
+}
+
+function goToShop(shopId){
+  if(!shopId){
+    alert('Shop profile not available');
+    return;
+  }
+
+  window.location.href = '/parts-shop-profile.html?shopId=' + shopId;
+}
+
+function addToCart(id){
+  const item = allListings.find(x => x.id === id);
+
+  if(!item){
+    alert('Item not found');
+    return;
+  }
+
+  let cart = JSON.parse(localStorage.getItem('vehicall_parts_cart') || '[]');
+
+  if(cart.some(x => x.id === item.id)){
+    alert('Already added to cart');
+    return;
+  }
+
+  cart.push({
+    id: item.id,
+    shopId: item.shopId || '',
+    shopName: item.shopName || '',
+    partName: item.partName || '',
+    brand: item.brand || '',
+    model: item.model || '',
+    price: Number(item.price || 0),
+    imageUrl: item.imageUrl || '',
+    shopWhatsapp: item.shopWhatsapp || ''
+  });
+
+  localStorage.setItem('vehicall_parts_cart', JSON.stringify(cart));
+  alert('Added to cart');
+}
+
+function toggleFavorite(id){
+  let favorites = JSON.parse(localStorage.getItem('vehicall_favorites') || '[]');
+
+  if(favorites.includes(id)){
+    favorites = favorites.filter(x => x !== id);
+  }else{
+    favorites.push(id);
+  }
+
+  localStorage.setItem('vehicall_favorites', JSON.stringify(favorites));
+  alert('Favorites updated');
+}
+
+function openWhatsappInquiry(id){
   const item = allListings.find(x => x.id === id);
 
   if(!item){
@@ -933,103 +899,25 @@ async function openWhatsappInquiry(id){
     return;
   }
 
-  const price = Number(item.price || 0);
-  const whatsapp = item.shopWhatsapp || '';
-  const cleanWa = String(whatsapp).replace(/^968/, '');
+  const mobile = String(item.shopWhatsapp || '').replace(/^968/, '');
+
+  if(!mobile){
+    alert('WhatsApp number not available for this shop.');
+    return;
+  }
 
   const msg = encodeURIComponent(
     `Hello, I found this part on Vehicall Parts:\n\n` +
     `Part: ${item.partName || '-'}\n` +
     `Brand: ${item.brand || '-'}\n` +
     `Model: ${item.model || '-'}\n` +
-    `Price: ${price ? price.toFixed(3) + ' OMR' : 'Price on request'}\n\n` +
+    `Price: ${Number(item.price || 0).toFixed(3)} OMR\n\n` +
     `Is it available?`
   );
 
-  const waLink = cleanWa
-    ? `https://wa.me/968${cleanWa}?text=${msg}`
-    : '#';
-
-  try{
-    await fetch('/api/parts/create-inquiry', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        listingId: item.id,
-        partName: item.partName || '',
-        shopId: item.shopId || '',
-        shopName: item.shopName || '',
-        vehicleBrand: item.brand || '',
-        vehicleModel: item.model || '',
-        listingPrice: price
-      })
-    });
-  }catch(err){
-    console.error('Inquiry save failed:', err);
-  }
-
-  if(cleanWa){
-    window.open(waLink, '_blank');
-  }else{
-    alert('WhatsApp number not available for this shop.');
-  }
+  window.open(`https://wa.me/968${mobile}?text=${msg}`, '_blank');
 }
 
-function showDetails(id){
-  const item = allListings.find(x => x.id === id);
-  if(!item) return;
-  alert(`${item.partName || '-'}\n\n${item.description || 'No description available.'}`);
-}
-
-function setCategory(cat){
-  document.getElementById('categoryFilter').value = cat;
-  scrollToSearch();
-  renderListings();
-}
-
-function quickSearch(text){
-  document.getElementById('searchInput').value = text;
-  document.getElementById('navSearch').value = text;
-  scrollToSearch();
-  renderListings();
-}
-
-function scrollToSearch(){
-  document.getElementById('search').scrollIntoView({behavior:'smooth'});
-}
-
-function syncSearch(e){
-  if(e.key === 'Enter') applyNavSearch();
-}
-
-function applyNavSearch(){
-  document.getElementById('searchInput').value = document.getElementById('navSearch').value;
-  scrollToSearch();
-  renderListings();
-}
-
-function toggleLang(){
-  currentLang = currentLang === 'en' ? 'ar' : 'en';
-  localStorage.setItem('vehicall_parts_lang', currentLang);
-  applyLanguage();
-  renderListings();
-}
-
-function applyLanguage(){
-  document.documentElement.lang = currentLang;
-  document.documentElement.dir = currentLang === 'ar' ? 'rtl' : 'ltr';
-
-  document.querySelectorAll('[data-en]').forEach(el => {
-    el.textContent = el.getAttribute(`data-${currentLang}`);
-  });
-
-  document.getElementById('langBtn').textContent =
-    currentLang === 'en' ? 'العربية' : 'English';
-}
-
-applyLanguage();
 loadFeaturedShops();
 loadPublicListings();
 </script>

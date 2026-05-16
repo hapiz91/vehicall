@@ -325,7 +325,16 @@
           <div>
             <label>Location / Area *</label>
             <input type="text" id="location" placeholder="Mabela, Ghala, Ruwi..." required />
-          </div>
+<div>
+  <label>Google Maps Link</label>
+  <input
+    type="url"
+    id="googleMapsLink"
+    placeholder="Paste your shop Google Maps link"
+  />
+</div>          
+
+</div>
         </div>
 
         <div class="grid">
@@ -433,6 +442,7 @@
         confirmPassword: document.getElementById("confirmPassword").value,
         location: document.getElementById("location").value.trim(),
         governorate: document.getElementById("governorate").value,
+        googleMapsLink: document.getElementById('googleMapsLink').value.trim(),
         shopType: document.getElementById("shopType").value,
         brands: document.getElementById("brands").value.trim(),
         preferredPlan: document.getElementById("preferredPlan").value,

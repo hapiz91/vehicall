@@ -1563,28 +1563,12 @@ app.post('/api/fleet/login', async (req, res) => {
     const companyId = companyDoc.id;
     const company = companyDoc.data();
 
-    let validPassword = false;
-
-console.log("SHOP PASSWORD DEBUG:", {
-  email,
-  shopId,
-  status: shop.status,
-  savedPassword: shop.password,
-  hasPasswordHash: !!shop.passwordHash
-});
-
-if (shop.password && String(shop.password).startsWith("$2")) {
-  validPassword = await bcrypt.compare(password, shop.password);
-} else if (shop.password === password) {
-  validPassword = true;
-} else if (shop.passwordHash) {
-  validPassword = await bcrypt.compare(password, shop.passwordHash);
-}
+const validPassword = await bcrypt.compare(password, company.password || '');
 
 if (!validPassword) {
   return res.status(401).json({
     success: false,
-    message: 'Invalid shop login - password mismatch'
+    message: 'Invalid fleet login'
   });
 }
 

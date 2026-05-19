@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Post91 Admin | Vehicall</title>
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:Arial,sans-serif}
+body{background:#07111f;color:white}
+.header{display:flex;justify-content:space-between;align-items:center;padding:18px 30px;background:#0b1b2d;border-bottom:1px solid #1d3553;position:sticky;top:0;z-index:10}
+.brand{display:flex;align-items:center;gap:14px}
+.brand img{height:48px;background:white;border-radius:10px;padding:4px}
+.brand h2{margin:0}
+.brand p{margin:3px 0 0;color:#9fb0c5;font-size:13px}
+.btn{border:none;border-radius:12px;padding:11px 16px;font-weight:bold;cursor:pointer;color:white;background:linear-gradient(135deg,#00c2ff,#0066ff)}
+.btn-dark{background:#10243a;border:1px solid #29496d}
+.btn-green{background:linear-gradient(135deg,#22c55e,#16a34a)}
+.btn-red{background:#ef4444}
+.container{max-width:1250px;margin:28px auto;padding:0 20px}
+.hero{background:linear-gradient(135deg,#10243d,#0a1727);border:1px solid #20344d;border-radius:22px;padding:32px;margin-bottom:25px}
+.hero h1{font-size:34px;margin-bottom:10px}
+.hero p{color:#b7c4d4;line-height:1.6}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;margin-bottom:25px}
+.stat{background:#0f1f33;border:1px solid #20344d;border-radius:18px;padding:22px}
+.stat span{color:#8fa8c2;font-size:13px}
+.stat h3{font-size:30px;color:#6ecbff;margin-top:10px}
+.section{background:#0f1f33;border:1px solid #20344d;border-radius:22px;padding:24px;margin-bottom:25px}
+.section h2{margin-bottom:18px}
+.toolbar{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+input,select{padding:12px;border-radius:12px;border:1px solid #29496d;background:#081827;color:white}
+.search{flex:1;min-width:240px}
+.list{display:grid;gap:14px}
+.item{background:#081827;border:1px solid #223854;border-radius:16px;padding:18px}
+.item-grid{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:15px;align-items:start}
+.item strong{font-size:19px;display:block;margin-bottom:8px}
+.muted{color:#9fb0c5;font-size:13px;line-height:1.7}
+.badge{display:inline-block;padding:6px 12px;border-radius:999px;font-size:12px;font-weight:bold;margin:6px 0}
+.pending{background:#fef3c7;color:#92400e}
+.approved{background:#dcfce7;color:#166534}
+.rejected{background:#fee2e2;color:#991b1b}
+.actions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.table{width:100%;border-collapse:collapse;margin-top:10px}
+.table th,.table td{border:1px solid #223854;padding:12px;text-align:left}
+.table th{background:#081827;color:#9fb0c5}
+.note{background:#10243a;border:1px solid #29496d;color:#b7c4d4;padding:14px;border-radius:14px;margin-top:15px;line-height:1.6}
+@media(max-width:950px){.stats{grid-template-columns:1fr 1fr}.item-grid{grid-template-columns:1fr}.actions{justify-content:flex-start}}
+@media(max-width:600px){.stats{grid-template-columns:1fr}.header{flex-direction:column;align-items:flex-start;gap:14px}}
+</style>
+</head>
+
+<body>
+
+<div class="header">
+  <div class="brand">
+    <img src="/images/vehicall-logo.png" onerror="this.src='/logo.png'">
+    <div>
+      <h2>Post91 Admin</h2>
+      <p>Accounting ERP approvals & subscription control</p>
+    </div>
+  </div>
+
+  <div>
+    <button class="btn btn-dark" onclick="window.location.href='/admin-dashboard.html'">
+      Back to Vehicall Admin
+    </button>
+
+    <button class="btn" onclick="window.open('https://post91-accounts.onrender.com','_blank')">
+      Open Post91
+    </button>
+  </div>
+</div>
+
+<div class="container">
+
+  <div class="hero">
+    <h1>Post91 Accounts Control Panel</h1>
+    <p>
+      Review Post91 business registrations, approve customer access,
+      reject invalid requests, monitor selected packages, and manage account activation.
+    </p>
+
+    <div class="note">
+      Current MVP stores Post91 registrations in browser localStorage.
+      Before real customer launch, move this approval workflow to Firebase / database.
+    </div>
+  </div>
+
+  <div class="stats">
+    <div class="stat">
+      <span>Total Requests</span>
+      <h3 id="totalRequests">0</h3>
+    </div>
+
+    <div class="stat">
+      <span>Pending</span>
+      <h3 id="pendingRequests">0</h3>
+    </div>
+
+    <div class="stat">
+      <span>Approved</span>
+      <h3 id="approvedRequests">0</h3>
+    </div>
+
+    <div class="stat">
+      <span>Rejected</span>
+      <h3 id="rejectedRequests">0</h3>
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Registration Requests</h2>
+
+    <div class="toolbar">
+      <input class="search" id="searchBox" placeholder="Search business, owner, mobile, email..." oninput="loadRequests()">
+
+      <select id="statusFilter" onchange="loadRequests()">
+        <option value="all">All Status</option>
+        <option value="pending">Pending</option>
+        <option value="approved">Approved</option>
+        <option value="rejected">Rejected</option>
+      </select>
+
+      <select id="planFilter" onchange="loadRequests()">
+        <option value="all">All Plans</option>
+        <option value="Basic">Basic</option>
+        <option value="Plus">Plus</option>
+        <option value="Premium">Premium</option>
+      </select>
+
+      <button class="btn btn-dark" onclick="loadRequests()">Refresh</button>
+    </div>
+
+    <div class="list" id="requestList">
+      Loading...
+    </div>
+  </div>
+
+  <div class="section">
+    <h2>Approved Customers Summary</h2>
+
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Business</th>
+          <th>Plan</th>
+          <th>Email</th>
+          <th>Mobile</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="approvedTable"></tbody>
+    </table>
+  </div>
+
+</div>
+
+<script>
+function getRequests(){
+  return JSON.parse(localStorage.getItem("post91RegistrationRequests") || "[]");
+}
+
+function saveRequests(data){
+  localStorage.setItem("post91RegistrationRequests", JSON.stringify(data));
+}
+
+function getUsers(){
+  return JSON.parse(localStorage.getItem("post91Users") || "[]");
+}
+
+function saveUsers(data){
+  localStorage.setItem("post91Users", JSON.stringify(data));
+}
+
+function statusClass(status){
+  if(status === "approved") return "approved";
+  if(status === "rejected") return "rejected";
+  return "pending";
+}
+
+function money(n){
+  return "OMR " + Number(n || 0).toFixed(3);
+}
+
+function updateStats(){
+  const requests = getRequests();
+
+  const total = requests.length;
+  const pending = requests.filter(r => (r.registrationStatus || "pending") === "pending").length;
+  const approved = requests.filter(r => r.registrationStatus === "approved").length;
+  const rejected = requests.filter(r => r.registrationStatus === "rejected").length;
+
+  totalRequests.textContent = total;
+  pendingRequests.textContent = pending;
+  approvedRequests.textContent = approved;
+  rejectedRequests.textContent = rejected;
+}
+
+function requestMatches(req){
+  const search = (searchBox.value || "").toLowerCase();
+  const status = statusFilter.value;
+  const plan = planFilter.value;
+
+  const currentStatus = req.registrationStatus || "pending";
+
+  if(status !== "all" && currentStatus !== status) return false;
+  if(plan !== "all" && req.selectedPlan !== plan) return false;
+
+  const text = [
+    req.businessName,
+    req.ownerName,
+    req.mobile,
+    req.email,
+    req.selectedPlan,
+    req.requestNo
+  ].join(" ").toLowerCase();
+
+  return text.includes(search);
+}
+
+function loadRequests(){
+  updateStats();
+
+  const container = document.getElementById("requestList");
+  const requests = getRequests()
+    .map((req,index)=>({req,index}))
+    .filter(x => requestMatches(x.req))
+    .reverse();
+
+  if(!requests.length){
+    container.innerHTML = `
+      <div class="item">
+        No matching Post91 registration requests.
+      </div>
+    `;
+    loadApprovedTable();
+    return;
+  }
+
+  container.innerHTML = "";
+
+  requests.forEach(({req,index})=>{
+    const status = req.registrationStatus || "pending";
+
+    container.innerHTML += `
+      <div class="item">
+        <div class="item-grid">
+
+          <div>
+            <strong>${req.businessName || "-"}</strong>
+
+            <span class="badge ${statusClass(status)}">
+              ${status.toUpperCase()}
+            </span>
+
+            <div class="muted">
+              Request No: ${req.requestNo || "-"}<br>
+              Owner: ${req.ownerName || "-"}<br>
+              Mobile: ${req.mobile || "-"}<br>
+              WhatsApp: ${req.whatsapp || "-"}<br>
+              Email: ${req.email || "-"}<br>
+              VAT No: ${req.vatNumber || "-"}
+            </div>
+          </div>
+
+          <div>
+            <strong>Package</strong>
+            <div class="muted">
+              Plan: ${req.selectedPlan || "-"}<br>
+              Monthly: ${money(req.monthlyPrice)}<br>
+              VAT 5%: ${money(req.vatAmount)}<br>
+              Total: ${money(req.totalAmount)}<br>
+              Payment: ${req.paymentStatus || "pending"}
+            </div>
+          </div>
+
+          <div>
+            <strong>Address</strong>
+            <div class="muted">
+              ${req.address || "-"}
+            </div>
+
+            <div class="actions">
+              <button class="btn btn-green" onclick="approveRequest('${req.email}')">
+                Approve
+              </button>
+
+              <button class="btn btn-red" onclick="rejectRequest('${req.email}')">
+                Reject
+              </button>
+
+              <button class="btn btn-dark" onclick="markPending('${req.email}')">
+                Pending
+              </button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    `;
+  });
+
+  loadApprovedTable();
+}
+
+function updateBoth(email, changes){
+  let users = getUsers();
+  let requests = getRequests();
+
+  users = users.map(user => {
+    if((user.email || "").toLowerCase() === email.toLowerCase()){
+      return {
+        ...user,
+        ...changes,
+        updatedAt: new Date().toISOString()
+      };
+    }
+
+    return user;
+  });
+
+  requests = requests.map(req => {
+    if((req.email || "").toLowerCase() === email.toLowerCase()){
+      return {
+        ...req,
+        ...changes,
+        updatedAt: new Date().toISOString()
+      };
+    }
+
+    return req;
+  });
+
+  saveUsers(users);
+  saveRequests(requests);
+}
+
+function approveRequest(email){
+  if(!email) return alert("Email missing.");
+
+  updateBoth(email,{
+    registrationStatus:"approved",
+    accountActive:true,
+    approvedAt:new Date().toISOString()
+  });
+
+  alert("Post91 account approved. Customer can now login.");
+  loadRequests();
+}
+
+function rejectRequest(email){
+  if(!email) return alert("Email missing.");
+
+  updateBoth(email,{
+    registrationStatus:"rejected",
+    accountActive:false,
+    rejectedAt:new Date().toISOString()
+  });
+
+  alert("Post91 account rejected.");
+  loadRequests();
+}
+
+function markPending(email){
+  if(!email) return alert("Email missing.");
+
+  updateBoth(email,{
+    registrationStatus:"pending",
+    accountActive:false,
+    pendingAt:new Date().toISOString()
+  });
+
+  alert("Post91 account moved back to pending.");
+  loadRequests();
+}
+
+function loadApprovedTable(){
+  const table = document.getElementById("approvedTable");
+  const users = getUsers().filter(u => u.registrationStatus === "approved");
+
+  if(!users.length){
+    table.innerHTML = `
+      <tr>
+        <td colspan="5">No approved Post91 customers yet.</td>
+      </tr>
+    `;
+    return;
+  }
+
+  table.innerHTML = "";
+
+  users.forEach(user=>{
+    table.innerHTML += `
+      <tr>
+        <td>${user.businessName || "-"}</td>
+        <td>${user.selectedPlan || "-"}</td>
+        <td>${user.email || "-"}</td>
+        <td>${user.mobile || "-"}</td>
+        <td>${user.accountActive ? "Active" : "Inactive"}</td>
+      </tr>
+    `;
+  });
+}
+
+loadRequests();
+</script>
+
+</body>
+</html>

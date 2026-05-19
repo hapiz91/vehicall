@@ -229,6 +229,31 @@
       color: #8fa8c2;
     }
 
+
+    .recent-item button {
+      margin-top: 12px;
+      padding: 10px 16px;
+      border: none;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #00c2ff, #0066ff);
+      color: #ffffff;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .post91-status {
+      display: inline-block;
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: bold;
+      margin-top: 8px;
+    }
+
+    .post91-pending { background: #fef3c7; color: #92400e; }
+    .post91-approved { background: #dcfce7; color: #166534; }
+    .post91-rejected { background: #fee2e2; color: #991b1b; }
+
     @media (max-width: 1100px) {
       .workspace-grid {
         grid-template-columns: 1fr;
@@ -376,6 +401,45 @@
         </button>
       </div>
 
+      <div class="workspace-card">
+        <h2>Post91 Accounts ERP</h2>
+
+        <p>
+          Manage Post91 accounting customers, subscription plans,
+          registration approvals, ERP access, and accounting SaaS operations.
+        </p>
+
+        <ul>
+          <li>Basic / Plus / Premium approvals</li>
+          <li>Customer activation control</li>
+          <li>Accounting app access</li>
+          <li>GitHub project tracking</li>
+          <li>Render deployment access</li>
+          <li>Subscription monitoring</li>
+        </ul>
+
+        <button onclick="window.open('https://post91-accounts.onrender.com','_blank')">
+          Open Post91 Accounts
+        </button>
+<button onclick="window.location.href='/admin-post91.html'"
+  style="background:linear-gradient(135deg,#22c55e,#16a34a);margin-left:8px;">
+  Open Post91 Admin
+</button>
+
+        <button onclick="window.open('https://github.com/hapiz91/post91-accounts','_blank')"
+          style="background:#10243a;border:1px solid #29496d;margin-left:8px;">
+          GitHub Repo
+        </button>
+      </div>
+
+    </div>
+
+    <div class="recent-section" style="margin-bottom:28px;">
+      <h2>Post91 Accounts Registration Requests</h2>
+
+      <div class="recent-list" id="post91Requests">
+        Loading Post91 requests...
+      </div>
     </div>
 
     <div class="recent-section">
@@ -437,7 +501,185 @@
       }
     }
 
+
+    function getPost91Requests() {
+      return JSON.parse(localStorage.getItem("post91RegistrationRequests") || "[]");
+    }
+
+    function savePost91Requests(requests) {
+      localStorage.setItem("post91RegistrationRequests", JSON.stringify(requests));
+    }
+
+    function getPost91Users() {
+      return JSON.parse(localStorage.getItem("post91Users") || "[]");
+    }
+
+    function savePost91Users(users) {
+      localStorage.setItem("post91Users", JSON.stringify(users));
+    }
+
+    function post91StatusClass(status) {
+      if (status === "approved") return "post91-approved";
+      if (status === "rejected") return "post91-rejected";
+      return "post91-pending";
+    }
+
+    function loadPost91Requests() {
+      const container = document.getElementById("post91Requests");
+
+      if (!container) return;
+
+      const requests = getPost91Requests();
+
+      if (!requests.length) {
+        container.innerHTML = `
+          <div class="recent-item">
+            No Post91 registration requests found.
+            <br><br>
+            <small>
+              Note: current Post91 requests are stored in browser localStorage
+              until database integration is completed.
+            </small>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = "";
+
+      requests.slice().reverse().forEach(req => {
+        const status = req.registrationStatus || "pending";
+        const price = Number(req.monthlyPrice || 0).toFixed(3);
+        const vat = Number(req.vatAmount || 0).toFixed(3);
+        const total = Number(req.totalAmount || 0).toFixed(3);
+
+        container.innerHTML += `
+          <div class="recent-item">
+            <strong>${req.businessName || "-"}</strong>
+
+            <div class="post91-status ${post91StatusClass(status)}">
+              ${status.toUpperCase()}
+            </div>
+
+            <br><br>
+            Plan: ${req.selectedPlan || "-"}
+            <br>
+            Monthly Price: OMR ${price}
+            <br>
+            VAT 5%: OMR ${vat}
+            <br>
+            Total: OMR ${total}
+            <br><br>
+
+            Owner: ${req.ownerName || "-"}
+            <br>
+            Mobile: ${req.mobile || "-"}
+            <br>
+            Email: ${req.email || "-"}
+            <br><br>
+
+            <small>Request No: ${req.requestNo || "-"}</small>
+            <br>
+
+            <button onclick="approvePost91('${req.email || ""}')">
+              Approve
+            </button>
+
+            <button onclick="rejectPost91('${req.email || ""}')"
+              style="background:#ef4444;margin-left:8px;">
+              Reject
+            </button>
+
+            <button onclick="openPost91App()"
+              style="background:#10243a;border:1px solid #29496d;margin-left:8px;">
+              Open App
+            </button>
+          </div>
+        `;
+      });
+    }
+
+    function approvePost91(email) {
+      if (!email) return alert("Email missing.");
+
+      let users = getPost91Users();
+      let requests = getPost91Requests();
+
+      users = users.map(user => {
+        if ((user.email || "").toLowerCase() === email.toLowerCase()) {
+          return {
+            ...user,
+            registrationStatus: "approved",
+            accountActive: true,
+            approvedAt: new Date().toISOString()
+          };
+        }
+        return user;
+      });
+
+      requests = requests.map(req => {
+        if ((req.email || "").toLowerCase() === email.toLowerCase()) {
+          return {
+            ...req,
+            registrationStatus: "approved",
+            accountActive: true,
+            approvedAt: new Date().toISOString()
+          };
+        }
+        return req;
+      });
+
+      savePost91Users(users);
+      savePost91Requests(requests);
+
+      alert("Post91 account approved. Customer login is now active.");
+      loadPost91Requests();
+    }
+
+    function rejectPost91(email) {
+      if (!email) return alert("Email missing.");
+
+      let users = getPost91Users();
+      let requests = getPost91Requests();
+
+      users = users.map(user => {
+        if ((user.email || "").toLowerCase() === email.toLowerCase()) {
+          return {
+            ...user,
+            registrationStatus: "rejected",
+            accountActive: false,
+            rejectedAt: new Date().toISOString()
+          };
+        }
+        return user;
+      });
+
+      requests = requests.map(req => {
+        if ((req.email || "").toLowerCase() === email.toLowerCase()) {
+          return {
+            ...req,
+            registrationStatus: "rejected",
+            accountActive: false,
+            rejectedAt: new Date().toISOString()
+          };
+        }
+        return req;
+      });
+
+      savePost91Users(users);
+      savePost91Requests(requests);
+
+      alert("Post91 account rejected.");
+      loadPost91Requests();
+    }
+
+    function openPost91App() {
+      window.open("https://post91-accounts.onrender.com", "_blank");
+    }
+
+
     loadDashboardData();
+    loadPost91Requests();
   </script>
 
 </body>
